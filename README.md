@@ -1,6 +1,6 @@
 # DartsLive Bookin
 
-Application de réservation des créneaux du Championnat de France Dartslive.
+Application de réservation des matchs de poules de qualifications du Championnat de France Dartslive (Doublettes, indivs et équipes)
 
 ## Technologies
 
