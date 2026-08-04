@@ -1,8 +1,0 @@
-node_modules dist 
-.firebase 
-.env 
-.env.local 
-coverage 
-.vscode/settings.json 
-.DS_Store 
-*.log
