@@ -5,7 +5,7 @@ import { Logo } from "../logo";
 import { appConfig } from "../../shared/config/app.config";
 
 export interface BrandProps {
-  logoWidth?: number | string;
+  logoWidth?: number;
   showSubtitle?: boolean;
   showVersion?: boolean;
 }
@@ -18,8 +18,10 @@ export function Brand({
   return (
     <Stack
       spacing={2}
-      alignItems="center"
-      textAlign="center"
+      sx={{
+        alignItems: "center",
+        textAlign: "center",
+      }}
     >
       <Logo width={logoWidth} />
 

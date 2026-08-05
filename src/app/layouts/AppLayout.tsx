@@ -1,4 +1,3 @@
-import Box from "@mui/material/Box";
 import type { ReactNode } from "react";
 import Container from "@mui/material/Container";
 
