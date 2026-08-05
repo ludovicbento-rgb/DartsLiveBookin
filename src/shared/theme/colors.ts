@@ -1,8 +1,8 @@
 export const colors = {
   primary: "#D32F2F",
-  secondary: "#212121",
+  secondary: "#1F1F1F",
 
-  background: "#F5F5F5",
+  background: "#F4F6F8",
   surface: "#FFFFFF",
 
   success: "#2E7D32",
@@ -14,6 +14,6 @@ export const colors = {
     available: "#2E7D32",
     pending: "#ED6C02",
     confirmed: "#1976D2",
-    blocked: "#616161"
-  }
+    blocked: "#757575",
+  },
 } as const;

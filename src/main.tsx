@@ -6,7 +6,7 @@ import ReactDOM from "react-dom/client";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
-import { theme } from "./core/theme";
+import { theme } from "./shared/theme";
 import App from "./App";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
