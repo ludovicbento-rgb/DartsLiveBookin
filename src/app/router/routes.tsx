@@ -1,5 +1,5 @@
 import { HomePage } from "../../pages/home/HomePage";
-import { LoginPage } from "../../pages/login/LoginPage";
+import { LoginPage } from "@/features/authentication/pages/LoginPage";
 import { MaintenancePage } from "../../pages/maintenance/MaintenancePage";
 import { NotFoundPage } from "../../pages/not-found/NotFoundPage";
 import { RegisterPage } from "../../pages/register/RegisterPage";

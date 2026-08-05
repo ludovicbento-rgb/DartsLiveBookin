@@ -1,19 +1,25 @@
 import "@fontsource/roboto";
 
-import React from "react";
-import ReactDOM from "react-dom/client";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
-import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+import { ThemeProvider } from "@mui/material/styles";
 
-import { theme } from "./shared/theme";
 import App from "./App";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+import { theme } from "./shared/theme";
+import { AuthProvider } from "./features/authentication/providers/AuthProvider";
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <App />
+
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+
     </ThemeProvider>
-  </React.StrictMode>
+  </StrictMode>,
 );

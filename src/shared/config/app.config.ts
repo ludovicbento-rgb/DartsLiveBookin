@@ -1,13 +1,13 @@
 export const appConfig = {
   name: "DartsLive Bookin",
 
-  championshipName: "Championnat de France Dartslive",
+  championshipName: "Réservation de matchs de Championnat de France Dartslive",
 
   version: "0.1.0",
 
   language: "fr",
 
-  supportEmail: "",
-
   copyright: `© ${new Date().getFullYear()} DartsLive Bookin`,
+
+  supportEmail: "",
 } as const;

@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
+
 import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
 
 import { Header } from "../../widgets/header";
-import { AppBottomNavigation } from "../../widgets/bottom-navigation";
+import { Footer } from "../../widgets/footer";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -15,17 +17,25 @@ export function AppLayout({
     <>
       <Header />
 
-      <Container
-        maxWidth="lg"
+      <Box
         sx={{
-          mt: 4,
-          mb: 10,
+          minHeight: "100vh",
+          background:
+            "linear-gradient(180deg,#fafafa,#eef2f5)",
         }}
       >
-        {children}
-      </Container>
+        <Container
+          maxWidth="md"
+          sx={{
+            pt: 6,
+            pb: 8,
+          }}
+        >
+          {children}
 
-      <AppBottomNavigation />
+          <Footer />
+        </Container>
+      </Box>
     </>
   );
 }
