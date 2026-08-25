@@ -40,24 +40,22 @@ export function AuthProvider({
             user,
             loading,
 
-            async login(
-                email: string,
-                password: string,
-            ) {
-                await authService.login({
+            async login(email: string, password: string) {
+                const user = await authService.login({
                     email,
                     password,
                 });
+
+                setUser(user);
             },
 
-            async register(
-                email: string,
-                password: string,
-            ) {
-                await authService.register({
+            async register(email: string, password: string) {
+                const user = await authService.register({
                     email,
                     password,
                 });
+
+                setUser(user);
             },
 
             async logout() {

@@ -1,72 +1,45 @@
-import { useState } from "react";
-
-import {
-    Alert,
-    Button,
-    Stack,
-    TextField,
-} from "@mui/material";
-
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import {
-    Controller,
-    useForm,
-} from "react-hook-form";
+import Stack from "@mui/material/Stack";
+import Alert from "@mui/material/Alert";
 
-import { useNavigate } from "react-router-dom";
-
-import { useAuth } from "../hooks/useAuth";
+import { AppButton } from "@/shared/ui/AppButton";
+import { AppTextField } from "@/shared/ui/AppTextField";
+import { AppPasswordField } from "@/shared/ui/AppPasswordField";
+import { AppFormActions } from "@/shared/ui/AppFormActions";
 
 import {
     loginSchema,
     type LoginFormValues,
 } from "../validation/login.schema";
 
-import { getFirebaseErrorMessage } from "../utils/firebase-error";
+interface LoginFormProps {
+    loading?: boolean;
+    error?: string;
+    onSubmit: (values: LoginFormValues) => Promise<void>;
+}
 
-export function LoginForm() {
-    const navigate = useNavigate();
-
-    const auth = useAuth();
-
-    const [error, setError] = useState("");
-
+export function LoginForm({
+    loading = false,
+    error,
+    onSubmit,
+}: LoginFormProps) {
     const {
         control,
         handleSubmit,
-        formState: { errors, isSubmitting },
+        formState: { errors },
     } = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
+        defaultValues: {
+            email: "",
+            password: "",
+        },
     });
-
-    async function onSubmit(
-        data: LoginFormValues,
-    ) {
-        setError("");
-
-        try {
-            await auth.login(
-                data.email,
-                data.password,
-            );
-
-            navigate("/dashboard");
-        } catch (e) {
-            const message =
-                getFirebaseErrorMessage(
-                    (e as { code?: string }).code ?? "",
-                );
-
-            setError(message);
-        }
-    }
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
-
-            <Stack spacing={3}>
-
+            <Stack spacing={2}>
                 {error && (
                     <Alert severity="error">
                         {error}
@@ -76,14 +49,12 @@ export function LoginForm() {
                 <Controller
                     name="email"
                     control={control}
-                    defaultValue=""
                     render={({ field }) => (
-                        <TextField
+                        <AppTextField
                             {...field}
-                            label="Adresse email"
+                            label="Adresse e-mail"
                             error={!!errors.email}
                             helperText={errors.email?.message}
-                            fullWidth
                         />
                     )}
                 />
@@ -91,32 +62,25 @@ export function LoginForm() {
                 <Controller
                     name="password"
                     control={control}
-                    defaultValue=""
                     render={({ field }) => (
-                        <TextField
+                        <AppPasswordField
                             {...field}
                             label="Mot de passe"
-                            type="password"
                             error={!!errors.password}
                             helperText={errors.password?.message}
-                            fullWidth
                         />
                     )}
                 />
 
-                <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting
-                        ? "Connexion..."
-                        : "Se connecter"}
-                </Button>
-
+                <AppFormActions>
+                    <AppButton
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading ? "Connexion..." : "Se connecter"}
+                    </AppButton>
+                </AppFormActions>
             </Stack>
-
         </form>
     );
 }

@@ -2,10 +2,15 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 
+import { useNavigate } from "react-router-dom";
+
 import { AppLayout } from "@/app/layouts/AppLayout";
 import { AppCard, AppButton, PageTitle } from "@/shared/ui";
 
 export function HomePage() {
+
+  const navigate = useNavigate();
+
   return (
     <AppLayout>
       <AppCard>
@@ -29,14 +34,16 @@ export function HomePage() {
             </Typography>
           </Stack>
 
-          <AppButton>
+          <AppButton
+            onClick={() => navigate("/login")}
+          >
             Se connecter
           </AppButton>
 
           <Button
             variant="outlined"
-            size="large"
             fullWidth
+            onClick={() => navigate("/activate")}
           >
             Activer mon compte
           </Button>

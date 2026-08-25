@@ -1,0 +1,13 @@
+import {
+    collection,
+    doc,
+} from "firebase/firestore";
+
+import { db } from "@/shared/firebase";
+
+export const usersCollection =
+    collection(db, "users");
+
+export function userDocument(uid: string) {
+    return doc(db, "users", uid);
+}

@@ -1,8 +1,11 @@
-import { HomePage } from "../../pages/home/HomePage";
+import { HomePage } from "@/pages/home/HomePage";
 import { LoginPage } from "@/features/authentication/pages/LoginPage";
-import { MaintenancePage } from "../../pages/maintenance/MaintenancePage";
-import { NotFoundPage } from "../../pages/not-found/NotFoundPage";
-import { RegisterPage } from "../../pages/register/RegisterPage";
+import { MaintenancePage } from "@/pages/maintenance/MaintenancePage";
+import { NotFoundPage } from "@/pages/not-found/NotFoundPage";
+import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
+import { PlanningPage } from "@/features/planning/pages/PlanningPage";
+import { ProtectedRoute } from "@/features/authentication/routes/ProtectedRoute";
+
 
 export const routes = [
   {
@@ -14,10 +17,6 @@ export const routes = [
     element: <LoginPage />,
   },
   {
-    path: "/register",
-    element: <RegisterPage />,
-  },
-  {
     path: "/maintenance",
     element: <MaintenancePage />,
   },
@@ -25,4 +24,20 @@ export const routes = [
     path: "*",
     element: <NotFoundPage />,
   },
+  {
+    path: "/planning/:venueId",
+    element: (
+      <ProtectedRoute>
+        <PlanningPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute>
+        <DashboardPage />
+      </ProtectedRoute>
+    ),
+  }
 ];

@@ -1,84 +1,231 @@
 # DartsLive Bookin
 
-Version : 1.0.0
-Statut : Sprint 0
+Version : 0.4.0-alpha
 
 ---
 
-# Vision
+# Vision du produit
 
-DartsLive Bookin est une Progressive Web App (PWA) destinée exclusivement à la gestion des réservations de créneaux de matchs du Championnat de France Dartslive.
+DartsLive Bookin est une application web permettant de gérer les réservations des créneaux de jeu dans le cadre du Championnat de France Dartslive.
 
-L'application ne gère pas les matchs, les scores, les classements ou les phases finales.
+L'objectif principal est de simplifier l'organisation des rencontres entre joueurs et de limiter les conflits de réservation dans les établissements partenaires.
 
-Elle complète l'application officielle Dartslive.
+L'application est développée avec React, TypeScript et Firebase (Authentication, Firestore et Hosting).
+
+---
+
+# Contexte
+
+Aujourd'hui les réservations sont réalisées de manière manuelle :
+
+- Messenger
+- Facebook
+- SMS
+- Téléphone
+
+Cela entraîne :
+
+- doubles réservations
+- manque de visibilité
+- difficultés pour les gérants
+- absence d'historique
+
+DartsLive Bookin apporte une solution unique permettant :
+
+- la réservation des créneaux
+- la validation par le gérant
+- une vision en temps réel des disponibilités
+- un historique complet
 
 ---
 
 # Objectifs
 
-- Simplifier la réservation des matchs.
-- Donner de la visibilité aux joueurs.
-- Permettre aux gérants de gérer leurs disponibilités.
-- Fournir à l'administration une vue globale.
-- Conserver l'historique des saisons.
+Les objectifs du projet sont :
+
+- réduire les erreurs de réservation
+- simplifier l'organisation des matchs
+- offrir une application mobile intuitive
+- fournir une vision temps réel des disponibilités
+- limiter les échanges entre joueurs et gérants
 
 ---
 
-# Public
+# Public cible
 
-- Joueurs
-- Gérants
-- Administrateurs
+L'application est destinée à quatre profils.
 
----
+## Joueur
 
-# Types de compétition
+Peut :
 
-- Individuel
-- Doublette
-- Équipe
+- consulter les disponibilités
+- réserver un créneau
+- consulter ses réservations
 
 ---
 
-# Technologies
+## Gérant
 
-- React
-- TypeScript
-- Vite
-- Firebase
-- Firestore
-- Firebase Authentication
-- Firebase Hosting
-- Material UI
+Peut :
+
+- consulter les demandes
+- valider ou refuser une réservation
+- bloquer des créneaux
+- fermer temporairement son établissement
 
 ---
 
-# Plateformes
+## Administrateur
 
-- Android
-- iPhone
-- PC
-- Mac
+Peut :
+
+- gérer les saisons
+- gérer les établissements
+- importer les joueurs
+- importer les inscriptions
+- gérer les utilisateurs
+
+---
+
+## Organisation
+
+Peut :
+
+- suivre l'activité globale
+- produire des statistiques
+- superviser les championnats
+
+---
+
+# Valeur ajoutée
+
+DartsLive Bookin apporte :
+
+- réservation temps réel
+- synchronisation Firestore
+- suppression des doubles réservations
+- visibilité immédiate des disponibilités
+- gestion centralisée des établissements
 
 ---
 
 # Fonctionnalités principales
 
-- Authentification
+- Authentification Firebase
+- Activation des comptes
+- Dashboard joueur
+- Gestion des inscriptions
+- Planning des établissements
 - Réservation
-- Validation des réservations
-- Gestion des bars
-- Gestion des créneaux
-- Gestion des événements
-- Mode maintenance
-- Journal d'audit
+- Validation
+- Administration
+- Notifications
 
 ---
 
-# Hors périmètre
+# Hors périmètre V1
 
-- Scores
-- Résultats
-- Classements
-- Arbitrage
+Ne seront pas développés :
+
+- paiement
+- géolocalisation
+- chat
+- messagerie
+- classement
+- statistiques avancées
+
+---
+
+# Stack technique
+
+Frontend
+
+- React
+- TypeScript
+- Vite
+- Material UI
+
+Backend
+
+- Firebase Authentication
+- Firestore
+- Firebase Hosting
+
+---
+
+# Architecture
+
+Le projet suit une architecture Feature-Sliced Design simplifiée.
+
+app
+
+entities
+
+features
+
+shared
+
+widgets
+
+---
+
+# Etat actuel
+
+Architecture :
+
+Stabilisée
+
+Build :
+
+Vert
+
+Authentification :
+
+Terminée
+
+Planning :
+
+En cours
+
+Réservation :
+
+En cours
+
+Administration :
+
+Non démarrée
+
+---
+
+# Vision V1
+
+Connexion
+
+↓
+
+Dashboard
+
+↓
+
+Choix de l'inscription
+
+↓
+
+Choix du bar
+
+↓
+
+Planning
+
+↓
+
+Réservation
+
+↓
+
+Validation
+
+↓
+
+Historique
