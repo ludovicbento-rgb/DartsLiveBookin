@@ -38,6 +38,7 @@ export function PlanningPage() {
     const { user } = useAuth();
 
     if (!planning) {
+
         return (
             <AppLayout>
                 <AppCard>

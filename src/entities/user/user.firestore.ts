@@ -8,6 +8,12 @@ import { db } from "@/shared/firebase";
 export const usersCollection =
     collection(db, "users");
 
-export function userDocument(uid: string) {
-    return doc(db, "users", uid);
+export function userDocument(
+    userId: string,
+) {
+    return doc(
+        db,
+        "users",
+        userId,
+    );
 }

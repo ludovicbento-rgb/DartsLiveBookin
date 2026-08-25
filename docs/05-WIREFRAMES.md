@@ -1,46 +1,163 @@
 # DartsLive Bookin
 
-# 05 - Wireframes
+# Wireframes & UX
 
-Version : 0.1.0
-
----
-
-# WF-001 - Écran de connexion
-
-+--------------------------------------------------+
-|                                                  |
-|              DartsLive Bookin                    |
-|                                                  |
-|     Championnat de France Dartslive              |
-|                                                  |
-|              [ Logo championnat ]                |
-|                                                  |
-|  Email                                           |
-|  [______________________________]                |
-|                                                  |
-|  Mot de passe                                    |
-|  [______________________________]                |
-|                                                  |
-|  ( ) Se souvenir de moi                          |
-|                                                  |
-|  [ Se connecter ]                                |
-|                                                  |
-|  Mot de passe oublié                             |
-|                                                  |
-|--------------------------------------------------|
-|                                                  |
-|  Pas encore de compte ?                          |
-|                                                  |
-|  [ Créer un compte ]                             |
-|                                                  |
-+--------------------------------------------------+
+Version : 0.4.0-alpha
 
 ---
 
-# WF-002 - Création de compte
+# Objectif
 
-Etape 1
+Ce document décrit l'ensemble des écrans de l'application.
+
+Pour chaque écran sont décrits :
+
+- son objectif
+- les informations affichées
+- les actions possibles
+- les règles métier
+- le parcours utilisateur
+
+---
+
+# Navigation générale
+
+```
+
+Landing
+
+↓
+
+Connexion
+
+↓
+
+Dashboard
+
+↓
+
+Choix de l'inscription
+
+↓
+
+Choix du bar
+
+↓
+
+Planning
+
+↓
+
+Réservation
+
+↓
+
+Validation
+
+↓
+
+Historique
+
+```
+
+---
+
+# Landing
+
+Objectif
+
+Présenter l'application.
+
+Actions
+
+- Se connecter
+- Activer son compte
+
+Wireframe
+
+```
+
++---------------------------------------+
+
+DartsLive Bookin
+
+Championnat de France Dartslive
+
+[ Se connecter ]
+
+[ Activer mon compte ]
+
+Version 0.4.0-alpha
+
++---------------------------------------+
+
+```
+
+---
+
+# Connexion
+
+Objectif
+
+Authentifier le joueur.
+
+Informations
+
+- Adresse email
+- Mot de passe
+
+Actions
+
+Connexion
+
+Mot de passe oublié (V2)
+
+Wireframe
+
+```
+
++---------------------------------------+
+
+Connexion
+
+Email
+
+[_____________________]
+
+Mot de passe
+
+[_____________________]
+
+[ Se connecter ]
+
++---------------------------------------+
+
+```
+
+---
+
+# Activation
+
+Objectif
+
+Associer une licence Dartslive à un compte Firebase.
+
+Informations
+
+- Numéro de licence
+- Adresse email
+- Mot de passe
+- Confirmation
+
+Actions
+
+Activer mon compte
+
+Wireframe
+
+```
+
+Licence
 
 Email
 
@@ -48,174 +165,306 @@ Mot de passe
 
 Confirmation
 
-↓
+[ Activer ]
 
-Etape 2
-
-Licence Dartslive
-
-↓
-
-Recherche automatique
-
-↓
-
-Résultat
-
-Vous participez à :
-
-☑ Doublette
-
-☐ Equipe
-
-☐ Individuel
-
-↓
-
-Création du compte
+```
 
 ---
 
-# WF-003 - Tableau de bord Joueur
+# Dashboard
 
-Bonjour Ludovic
+Objectif
 
-Compétition active
+Présenter les établissements disponibles.
+
+Informations
+
+- joueur connecté
+- saison active
+- inscription sélectionnée
+
+Wireframe
+
+```
+
+Bonjour Ludovic 👋
+
+Championnat de France
+
+Saison CF2027
+
+Mon inscription
 
 [Doublette ▼]
 
-------------------------------------
-
-📅 Nouvelle réservation
-
-📋 Mes réservations
-
-🔔 Notifications (2)
-
-👤 Mon profil
-
-------------------------------------
-
-Dernières réservations
-
-18h00
+────────────────────────
 
 Point Bar
 
-Confirmée
+Voir le planning
 
-19h30
+────────────────────────
 
 LesMurets.shop
 
-En attente
+Voir le planning
+
+```
 
 ---
 
-# WF-004 - Choix du bar
+# Planning
 
-Choisissez un établissement
+Objectif
 
-+---------------------------+
+Afficher les créneaux disponibles.
 
-[ LOGO ]
+Informations
+
+- établissement
+- date
+- disponibilité
+
+Wireframe
+
+```
 
 Point Bar
 
-2 cibles
+25/08/2026
 
-Créneaux disponibles : 8
+6 cibles disponibles
 
-[ Choisir ]
+────────────────────────
 
-+---------------------------+
+18:00 - 19:30
 
-+---------------------------+
++-------------+
 
-[ LOGO ]
+🎯1
 
-LesMurets.shop
+Disponible
 
-1 cible
++-------------+
 
-Créneaux disponibles : 3
++-------------+
 
-[ Choisir ]
+🎯2
 
-+---------------------------+
+Réservée
 
----
++-------------+
 
-# WF-005 - Planning
+────────────────────────
 
-Point Bar
+19:30 - 21:00
 
-Lundi 2 août
+...
 
----------------------------------------------------
-
-18h00
-
-🟢 Cible 1
-
-🟢 Cible 2
-
----------------------------------------------------
-
-19h30
-
-🔴 Cible 1
-
-🟢 Cible 2
-
----------------------------------------------------
-
-21h00
-
-🟢 Cible 1
-
-🟢 Cible 2
-
----------------------------------------------------
-
-Cliquer sur une case verte ouvre la demande de réservation.
+```
 
 ---
 
-# WF-006 - Demande de réservation
+# Réservation
+
+Objectif
+
+Confirmer une réservation.
+
+Wireframe
+
+```
+
+Réserver cette cible
 
 Bar
 
 Point Bar
 
-Date
-
-02/08/2026
-
 Créneau
 
-18h00 - 19h30
+18:00 - 19:30
 
 Cible
 
-Cible 2
-
-Compétition
-
-[Doublette ▼]
-
-Equipe
-
-Les Triple 20
-
-------------------------------------
-
-[ Confirmer ]
+1
 
 [ Annuler ]
 
-------------------------------------
+[ Confirmer ]
 
-Après validation :
+```
 
-Votre demande a été envoyée au gérant.
+---
+
+# Historique
+
+Objectif
+
+Afficher les réservations du joueur.
+
+Informations
+
+- établissement
+- créneau
+- statut
+
+Exemple
+
+```
+
+Point Bar
+
+18:00
+
+CONFIRMED
+
+──────────────
+
+LesMurets
+
+19:30
+
+PENDING
+
+```
+
+---
+
+# Validation
+
+Objectif
+
+Permettre au gérant de traiter les demandes.
+
+Wireframe
+
+```
+
+Demandes
+
+──────────────────
+
+Ludovic Bento
+
+18:00
+
+[ Valider ]
+
+[ Refuser ]
+
+```
+
+---
+
+# Administration
+
+Objectif
+
+Configurer l'application.
+
+Fonctions
+
+- saisons
+- établissements
+- joueurs
+- inscriptions
+- configuration
+
+---
+
+# Responsive
+
+Desktop
+
+Sidebar
+
+Tablet
+
+Drawer
+
+Mobile
+
+Bottom Navigation
+
+---
+
+# Couleurs
+
+Vert
+
+Disponible
+
+Orange
+
+En attente
+
+Rouge
+
+Réservée
+
+Gris
+
+Indisponible
+
+---
+
+# Icônes
+
+🎯
+
+Cible
+
+📅
+
+Planning
+
+👤
+
+Profil
+
+🏢
+
+Établissement
+
+⚙️
+
+Administration
+
+---
+
+# Parcours utilisateur V1
+
+Connexion
+
+↓
+
+Dashboard
+
+↓
+
+Choix inscription
+
+↓
+
+Choix établissement
+
+↓
+
+Planning
+
+↓
+
+Choix cible
+
+↓
+
+Réservation
+
+↓
+
+Validation
+
+↓
+
+Historique

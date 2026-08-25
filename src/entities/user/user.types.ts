@@ -1,6 +1,27 @@
-export interface UserProfile {
-    firebaseUid: string;
+import type { Timestamp } from "firebase/firestore";
 
+export interface UserRoles {
+    administrator: boolean;
+    manager: boolean;
+    player: boolean;
+}
+
+export interface UserProfile {
+
+    /**
+     * Identifiant du document Firestore.
+     */
+    id: string;
+
+    /**
+     * UID Firebase Authentication.
+     * Null tant que le compte n'est pas activé.
+     */
+    firebaseUid: string | null;
+
+    /**
+     * Numéro de licence Dartslive.
+     */
     licenseNumber: string;
 
     firstname: string;
@@ -11,19 +32,22 @@ export interface UserProfile {
 
     seasonId: string;
 
+    /**
+     * Compte activé ?
+     */
     accountActivated: boolean;
 
-    roles: {
-        administrator: boolean;
-        manager: boolean;
-        player: boolean;
-    };
+    /**
+     * Rôles de l'utilisateur.
+     */
+    roles: UserRoles;
 
-    createdAt: unknown;
+    status: "ACTIVE" | "BLOCKED";
 
-    updatedAt: unknown;
+    createdAt: Timestamp;
 
-    lastLoginAt?: unknown;
+    updatedAt: Timestamp;
 
-    status?: "ACTIVE" | "BLOCKED";
+    lastLoginAt: Timestamp | null;
+
 }

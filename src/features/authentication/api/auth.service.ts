@@ -24,7 +24,9 @@ export class AuthService {
         return credential.user;
     }
 
-    async register(data: RegisterRequest): Promise<User> {
+    async register(
+        data: RegisterRequest,
+    ): Promise<User> {
         const credential = await createUserWithEmailAndPassword(
             auth,
             data.email,

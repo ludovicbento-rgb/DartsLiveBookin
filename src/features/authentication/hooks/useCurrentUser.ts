@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./useAuth";
 
 import {
-    getUserByUid,
+    getUserByFirebaseUid,
     type UserProfile,
 } from "@/entities/user";
 
 export function useCurrentUser() {
+
     const { user } = useAuth();
 
     const [profile, setProfile] =
@@ -16,13 +17,19 @@ export function useCurrentUser() {
     useEffect(() => {
 
         if (!user) {
+
+            setProfile(null);
+
             return;
+
         }
 
-        getUserByUid(user.uid)
-            .then(setProfile);
+        getUserByFirebaseUid(
+            user.uid,
+        ).then(setProfile);
 
     }, [user]);
 
     return profile;
+
 }

@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 
 import type { VenuePlanning } from "../model/planning.types";
-
-import {
-    getReservationsByVenueAndDay,
-} from "@/entities/reservation";
+import type { Reservation } from "@/entities/reservation";
 
 import { buildPlanning } from "../utils/buildPlanning";
 
@@ -26,6 +23,7 @@ const slots = [
 export function usePlanning(
     venueId: string,
 ) {
+
     const [planning, setPlanning] =
         useState<VenuePlanning | null>(null);
 
@@ -33,22 +31,46 @@ export function usePlanning(
 
         async function load() {
 
-            const reservations =
-                await getReservationsByVenueAndDay(
-                    venueId,
-                    new Date(),
+            try {
+                // TODO US-004
+                // Remplacer les réservations simulées
+                // par la lecture Firestore.
+                const reservations: Reservation[] = [];
+
+                const result =
+                    buildPlanning(
+                        venueId,
+                        "Point Bar",
+                        2,
+                        slots,
+                        reservations,
+                    );
+                setPlanning(result);
+
+            }
+            catch (e) {
+
+                console.error(
+                    "Erreur Planning",
+                    e,
                 );
 
-            const result =
-                buildPlanning(
-                    venueId,
-                    "Point Bar",
-                    2,
-                    slots,
-                    reservations,
+                // Pour continuer la recette
+                // on affiche quand même le planning vide
+
+                setPlanning(
+
+                    buildPlanning(
+                        venueId,
+                        "Point Bar",
+                        2,
+                        slots,
+                        [],
+                    ),
+
                 );
 
-            setPlanning(result);
+            }
 
         }
 
@@ -57,4 +79,5 @@ export function usePlanning(
     }, [venueId]);
 
     return planning;
+
 }

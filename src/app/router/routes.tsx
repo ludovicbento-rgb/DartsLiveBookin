@@ -5,6 +5,7 @@ import { NotFoundPage } from "@/pages/not-found/NotFoundPage";
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
 import { PlanningPage } from "@/features/planning/pages/PlanningPage";
 import { ProtectedRoute } from "@/features/authentication/routes/ProtectedRoute";
+import { ActivateAccountPage } from "@/features/authentication/pages/ActivateAccountPage";
 
 
 export const routes = [
@@ -39,5 +40,9 @@ export const routes = [
         <DashboardPage />
       </ProtectedRoute>
     ),
-  }
+  },
+  {
+    path: "/activate",
+    element: <ActivateAccountPage />,
+  },
 ];
