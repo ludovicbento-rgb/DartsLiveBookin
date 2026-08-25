@@ -9,8 +9,6 @@ interface DashboardHeaderProps {
 
     firstname: string;
 
-    lastname: string;
-
     role: string;
 
     season: string;
@@ -22,8 +20,6 @@ interface DashboardHeaderProps {
 export function DashboardHeader({
 
     firstname,
-
-    lastname,
 
     role,
 
@@ -62,14 +58,6 @@ export function DashboardHeader({
                         >
 
                             Bonjour {firstname} 👋
-
-                        </Typography>
-
-                        <Typography
-                            color="text.secondary"
-                        >
-
-                            {lastname}
 
                         </Typography>
 
