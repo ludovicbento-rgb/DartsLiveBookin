@@ -12,11 +12,11 @@ export const registrationsCollection =
     );
 
 export function registrationDocument(
-    id: string,
+    registrationId: string,
 ) {
     return doc(
         db,
         "registrations",
-        id,
+        registrationId,
     );
 }

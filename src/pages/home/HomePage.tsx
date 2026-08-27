@@ -3,6 +3,10 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 
 import { useNavigate } from "react-router-dom";
+import {
+  LOGIN_ROUTE,
+  ACTIVATE_ACCOUNT_ROUTE,
+} from "@/shared/routing";
 
 import { AppLayout } from "@/app/layouts/AppLayout";
 import { AppCard, AppButton, PageTitle } from "@/shared/ui";
@@ -35,7 +39,7 @@ export function HomePage() {
           </Stack>
 
           <AppButton
-            onClick={() => navigate("/login")}
+            onClick={() => navigate(LOGIN_ROUTE)}
           >
             Se connecter
           </AppButton>
@@ -43,18 +47,11 @@ export function HomePage() {
           <Button
             variant="outlined"
             fullWidth
-            onClick={() => navigate("/activate")}
+            onClick={() => navigate(ACTIVATE_ACCOUNT_ROUTE)}
           >
             Activer mon compte
           </Button>
 
-          <Button
-            variant="text"
-            size="large"
-            fullWidth
-          >
-            Consulter le planning
-          </Button>
         </Stack>
       </AppCard>
     </AppLayout>

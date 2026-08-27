@@ -1,32 +1,30 @@
-import {
-    addDoc,
-    collection,
-    serverTimestamp,
-} from "firebase/firestore";
+import { createReservationCommand } from "../../commands/createReservation";
 
-import { db } from "@/shared/firebase";
+import type { ReservationCommand } from "../model/reservation-command";
 
-import type {
-    CreateReservationRequest,
-} from "@/entities/reservation";
+export interface ReservationResult {
+
+    success: boolean;
+
+    message: string;
+
+}
 
 export async function createReservation(
-    reservation: CreateReservationRequest,
-) {
-    await addDoc(
-        collection(db, "reservations"),
-        {
-            ...reservation,
 
-            status: "PENDING",
+    command: ReservationCommand,
 
-            createdAt: serverTimestamp(),
+): Promise<ReservationResult> {
 
-            updatedAt: serverTimestamp(),
+    await createReservationCommand(command);
 
-            validatedBy: null,
+    return {
 
-            notes: "",
-        },
-    );
+        success: true,
+
+        message:
+            "Votre réservation a été envoyée au gérant.",
+
+    };
+
 }

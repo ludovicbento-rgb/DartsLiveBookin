@@ -1,61 +1,70 @@
-import Card from "@mui/material/Card";
-import CardActionArea from "@mui/material/CardActionArea";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
+import Chip from "@mui/material/Chip";
+
+import type {
+    BoardSlot as BoardSlotModel,
+} from "../model/planning.types";
 
 interface BoardSlotProps {
-    boardNumber: number;
-    available: boolean;
-    onSelect?: () => void;
+
+    board: BoardSlotModel;
+
+    onClick: () => void;
+
 }
 
 export function BoardSlot({
-    boardNumber,
-    available,
-    onSelect,
-}: BoardSlotProps) {
-    return (
-        <Card
-            variant="outlined"
-            sx={{
-                width: 150,
-                borderColor: available ? "success.main" : "error.main",
-            }}
-        >
-            <CardActionArea
-                disabled={!available}
-                onClick={available ? onSelect : undefined}
-            >
-                <CardContent
-                    sx={{
-                        textAlign: "center",
-                    }}
-                >
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            fontWeight: 700,
-                        }}
-                    >
-                        🎯 {boardNumber}
-                    </Typography>
 
-                    <Typography
-                        color={
-                            available
-                                ? "success.main"
-                                : "error.main"
-                        }
-                        sx={{
-                            fontWeight: 600,
-                        }}
-                    >
-                        {available
-                            ? "Disponible"
-                            : "Réservée"}
-                    </Typography>
-                </CardContent>
-            </CardActionArea>
-        </Card>
+    board,
+
+    onClick,
+
+}: BoardSlotProps) {
+
+    const color =
+        board.status === "AVAILABLE"
+            ? "success"
+            : board.status === "PENDING"
+                ? "warning"
+                : "error";
+
+    const clickable =
+        board.status === "AVAILABLE";
+
+    const label =
+        `Cible ${board.boardNumber}`;
+
+    return (
+
+        <Chip
+
+            label={label}
+
+            color={color}
+
+            variant={
+                clickable
+                    ? "filled"
+                    : "outlined"
+            }
+
+            clickable={clickable}
+
+            onClick={
+                clickable
+                    ? onClick
+                    : undefined
+            }
+
+            sx={{
+
+                width: "100%",
+
+                fontWeight: 600,
+
+            }}
+
+        />
+
     );
+
 }

@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+    DASHBOARD_ROUTE,
+} from "@/shared/routing";
 
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -27,7 +30,7 @@ export function LoginPage() {
         try {
             await auth.login(values.email, values.password);
 
-            navigate("/dashboard");
+            navigate(DASHBOARD_ROUTE);
         } catch (e) {
             const code =
                 typeof e === "object" &&

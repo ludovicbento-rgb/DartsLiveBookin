@@ -3,49 +3,57 @@ import type { Timestamp } from "firebase/firestore";
 export type ReservationStatus =
     | "PENDING"
     | "CONFIRMED"
-    | "REFUSED"
+    | "REJECTED"
     | "CANCELLED";
 
 export interface Reservation {
+
     id: string;
 
-    seasonId: string;
-
-    venueId: string;
-
-    registrationId: string;
-
-    playerUid: string;
+    matchId: string;
 
     boardNumber: number;
 
-    startAt: Timestamp;
+    plannedStartAt: Timestamp;
 
-    endAt: Timestamp;
+    plannedEndAt: Timestamp;
 
     status: ReservationStatus;
 
+    createdByUserId: string;
+
     createdAt: Timestamp;
 
-    updatedAt: Timestamp;
+    validatedByUserId: string | null;
 
-    validatedBy: string | null;
+    validatedAt: Timestamp | null;
+
+    rejectedByUserId: string | null;
+
+    rejectedAt: Timestamp | null;
+
+    cancelledByUserId: string | null;
+
+    cancelledAt: Timestamp | null;
+
+    validationComment: string;
 
     notes: string;
+
 }
 
 export interface CreateReservationRequest {
-    seasonId: string;
 
-    venueId: string;
-
-    registrationId: string;
-
-    playerUid: string;
+    matchId: string;
 
     boardNumber: number;
 
-    startAt: Timestamp;
+    plannedStartAt: Timestamp;
 
-    endAt: Timestamp;
-}   
+    plannedEndAt: Timestamp;
+
+    createdByUserId: string;
+
+    notes: string;
+
+}

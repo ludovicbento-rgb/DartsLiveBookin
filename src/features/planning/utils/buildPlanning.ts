@@ -4,19 +4,127 @@ import type {
 
 import type {
     BoardSlot,
+    BoardStatus,
+    TimeSlot,
     VenuePlanning,
 } from "../model/planning.types";
 
+interface ReservationSlot {
+
+    startTime: string;
+
+    endTime: string;
+
+}
+
 export function buildPlanning(
+
     venueId: string,
+
     venueName: string,
+
     boardCount: number,
-    slots: {
-        startTime: string;
-        endTime: string;
-    }[],
+
+    slots: ReservationSlot[],
+
     reservations: Reservation[],
+
 ): VenuePlanning {
+
+    const planningSlots: TimeSlot[] = slots.map(slot => {
+
+        const boards: BoardSlot[] = [];
+
+        for (
+
+            let boardNumber = 1;
+
+            boardNumber <= boardCount;
+
+            boardNumber++
+
+        ) {
+
+            const reservation =
+                reservations.find(r => {
+
+                    const reservationStart =
+                        r.plannedStartAt
+                            .toDate()
+                            .toLocaleTimeString(
+                                "fr-FR",
+                                {
+
+                                    hour: "2-digit",
+
+                                    minute: "2-digit",
+
+                                },
+                            );
+
+                    return (
+
+                        r.boardNumber === boardNumber &&
+
+                        reservationStart === slot.startTime
+
+                    );
+
+                });
+
+            let status: BoardStatus =
+                "AVAILABLE";
+
+            if (reservation) {
+
+                switch (reservation.status) {
+
+                    case "PENDING":
+
+                        status = "PENDING";
+
+                        break;
+
+                    case "CONFIRMED":
+
+                        status = "CONFIRMED";
+
+                        break;
+
+                    default:
+
+                        status = "AVAILABLE";
+
+                }
+
+            }
+
+            boards.push({
+
+                boardNumber,
+
+                status,
+
+                reservationId:
+                    reservation?.id,
+
+            });
+
+        }
+
+        return {
+
+            startTime:
+                slot.startTime,
+
+            endTime:
+                slot.endTime,
+
+            boards,
+
+        };
+
+    });
 
     return {
 
@@ -24,35 +132,9 @@ export function buildPlanning(
 
         venueName,
 
-        slots: slots.map((slot, index) => ({
+        boardCount,
 
-            id: `${index}`,
-
-            startTime: slot.startTime,
-
-            endTime: slot.endTime,
-
-            boards: Array.from(
-                { length: boardCount },
-                (_, boardIndex): BoardSlot => {
-
-                    const reserved =
-                        reservations.some(
-                            reservation =>
-                                reservation.boardNumber === boardIndex + 1 &&
-                                reservation.startAt.toDate().getHours() ===
-                                Number(slot.startTime.split(":")[0]),
-                        );
-
-                    return {
-                        boardNumber: boardIndex + 1,
-                        available: !reserved,
-                    };
-
-                },
-            ),
-
-        })),
+        slots: planningSlots,
 
     };
 

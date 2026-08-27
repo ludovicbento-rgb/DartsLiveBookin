@@ -3,6 +3,11 @@ import Typography from "@mui/material/Typography";
 
 import { useNavigate } from "react-router-dom";
 
+import {
+    HOME_ROUTE,
+    planningRoute,
+} from "@/shared/routing";
+
 import { AppLayout } from "@/app/layouts/AppLayout";
 import { AppCard } from "@/shared/ui";
 
@@ -21,7 +26,11 @@ export function DashboardPage() {
 
     const navigate = useNavigate();
 
-    const dashboard = useDashboard();
+    const {
+        dashboard,
+        loading,
+        error,
+    } = useDashboard();
 
     const profile = useCurrentUser();
 
@@ -31,18 +40,41 @@ export function DashboardPage() {
     // Guards
     // -------------------------
 
-    if (!dashboard || !profile) {
+    if (loading) {
+
         return (
             <AppLayout>
                 <AppCard>
-                    <Typography>
-                        Chargement...
-                    </Typography>
+                    Chargement...
                 </AppCard>
             </AppLayout>
         );
+
     }
 
+    if (error) {
+
+        return (
+            <AppLayout>
+                <AppCard>
+                    {error}
+                </AppCard>
+            </AppLayout>
+        );
+
+    }
+
+    if (!dashboard || !profile) {
+
+        return (
+            <AppLayout>
+                <AppCard>
+                    Chargement...
+                </AppCard>
+            </AppLayout>
+        );
+
+    }
     // -------------------------
     // Derived values
     // -------------------------
@@ -61,7 +93,7 @@ export function DashboardPage() {
     async function handleLogout() {
         await logout();
 
-        navigate("/");
+        navigate(HOME_ROUTE);
     }
 
     // -------------------------
@@ -70,7 +102,11 @@ export function DashboardPage() {
 
     return (
         <AppLayout>
-            <Stack spacing={4}>
+            <Stack spacing={2} sx={{
+                width: "100%",
+                maxWidth: 700,
+                mx: "auto",
+            }}>
                 <DashboardHeader
                     firstname={profile.firstname}
                     role={userRole}
@@ -95,9 +131,8 @@ export function DashboardPage() {
                         city={venue.city}
                         logo={venue.logo}
                         boardCount={venue.boardCount}
-                        availableSlots={venue.availableSlots}
                         onPlanning={() =>
-                            navigate(`/planning/${venue.id}`)
+                            navigate(planningRoute(venue.id))
                         }
                     />
                 ))}

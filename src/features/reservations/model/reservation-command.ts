@@ -2,18 +2,14 @@ import type { Timestamp } from "firebase/firestore";
 
 export interface ReservationCommand {
 
-    seasonId: string;
-
-    registrationId: string;
-
-    venueId: string;
-
-    playerUid: string;
+    matchId: string;
 
     boardNumber: number;
 
-    startAt: Timestamp;
+    plannedStartAt: Timestamp;
 
-    endAt: Timestamp;
+    plannedEndAt: Timestamp;
+
+    notes: string;
 
 }

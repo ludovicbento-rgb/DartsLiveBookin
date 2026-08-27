@@ -1,17 +1,5 @@
-export interface DashboardVenue {
-    id: string;
-    name: string;
-    logo: string;
-    boardCount: number;
-    availableSlots: number;
-    city: string;
-    address: string;
-    active: boolean;
-}
+import type { Venue } from "@/entities/venue";
 
 export interface DashboardData {
-    firstname: string;
-    season: string;
-    competition: string;
-    venues: DashboardVenue[];
+    venues: Venue[];
 }

@@ -1,83 +1,69 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState,
+} from "react";
 
-import type { VenuePlanning } from "../model/planning.types";
-import type { Reservation } from "@/entities/reservation";
+import {
+    subscribePlanning,
+} from "../api/planning.service";
 
-import { buildPlanning } from "../utils/buildPlanning";
-
-const slots = [
-    {
-        startTime: "18:00",
-        endTime: "19:30",
-    },
-    {
-        startTime: "19:30",
-        endTime: "21:00",
-    },
-    {
-        startTime: "21:00",
-        endTime: "22:30",
-    },
-];
+import type {
+    VenuePlanning,
+} from "../model/planning.types";
 
 export function usePlanning(
     venueId: string,
 ) {
 
-    const [planning, setPlanning] =
-        useState<VenuePlanning | null>(null);
+    const [
+        planning,
+        setPlanning,
+    ] =
+        useState<VenuePlanning | null>(
+            null,
+        );
+
+    const [
+        loading,
+        setLoading,
+    ] =
+        useState(true);
+
+    const [
+        error,
+    ] = useState<string | null>(null);
 
     useEffect(() => {
 
-        async function load() {
-
-            try {
-                // TODO US-004
-                // Remplacer les réservations simulées
-                // par la lecture Firestore.
-                const reservations: Reservation[] = [];
-
-                const result =
-                    buildPlanning(
-                        venueId,
-                        "Point Bar",
-                        2,
-                        slots,
-                        reservations,
-                    );
-                setPlanning(result);
-
-            }
-            catch (e) {
-
-                console.error(
-                    "Erreur Planning",
-                    e,
-                );
-
-                // Pour continuer la recette
-                // on affiche quand même le planning vide
-
-                setPlanning(
-
-                    buildPlanning(
-                        venueId,
-                        "Point Bar",
-                        2,
-                        slots,
-                        [],
-                    ),
-
-                );
-
-            }
-
+        if (!venueId) {
+            setLoading(false);
+            return;
         }
 
-        load();
+        const unsubscribe =
+            subscribePlanning(
+                venueId,
+                planning => {
+
+                    setPlanning(planning);
+
+                    setLoading(false);
+
+                },
+            );
+
+        return unsubscribe;
 
     }, [venueId]);
 
-    return planning;
+    return {
+
+        planning,
+
+        loading,
+
+        error,
+
+    };
 
 }

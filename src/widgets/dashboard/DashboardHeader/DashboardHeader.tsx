@@ -35,6 +35,11 @@ export function DashboardHeader({
 
             <Stack
                 spacing={3}
+                sx={{
+                    width: "100%",
+                    maxWidth: 700,
+                    mx: "auto",
+                }}
             >
 
                 <Stack
@@ -51,8 +56,12 @@ export function DashboardHeader({
                     <Stack>
 
                         <Typography
-                            variant="h4"
+                            variant="h5"
                             sx={{
+                                fontSize: {
+                                    xs: "2.2rem",
+                                    md: "3.2rem",
+                                },
                                 fontWeight: 700,
                             }}
                         >

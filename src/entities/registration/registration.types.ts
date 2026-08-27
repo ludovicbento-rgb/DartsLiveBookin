@@ -1,18 +1,30 @@
-export interface Registration {
-    id: string;
+export type CompetitionType =
+    | "DOUBLES"
+    | "INDIVIDUAL"
+    | "TEAM";
 
-    playerUid: string;
+export interface Registration {
+
+    id: string;
 
     seasonId: string;
 
-    competitionType:
-    | "INDIVIDUAL"
-    | "DOUBLES"
-    | "TEAM";
+    competitionId: string;
 
-    displayName: string;
+    poolId: string;
 
-    teamId?: string;
+    registrationName: string;
+
+    captainId: string;
+
+    playerIds: string[];
+
+    /**
+     * Etablissement où cette inscription reçoit
+     * ses matchs à domicile.
+     */
+    homeVenueId: string;
 
     active: boolean;
+
 }

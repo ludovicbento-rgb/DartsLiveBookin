@@ -7,6 +7,20 @@ import {
     serverTimestamp,
     where,
     Timestamp,
+    onSnapshot,
+    getDoc,
+} from "firebase/firestore";
+
+import {
+    reservationDocument,
+} from "./reservation.firestore";
+
+import type {
+    UpdateData,
+} from "firebase/firestore";
+
+import {
+    updateDoc,
 } from "firebase/firestore";
 
 import { db } from "@/shared/firebase";
@@ -22,76 +36,183 @@ import type {
 
 export async function createReservation(
     request: CreateReservationRequest,
-): Promise<void> {
+): Promise<string> {
 
     const reservationRef =
         doc(collection(db, "reservations"));
 
     await runTransaction(
+
         db,
-        async (transaction) => {
 
-            const q = query(
-                reservationsCollection,
+        async transaction => {
 
-                where(
-                    "venueId",
-                    "==",
-                    request.venueId,
-                ),
+            //--------------------------------------------------
+            // Contrôle disponibilité de la cible
+            //--------------------------------------------------
 
-                where(
-                    "boardNumber",
-                    "==",
-                    request.boardNumber,
-                ),
+            const boardQuery =
+                query(
 
-                where(
-                    "startAt",
-                    "==",
-                    request.startAt,
-                ),
+                    reservationsCollection,
 
-                where(
-                    "status",
-                    "in",
-                    [
-                        "PENDING",
-                        "CONFIRMED",
-                    ],
-                ),
-            );
+                    where(
+                        "plannedStartAt",
+                        "==",
+                        request.plannedStartAt,
+                    ),
 
-            const snapshot =
-                await getDocs(q);
+                    where(
+                        "boardNumber",
+                        "==",
+                        request.boardNumber,
+                    ),
 
-            if (!snapshot.empty) {
+                    where(
+                        "status",
+                        "in",
+                        [
+                            "PENDING",
+                            "CONFIRMED",
+                        ],
+                    ),
+
+                );
+
+            const boardSnapshot =
+                await getDocs(
+                    boardQuery,
+                );
+
+            if (!boardSnapshot.empty) {
+
                 throw new Error(
                     "BOARD_ALREADY_RESERVED",
                 );
+
             }
 
+            //--------------------------------------------------
+            // Création réservation
+            //--------------------------------------------------
+
             transaction.set(
+
                 reservationRef,
+
                 {
-                    ...request,
 
-                    status: "PENDING",
+                    matchId:
+                        request.matchId,
 
-                    validatedBy: null,
+                    boardNumber:
+                        request.boardNumber,
 
-                    notes: "",
+                    plannedStartAt:
+                        request.plannedStartAt,
+
+                    plannedEndAt:
+                        request.plannedEndAt,
+
+                    status:
+                        "PENDING",
+
+                    createdByUserId:
+                        request.createdByUserId,
 
                     createdAt:
                         serverTimestamp(),
 
-                    updatedAt:
-                        serverTimestamp(),
+                    validatedByUserId:
+                        null,
+
+                    validatedAt:
+                        null,
+
+                    rejectedByUserId:
+                        null,
+
+                    rejectedAt:
+                        null,
+
+                    cancelledByUserId:
+                        null,
+
+                    cancelledAt:
+                        null,
+
+                    validationComment:
+                        "",
+
+                    notes:
+                        request.notes,
+
                 },
+
             );
 
         },
+
     );
+
+    return reservationRef.id;
+
+}
+
+export async function getReservations(
+    reservationIds: string[],
+): Promise<Reservation[]> {
+
+    const reservations: Reservation[] = [];
+
+    for (const reservationId of reservationIds) {
+
+        const reservation =
+            await getReservation(
+                reservationId,
+            );
+
+        if (reservation) {
+
+            reservations.push(
+                reservation,
+            );
+
+        }
+
+    }
+
+    return reservations;
+
+}
+
+export async function getReservation(
+    reservationId: string,
+): Promise<Reservation | null> {
+
+    const snapshot =
+        await getDoc(
+            reservationDocument(
+                reservationId,
+            ),
+        );
+
+    if (!snapshot.exists()) {
+
+        return null;
+
+    }
+
+    return {
+
+        id: snapshot.id,
+
+        ...(snapshot.data() as Omit<
+            Reservation,
+            "id"
+        >),
+
+    };
 
 }
 
@@ -131,6 +252,9 @@ export async function getReservationsByPlayer(
 
 }
 
+// TODO Migration Match
+// Cette méthode sera remplacée par une recherche basée sur Match.plannedReservationId.
+// Conservée temporairement pour assurer la compatibilité du Planning actuel.
 export async function getReservationsByVenueAndDay(
     venueId: string,
     day: Date,
@@ -183,5 +307,90 @@ export async function getReservationsByVenueAndDay(
         };
 
     });
+
+}
+
+export async function updateReservation(
+    reservationId: string,
+    values: UpdateData<Reservation>
+): Promise<void> {
+
+    await updateDoc(
+
+        reservationDocument(
+            reservationId,
+        ),
+
+        values,
+
+    );
+
+}
+
+// TODO Migration Match
+// Cette méthode sera remplacée par un abonnement sur les Matchs.
+// Conservée temporairement pendant la migration.
+export function subscribeReservations(
+    venueId: string,
+    day: Date,
+    callback: (
+        reservations: Reservation[],
+    ) => void,
+): () => void {
+
+    const start = new Date(day);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(day);
+    end.setHours(23, 59, 59, 999);
+
+    const q = query(
+
+        reservationsCollection,
+
+        where(
+            "venueId",
+            "==",
+            venueId,
+        ),
+
+        where(
+            "startAt",
+            ">=",
+            Timestamp.fromDate(start),
+        ),
+
+        where(
+            "startAt",
+            "<=",
+            Timestamp.fromDate(end),
+        ),
+
+    );
+
+    return onSnapshot(
+
+        q,
+
+        snapshot => {
+
+            callback(
+
+                snapshot.docs.map(doc => ({
+
+                    id: doc.id,
+
+                    ...(doc.data() as Omit<
+                        Reservation,
+                        "id"
+                    >),
+
+                })),
+
+            );
+
+        },
+
+    );
 
 }

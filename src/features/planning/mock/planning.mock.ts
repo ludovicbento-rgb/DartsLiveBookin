@@ -3,55 +3,52 @@ import type { VenuePlanning } from "../model/planning.types";
 export const planningMock: VenuePlanning = {
     venueId: "point-bar",
     venueName: "Point Bar",
-
+    boardCount: 2,
     slots: [
         {
-            id: "18h00",
             startTime: "18:00",
             endTime: "19:30",
 
             boards: [
                 {
                     boardNumber: 1,
-                    available: true,
+                    status: "AVAILABLE"
                 },
                 {
                     boardNumber: 2,
-                    available: false,
+                    status: "CONFIRMED"
                 },
             ],
         },
 
         {
-            id: "19h30",
             startTime: "19:30",
             endTime: "21:00",
 
             boards: [
                 {
                     boardNumber: 1,
-                    available: true,
+                    status: "AVAILABLE"
                 },
                 {
                     boardNumber: 2,
-                    available: true,
+                    status: "AVAILABLE"
                 },
             ],
         },
 
         {
-            id: "21h00",
             startTime: "21:00",
             endTime: "22:30",
 
             boards: [
                 {
                     boardNumber: 1,
-                    available: false,
+                    status: "PENDING"
                 },
                 {
                     boardNumber: 2,
-                    available: true,
+                    status: "AVAILABLE"
                 },
             ],
         },

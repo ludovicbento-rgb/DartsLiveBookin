@@ -1,32 +1,52 @@
 import { useEffect, useState } from "react";
 
-import type { DashboardData } from "../model/dashboard.types";
+import { loadDashboard } from "../api/dashboard.service";
 
-import { getVenues } from "@/entities/venue";
+import type { DashboardData } from "../model/dashboard.types";
 
 export function useDashboard() {
 
     const [dashboard, setDashboard] =
         useState<DashboardData | null>(null);
 
+    const [loading, setLoading] =
+        useState(true);
+
+    const [error, setError] =
+        useState<string | null>(null);
+
     useEffect(() => {
 
         async function load() {
 
-            const venues =
-                await getVenues();
+            try {
 
-            setDashboard({
+                const data =
+                    await loadDashboard();
 
-                firstname: "Ludovic",
+                setDashboard(data);
 
-                season: "CF2027",
+            }
+            catch (e) {
 
-                competition: "Doublette",
+                if (e instanceof Error) {
 
-                venues,
+                    setError(e.message);
 
-            });
+                } else {
+
+                    setError(
+                        "Une erreur est survenue.",
+                    );
+
+                }
+
+            }
+            finally {
+
+                setLoading(false);
+
+            }
 
         }
 
@@ -34,6 +54,14 @@ export function useDashboard() {
 
     }, []);
 
-    return dashboard;
+    return {
+
+        dashboard,
+
+        loading,
+
+        error,
+
+    };
 
 }

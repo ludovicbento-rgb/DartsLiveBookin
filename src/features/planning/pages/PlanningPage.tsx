@@ -1,9 +1,7 @@
 import Stack from "@mui/material/Stack";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-
 import { Timestamp } from "firebase/firestore";
-import { useCurrentUser } from "@/features/authentication/hooks/useCurrentUser";
 import { AppLayout } from "@/app/layouts/AppLayout";
 import { AppCard, PageTitle } from "@/shared/ui";
 
@@ -18,24 +16,115 @@ import { useCreateReservation } from "@/features/reservations/hooks/useCreateRes
 import { useAuth } from "@/features/authentication/hooks/useAuth";
 import { useParams } from "react-router-dom";
 
+import {
+    useSearchParams,
+} from "react-router-dom";
+
+import {
+    getMatchPlanningContext,
+} from "@/features/commands/match-planning.service";
+
 import type {
     BoardSlot,
     TimeSlot,
 } from "../model/planning.types";
 
-export function PlanningPage() {
-    const { venueId } = useParams();
-    const profile = useCurrentUser();
+import {
+    useEffect,
+    useState,
+} from "react";
 
-    const planning = usePlanning(
+import {
+    useMatchesToPlan,
+} from "@/features/matches/hooks/useMatchesToPlan";
+
+export function PlanningPage() {
+
+    const { venueId } = useParams();
+
+    const {
+        planning,
+        loading,
+        error,
+    } = usePlanning(
         venueId ?? "",
     );
+    const [searchParams] =
+        useSearchParams();
+
+    const matchId =
+        searchParams.get("matchId");
 
     const dialog = useReservationDialog();
+
+    const {
+        matches,
+        loading: loadingMatches,
+    } = useMatchesToPlan(undefined);
+
+    const [
+        selectedMatch,
+        setSelectedMatch,
+    ] = useState<
+        Awaited<
+            ReturnType<
+                typeof getMatchPlanningContext
+            >
+        > | null
+    >(null);
+
+    useEffect(() => {
+
+        async function loadMatch() {
+
+            if (!matchId) {
+
+                return;
+
+            }
+
+            const context =
+                await getMatchPlanningContext(
+                    matchId,
+                );
+
+            setSelectedMatch(
+                context,
+            );
+
+        }
+
+        loadMatch();
+
+    }, [matchId]);
 
     const reservation = useCreateReservation();
 
     const { user } = useAuth();
+
+    if (loading) {
+
+        return (
+            <AppLayout>
+                <AppCard>
+                    Chargement du planning...
+                </AppCard>
+            </AppLayout>
+        );
+
+    }
+
+    if (error) {
+
+        return (
+            <AppLayout>
+                <AppCard>
+                    {error}
+                </AppCard>
+            </AppLayout>
+        );
+
+    }
 
     if (!planning) {
 
@@ -49,21 +138,13 @@ export function PlanningPage() {
 
     }
 
-    if (!profile) {
-        return (
-            <AppLayout>
-                <AppCard>
-                    Chargement du profil...
-                </AppCard>
-            </AppLayout>
-        );
-    }
-
-    const currentProfile = profile;
     const availableBoards =
         planning.slots
             .flatMap(slot => slot.boards)
-            .filter(board => board.available)
+            .filter(
+                board =>
+                    board.status === "AVAILABLE",
+            )
             .length;
     const currentPlanning = planning;
 
@@ -75,22 +156,27 @@ export function PlanningPage() {
         try {
 
             await reservation.create({
-                seasonId: currentProfile.seasonId,
 
-                venueId: currentPlanning.venueId,
+                matchId:
+                    dialog.selection.matchId,
 
-                registrationId: "registration-demo",
+                boardNumber:
+                    dialog.selection.boardNumber,
 
-                playerUid: user.uid,
+                plannedStartAt:
+                    dialog.selection.plannedStartAt,
 
-                boardNumber: dialog.selection.boardNumber,
+                plannedEndAt:
+                    dialog.selection.plannedEndAt,
 
-                startAt: dialog.selection.startAt,
+                notes:
+                    dialog.selection.notes,
 
-                endAt: dialog.selection.endAt,
             });
 
             dialog.close();
+
+            reservation.reset();
         } catch (e) {
 
             if (
@@ -134,36 +220,108 @@ export function PlanningPage() {
         end.setHours(eh, em, 0, 0);
 
         dialog.open({
-            venueId: currentPlanning.venueId,
-            venueName: currentPlanning.venueName,
-            boardNumber: board.boardNumber,
-            startAt: Timestamp.fromDate(today),
-            endAt: Timestamp.fromDate(end),
+
+            venueId:
+                currentPlanning.venueId,
+
+            venueName:
+                currentPlanning.venueName,
+
+            boardNumber:
+                board.boardNumber,
+
+            plannedStartAt:
+                Timestamp.fromDate(today),
+
+            plannedEndAt:
+                Timestamp.fromDate(end),
+
         });
+
+        if (matchId) {
+
+            dialog.updateMatch(
+                matchId,
+            );
+
+        }
     }
     return (
         <AppLayout>
             <AppCard>
                 <Stack spacing={4}>
                     <PageTitle>
-                        Planning des réservations
+                        Choix d'un créneau
                     </PageTitle>
 
                     <PlanningHeader
                         venueName={planning.venueName}
                         availableBoards={availableBoards}
                     />
+                    {
 
+                        selectedMatch && (
+
+                            <Alert
+                                severity="info"
+                            >
+
+                                {
+
+                                    selectedMatch.matchDay.displayName
+
+                                }
+
+                                {" - "}
+
+                                {
+
+                                    selectedMatch.homeRegistration.registrationName
+
+                                }
+
+                                {" vs "}
+
+                                {
+
+                                    selectedMatch.awayRegistration.registrationName
+
+                                }
+
+                            </Alert>
+
+                        )
+
+                    }
                     <PlanningTable
                         planning={planning}
                         onBoardSelected={handleBoardSelected}
                     />
 
                     <ReservationDialog
+
                         open={dialog.opened}
+
                         selection={dialog.selection}
+
+                        matches={matches}
+
+                        loadingMatches={loadingMatches}
+
+                        loading={reservation.loading}
+
                         onClose={dialog.close}
+
                         onConfirm={handleReservation}
+
+                        onNotesChanged={
+                            dialog.updateNotes
+                        }
+
+                        onMatchChanged={
+                            dialog.updateMatch
+                        }
+
                     />
 
                     <Snackbar
@@ -172,6 +330,20 @@ export function PlanningPage() {
                     >
                         <Alert severity="error">
                             {reservation.error}
+                        </Alert>
+                    </Snackbar>
+
+                    <Snackbar
+                        open={
+                            reservation.result !== null
+                        }
+                        autoHideDuration={3000}
+                        onClose={reservation.reset}
+                    >
+                        <Alert severity="success">
+
+                            {reservation.result?.message}
+
                         </Alert>
                     </Snackbar>
                 </Stack>

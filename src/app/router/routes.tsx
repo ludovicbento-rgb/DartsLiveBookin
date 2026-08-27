@@ -4,9 +4,9 @@ import { MaintenancePage } from "@/pages/maintenance/MaintenancePage";
 import { NotFoundPage } from "@/pages/not-found/NotFoundPage";
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
 import { PlanningPage } from "@/features/planning/pages/PlanningPage";
+import { MyMatchesPage } from "@/features/matches/pages/MyMatchesPage";
 import { ProtectedRoute } from "@/features/authentication/routes/ProtectedRoute";
 import { ActivateAccountPage } from "@/features/authentication/pages/ActivateAccountPage";
-
 
 export const routes = [
   {
@@ -22,8 +22,12 @@ export const routes = [
     element: <MaintenancePage />,
   },
   {
-    path: "*",
-    element: <NotFoundPage />,
+    path: "/matches",
+    element: (
+      <ProtectedRoute>
+        <MyMatchesPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/planning/:venueId",
@@ -44,5 +48,9 @@ export const routes = [
   {
     path: "/activate",
     element: <ActivateAccountPage />,
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ];

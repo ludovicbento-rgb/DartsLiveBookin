@@ -40,7 +40,7 @@ export async function getVenues(): Promise<Venue[]> {
 
         return {
             id: doc.id,
-            ...(doc.data() as Omit<Venue, "id">),
+            ...data,
         };
     });
 }

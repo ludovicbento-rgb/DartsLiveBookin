@@ -4,6 +4,9 @@ import Typography from "@mui/material/Typography";
 import { AppLayout } from "@/app/layouts/AppLayout";
 import { AppCard, PageTitle } from "@/shared/ui";
 import { useNavigate } from "react-router-dom";
+import {
+    DASHBOARD_ROUTE,
+} from "@/shared/routing";
 import { ActivateAccountForm } from "../components/ActivateAccountForm";
 
 import { useActivation } from "../hooks/useActivation";
@@ -27,7 +30,7 @@ export function ActivateAccountPage() {
 
         await activation.activate(values);
 
-        navigate("/dashboard");
+        navigate(DASHBOARD_ROUTE);
 
     }
 
