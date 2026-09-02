@@ -3,6 +3,10 @@ import {
     useState,
 } from "react";
 
+import {
+    createPlanning,
+} from "../api/planning.service";
+
 import type {
     VenuePlanning,
 } from "../model/planning.types";
@@ -19,8 +23,12 @@ export function usePlanning(
 
         planning,
 
+        setPlanning,
+
     ] = useState<VenuePlanning | null>(
+
         null,
+
     );
 
     const [
@@ -38,7 +46,9 @@ export function usePlanning(
         setError,
 
     ] = useState<string | null>(
+
         null,
+
     );
 
     useEffect(() => {
@@ -47,18 +57,62 @@ export function usePlanning(
 
             try {
 
-                throw new Error("Planning service not integrated yet");
+                setLoading(true);
+
+                setError(null);
+
+                /*
+                 * TODO PR-068
+                 * Charger :
+                 *   - venue
+                 *   - schedules
+                 *   - reservations
+                 */
+
+                const result = createPlanning({
+
+                    venueId,
+
+                    venueName: "",
+
+                    openingHours: {
+
+                        openTime: "18:00",
+
+                        closeTime: "22:30",
+
+                        boardNumbers: [1, 2],
+
+                    },
+
+                    matchDurationMinutes: 90,
+
+                    reservations: [],
+
+                });
+
+                setPlanning(
+
+                    result.planning,
+
+                );
 
             }
+
             catch (e) {
 
                 if (e instanceof Error) {
 
-                    setError(e.message);
+                    setError(
+
+                        e.message,
+
+                    );
 
                 }
 
             }
+
             finally {
 
                 setLoading(false);
