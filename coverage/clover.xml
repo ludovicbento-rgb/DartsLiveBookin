@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1788367034707" clover="3.2.0">
-  <project timestamp="1788367034707" name="All files">
-    <metrics statements="35" coveredstatements="35" conditionals="6" coveredconditionals="6" methods="13" coveredmethods="13" elements="54" coveredelements="54" complexity="0" loc="35" ncloc="35" packages="5" files="12" classes="12"/>
+<coverage generated="1788390983278" clover="3.2.0">
+  <project timestamp="1788390983278" name="All files">
+    <metrics statements="50" coveredstatements="50" conditionals="14" coveredconditionals="14" methods="17" coveredmethods="17" elements="81" coveredelements="81" complexity="0" loc="50" ncloc="50" packages="7" files="16" classes="16"/>
     <package name="availability-engine">
-      <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+      <metrics statements="5" coveredstatements="5" conditionals="4" coveredconditionals="4" methods="3" coveredmethods="3"/>
       <file name="availability-engine.ts" path="C:\Users\BENTOLU\.vscode\DartsLiveBookin\DartsLiveBookin\src\core\availability-engine\availability-engine.ts">
-        <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
-        <line num="41" count="2" type="stmt"/>
-        <line num="43" count="1" type="stmt"/>
-        <line num="47" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="49" count="1" type="stmt"/>
-        <line num="53" count="1" type="stmt"/>
+        <metrics statements="5" coveredstatements="5" conditionals="4" coveredconditionals="4" methods="3" coveredmethods="3"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="41" count="1" type="cond" truecount="2" falsecount="0"/>
+        <line num="57" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="59" count="1" type="stmt"/>
+        <line num="63" count="1" type="stmt"/>
       </file>
       <file name="index.ts" path="C:\Users\BENTOLU\.vscode\DartsLiveBookin\DartsLiveBookin\src\core\availability-engine\index.ts">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      </file>
+    </package>
+    <package name="availability-engine.model">
+      <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="availability-closure.ts" path="C:\Users\BENTOLU\.vscode\DartsLiveBookin\DartsLiveBookin\src\core\availability-engine\model\availability-closure.ts">
         <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       </file>
     </package>
@@ -32,7 +38,14 @@
       </file>
     </package>
     <package name="common">
-      <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
+      <metrics statements="12" coveredstatements="12" conditionals="2" coveredconditionals="2" methods="5" coveredmethods="5"/>
+      <file name="date.ts" path="C:\Users\BENTOLU\.vscode\DartsLiveBookin\DartsLiveBookin\src\core\common\date.ts">
+        <metrics statements="4" coveredstatements="4" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="13" count="3" type="stmt"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+      </file>
       <file name="time.ts" path="C:\Users\BENTOLU\.vscode\DartsLiveBookin\DartsLiveBookin\src\core\common\time.ts">
         <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
         <line num="8" count="31" type="stmt"/>
@@ -43,6 +56,26 @@
         <line num="28" count="113" type="stmt"/>
         <line num="30" count="113" type="stmt"/>
         <line num="43" count="6" type="stmt"/>
+      </file>
+    </package>
+    <package name="planning-mapper">
+      <metrics statements="11" coveredstatements="11" conditionals="4" coveredconditionals="4" methods="1" coveredmethods="1"/>
+      <file name="index.ts" path="C:\Users\BENTOLU\.vscode\DartsLiveBookin\DartsLiveBookin\src\core\planning-mapper\index.ts">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      </file>
+      <file name="planning-mapper.ts" path="C:\Users\BENTOLU\.vscode\DartsLiveBookin\DartsLiveBookin\src\core\planning-mapper\planning-mapper.ts">
+        <metrics statements="11" coveredstatements="11" conditionals="4" coveredconditionals="4" methods="1" coveredmethods="1"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="35" count="2" type="stmt"/>
+        <line num="38" count="3" type="stmt"/>
+        <line num="41" count="3" type="stmt"/>
+        <line num="43" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="45" count="2" type="stmt"/>
+        <line num="57" count="2" type="stmt"/>
+        <line num="64" count="3" type="stmt"/>
+        <line num="79" count="3" type="stmt"/>
+        <line num="87" count="1" type="stmt"/>
       </file>
     </package>
     <package name="reservation-engine">

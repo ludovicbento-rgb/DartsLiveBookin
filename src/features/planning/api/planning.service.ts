@@ -1,22 +1,16 @@
-import {
-    buildAvailability,
-    type AvailabilityClosure,
-} from "@/core/availability-engine";
-
-import {
-    findBestSlot,
-} from "@/core/booking-engine";
-
-import {
-    mapPlanning,
-} from "@/core/planning-mapper";
 
 import type {
     OpeningHours,
     Reservation,
 } from "@/core/reservation-engine";
 
-import type { VenuePlanning } from "../model/planning.types";
+import {
+    mapPlanning,
+} from "@/core/planning-mapper";
+
+import type { VenuePlanning, } from "../model/planning.types";
+
+import { buildPlanning, } from "@/core/reservation-engine";
 
 export interface PlanningServiceInput {
 
@@ -30,55 +24,27 @@ export interface PlanningServiceInput {
 
     reservations: Reservation[];
 
-    closures: AvailabilityClosure[];
-
-    reservationDate: Date;
-
 }
 
 export interface PlanningServiceResult {
-
     planning: VenuePlanning;
-
-    suggestion: ReturnType<typeof findBestSlot>;
-
 }
 
 export function createPlanning(
-
     input: PlanningServiceInput,
-
 ): PlanningServiceResult {
 
     const planningBoards =
 
-        buildAvailability({
+        buildPlanning(
 
-            openingHours:
-                input.openingHours,
+            input.openingHours,
 
-            durationMinutes:
-                input.matchDurationMinutes,
+            input.matchDurationMinutes,
 
-            reservations:
-                input.reservations,
+            input.reservations,
 
-            closures:
-                input.closures,
-
-            reservationDate:
-                input.reservationDate,
-
-        });
-
-    const suggestion =
-
-        findBestSlot({
-
-            planning:
-                planningBoards,
-
-        });
+        );
 
     const planning =
 
@@ -98,8 +64,6 @@ export function createPlanning(
     return {
 
         planning,
-
-        suggestion,
 
     };
 
