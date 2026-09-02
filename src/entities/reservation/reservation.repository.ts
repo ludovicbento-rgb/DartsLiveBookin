@@ -276,13 +276,13 @@ export async function getReservationsByVenueAndDay(
         ),
 
         where(
-            "startAt",
+            "plannedStartAt",
             ">=",
             Timestamp.fromDate(start),
         ),
 
         where(
-            "startAt",
+            "plannedStartAt",
             "<=",
             Timestamp.fromDate(end),
         ),
@@ -355,13 +355,13 @@ export function subscribeReservations(
         ),
 
         where(
-            "startAt",
+            "plannedStartAt",
             ">=",
             Timestamp.fromDate(start),
         ),
 
         where(
-            "startAt",
+            "plannedStartAt",
             "<=",
             Timestamp.fromDate(end),
         ),

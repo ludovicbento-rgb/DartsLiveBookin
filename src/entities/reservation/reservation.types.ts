@@ -46,6 +46,8 @@ export interface CreateReservationRequest {
 
     matchId: string;
 
+    venueId: string;
+
     boardNumber: number;
 
     plannedStartAt: Timestamp;

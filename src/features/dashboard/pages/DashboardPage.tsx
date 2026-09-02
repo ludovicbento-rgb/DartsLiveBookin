@@ -1,23 +1,42 @@
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 
 import { useNavigate } from "react-router-dom";
 
 import {
     HOME_ROUTE,
-    planningRoute,
+    MY_MATCHES_ROUTE,
+    VENUE_SETTINGS_ROUTE,
 } from "@/shared/routing";
+
+import SportsScoreIcon
+    from "@mui/icons-material/SportsScore";
+
+import StorefrontIcon from "@mui/icons-material/Storefront";
+
+import AssignmentTurnedInIcon
+    from "@mui/icons-material/AssignmentTurnedIn";
+
+import CalendarMonthIcon
+    from "@mui/icons-material/CalendarMonth";
+
+import AdminPanelSettingsIcon
+    from "@mui/icons-material/AdminPanelSettings";
+
+import {
+    DashboardActionCard,
+} from "@/widgets/dashboard/DashboardActionCard";
 
 import { AppLayout } from "@/app/layouts/AppLayout";
 import { AppCard } from "@/shared/ui";
 
 import { DashboardHeader } from "@/widgets/dashboard/DashboardHeader";
-import { VenueCard } from "@/widgets/dashboard/VenueCard/VenueCard";
 
 import { useDashboard } from "../hooks/useDashboard";
 
 import { useAuth } from "@/features/authentication/hooks/useAuth";
 import { useCurrentUser } from "@/features/authentication/hooks/useCurrentUser";
+
+
 
 export function DashboardPage() {
     // -------------------------
@@ -110,32 +129,137 @@ export function DashboardPage() {
                 <DashboardHeader
                     firstname={profile.firstname}
                     role={userRole}
-                    season={profile.seasonId}
+                    season={
+                        dashboard.activeSeason?.name ?? ""
+                    }
                     onLogout={handleLogout}
                 />
 
-                <Typography
-                    variant="h6"
-                    sx={{
-                        fontWeight: 600,
-                        textAlign: "center",
-                    }}
-                >
-                    Choisissez un établissement
-                </Typography>
+                <Stack spacing={2}>
 
-                {dashboard.venues.map((venue) => (
-                    <VenueCard
-                        key={venue.id}
-                        name={venue.name}
-                        city={venue.city}
-                        logo={venue.logo}
-                        boardCount={venue.boardCount}
-                        onPlanning={() =>
-                            navigate(planningRoute(venue.id))
-                        }
-                    />
-                ))}
+                    {
+
+                        profile.roles.player && (
+
+                            <DashboardActionCard
+
+                                title="Mes matchs"
+
+                                description="Consulter vos rencontres"
+
+                                icon={<SportsScoreIcon />}
+
+                                color="primary"
+
+                                onClick={() => navigate(MY_MATCHES_ROUTE)}
+
+                            />
+
+                        )
+
+                    }
+
+                    {
+
+                        profile.roles.manager && (
+
+                            <DashboardActionCard
+
+                                title="Demandes"
+
+                                description="Valider les réservations"
+
+                                icon={
+                                    <AssignmentTurnedInIcon />
+                                }
+
+                                color="warning"
+
+                                onClick={() =>
+                                    navigate("/reservation-validation")
+                                }
+
+                            />
+
+                        )
+
+                    }
+
+                    {
+
+                        profile.roles.manager && (
+
+                            <DashboardActionCard
+
+                                title="Agenda"
+
+                                description="Consulter les réservations"
+
+                                icon={<CalendarMonthIcon />}
+
+                                color="success"
+
+                                onClick={() =>
+                                    navigate("/agenda")
+                                }
+
+                            />
+
+                        )
+
+                    }
+
+                    {
+                        profile.roles.manager && (
+
+                            <DashboardActionCard
+
+                                title="Mon établissement"
+
+                                description="Gérer les horaires et les fermetures"
+
+                                icon={<StorefrontIcon />}
+
+                                color="success"
+
+                                onClick={() =>
+                                    navigate(
+                                        VENUE_SETTINGS_ROUTE,
+                                    )
+                                }
+
+                            />
+
+                        )
+                    }
+
+                    {
+
+                        profile.roles.administrator && (
+
+                            <DashboardActionCard
+
+                                title="Administration"
+
+                                description="Paramétrage"
+
+                                icon={
+                                    <AdminPanelSettingsIcon />
+                                }
+
+                                color="primary"
+
+                                onClick={() =>
+                                    navigate("/admin")
+                                }
+
+                            />
+
+                        )
+
+                    }
+
+                </Stack>
             </Stack>
         </AppLayout>
     );

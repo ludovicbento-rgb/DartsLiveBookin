@@ -1,115 +1,107 @@
-import { getConfiguration } from "@/entities/configuration";
 import {
-    getReservationsByVenueAndDay,
-    subscribeReservations,
-} from "@/entities/reservation";
+    buildAvailability,
+    type AvailabilityClosure,
+} from "@/core/availability-engine";
+
 import {
-    getVenue,
-} from "@/entities/venue";
+    findBestSlot,
+} from "@/core/booking-engine";
+
+import {
+    mapPlanning,
+} from "@/core/planning-mapper";
 
 import type {
-    VenuePlanning,
-} from "../model/planning.types";
+    OpeningHours,
+    Reservation,
+} from "@/core/reservation-engine";
 
-import {
-    buildPlanning,
-} from "../utils/buildPlanning";
+import type { VenuePlanning } from "../model/planning.types";
 
-export async function loadPlanning(
-    venueId: string,
-): Promise<VenuePlanning> {
+export interface PlanningServiceInput {
 
-    const [
-        configuration,
-        venue,
-    ] = await Promise.all([
+    venueId: string;
 
-        getConfiguration(),
+    venueName: string;
 
-        getVenue(venueId),
+    openingHours: OpeningHours;
 
-    ]);
+    matchDurationMinutes: number;
 
-    if (!venue) {
+    reservations: Reservation[];
 
-        throw new Error(
-            "Legacy planning removed",
-        );
+    closures: AvailabilityClosure[];
 
-    }
-
-    const reservations =
-        await getReservationsByVenueAndDay(
-            venue.id,
-            new Date(),
-        );
-
-    return buildPlanning(
-
-        venue.id,
-
-        venue.name,
-
-        venue.boardCount,
-
-        configuration.reservationSlots,
-
-        reservations,
-
-    );
+    reservationDate: Date;
 
 }
 
-export function subscribePlanning(
-    venueId: string,
-    onPlanning: (
-        planning: VenuePlanning,
-    ) => void,
-): () => void {
+export interface PlanningServiceResult {
 
-    return subscribeReservations(
+    planning: VenuePlanning;
 
-        venueId,
-
-        new Date(),
-
-        async reservations => {
-
-            const [
-                configuration,
-                venue,
-            ] = await Promise.all([
-
-                getConfiguration(),
-
-                getVenue(venueId),
-
-            ]);
-
-            if (!venue) {
-                return;
-            }
-
-            onPlanning(
-
-                buildPlanning(
-
-                    venue.id,
-
-                    venue.name,
-
-                    venue.boardCount,
-
-                    configuration.reservationSlots,
-
-                    reservations,
-
-                ),
-
-            );
-
-        },
-
-    );
+    suggestion: ReturnType<typeof findBestSlot>;
 
 }
+
+export function createPlanning(
+
+    input: PlanningServiceInput,
+
+): PlanningServiceResult {
+
+    const planningBoards =
+
+        buildAvailability({
+
+            openingHours:
+                input.openingHours,
+
+            durationMinutes:
+                input.matchDurationMinutes,
+
+            reservations:
+                input.reservations,
+
+            closures:
+                input.closures,
+
+            reservationDate:
+                input.reservationDate,
+
+        });
+
+    const suggestion =
+
+        findBestSlot({
+
+            planning:
+                planningBoards,
+
+        });
+
+    const planning =
+
+        mapPlanning({
+
+            venueId:
+                input.venueId,
+
+            venueName:
+                input.venueName,
+
+            planning:
+                planningBoards,
+
+        });
+
+    return {
+
+        planning,
+
+        suggestion,
+
+    };
+
+}
+

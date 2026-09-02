@@ -1,6 +1,8 @@
 import {
     getDoc,
     getDocs,
+    query,
+    where
 } from "firebase/firestore";
 
 import {
@@ -8,7 +10,36 @@ import {
     venuesCollection,
 } from "./venue.firestore";
 
+import {
+    mapVenue,
+} from "./venue.mapper";
+
 import type { Venue } from "./venue.types";
+
+export async function getVenuesManagedByUser(
+    userId: string,
+): Promise<Venue[]> {
+
+    const q = query(
+
+        venuesCollection,
+
+        where(
+            "managerUserIds",
+            "array-contains",
+            userId,
+        ),
+
+    );
+
+    const snapshot =
+        await getDocs(q);
+
+    return snapshot.docs.map(
+        mapVenue,
+    );
+
+}
 
 export async function getVenue(
     venueId: string,
@@ -43,4 +74,42 @@ export async function getVenues(): Promise<Venue[]> {
             ...data,
         };
     });
+}
+export async function getManagedVenue(
+
+    userId: string,
+
+): Promise<Venue | null> {
+
+    const q = query(
+
+        venuesCollection,
+
+        where(
+
+            "managerUserIds",
+
+            "array-contains",
+
+            userId,
+
+        ),
+
+    );
+
+    const snapshot =
+        await getDocs(q);
+
+    if (snapshot.empty) {
+
+        return null;
+
+    }
+
+    return mapVenue(
+
+        snapshot.docs[0],
+
+    );
+
 }

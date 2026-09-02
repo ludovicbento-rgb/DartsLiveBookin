@@ -1,8 +1,11 @@
 import { createContext } from "react";
 import type { User } from "firebase/auth";
+import type { UserProfile } from "@/entities/user";
 
 export interface AuthContextType {
-    user: User | null;
+    firebaseUser: User | null;
+
+    userProfile: UserProfile | null;
     loading: boolean;
 
     login: (email: string, password: string) => Promise<void>;

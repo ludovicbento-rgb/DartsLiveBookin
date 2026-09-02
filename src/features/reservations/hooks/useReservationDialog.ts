@@ -10,6 +10,8 @@ export interface ReservationSelection {
 
     venueName: string;
 
+    reservationDate: Date;
+
     boardNumber: number;
 
     plannedStartAt: Timestamp;

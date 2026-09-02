@@ -5,20 +5,29 @@ import { Timestamp } from "firebase/firestore";
 import { AppLayout } from "@/app/layouts/AppLayout";
 import { AppCard, PageTitle } from "@/shared/ui";
 
-import { usePlanning } from "../hooks/usePlanning";
+import {
+    usePlanning,
+} from "../hooks/usePlanning";
+
 import { PlanningHeader } from "../components/PlanningHeader";
 import { PlanningTable } from "../components/PlanningTable";
 
 import { useReservationDialog } from "@/features/reservations/hooks/useReservationDialog";
-import { ReservationDialog } from "@/features/reservations/components";
 import { useCreateReservation } from "@/features/reservations/hooks/useCreateReservation";
+import PlanningConfirmDrawer
+    from "../components/PlanningConfirmDrawer";
 
 import { useAuth } from "@/features/authentication/hooks/useAuth";
 import { useParams } from "react-router-dom";
-
+import {
+    PlanningSummary,
+} from "../components/PlanningSummary";
 import {
     useSearchParams,
 } from "react-router-dom";
+
+import PlanningDateSelector
+    from "../components/PlanningDateSelector";
 
 import {
     getMatchPlanningContext,
@@ -35,20 +44,19 @@ import {
 } from "react";
 
 import {
-    useMatchesToPlan,
-} from "@/features/matches/hooks/useMatchesToPlan";
+    useNavigate,
+} from "react-router-dom";
+
+import {
+    MY_MATCHES_ROUTE,
+} from "@/shared/routing";
 
 export function PlanningPage() {
 
     const { venueId } = useParams();
+    const navigate =
+        useNavigate();
 
-    const {
-        planning,
-        loading,
-        error,
-    } = usePlanning(
-        venueId ?? "",
-    );
     const [searchParams] =
         useSearchParams();
 
@@ -57,10 +65,29 @@ export function PlanningPage() {
 
     const dialog = useReservationDialog();
 
+    const [
+        reservationDate,
+        setReservationDate,
+    ] = useState(
+        new Date(),
+    );
+
+    const [
+        reservationSuccess,
+        setReservationSuccess,
+    ] = useState(false);
+
     const {
-        matches,
-        loading: loadingMatches,
-    } = useMatchesToPlan(undefined);
+        planning,
+        loading,
+        error,
+    } = usePlanning(
+
+        venueId ?? "",
+
+        reservationDate,
+
+    );
 
     const [
         selectedMatch,
@@ -100,7 +127,9 @@ export function PlanningPage() {
 
     const reservation = useCreateReservation();
 
-    const { user } = useAuth();
+    const {
+        userProfile,
+    } = useAuth();
 
     if (loading) {
 
@@ -140,16 +169,23 @@ export function PlanningPage() {
 
     const availableBoards =
         planning.slots
-            .flatMap(slot => slot.boards)
-            .filter(
-                board =>
-                    board.status === "AVAILABLE",
+            .flatMap((slot: TimeSlot) => slot.boards)
+            .filter((board: BoardSlot) =>
+                board.status === "AVAILABLE",
+            )
+            .length;
+
+    const reservedBoards =
+        planning.slots
+            .flatMap((slot: TimeSlot) => slot.boards)
+            .filter((board: BoardSlot) =>
+                board.status !== "AVAILABLE",
             )
             .length;
     const currentPlanning = planning;
 
     async function handleReservation() {
-        if (!dialog.selection || !user) {
+        if (!dialog.selection || !userProfile) {
             return;
         }
 
@@ -159,6 +195,9 @@ export function PlanningPage() {
 
                 matchId:
                     dialog.selection.matchId,
+
+                venueId:
+                    currentPlanning.venueId,
 
                 boardNumber:
                     dialog.selection.boardNumber,
@@ -176,7 +215,17 @@ export function PlanningPage() {
 
             dialog.close();
 
+            setReservationSuccess(true);
             reservation.reset();
+            setTimeout(() => {
+
+                navigate(
+                    MY_MATCHES_ROUTE,
+                );
+
+            }, 3000);
+
+
         } catch (e) {
 
             if (
@@ -205,21 +254,31 @@ export function PlanningPage() {
         slot: TimeSlot,
         board: BoardSlot,
     ) {
-        const today = new Date();
 
         const [h, m] =
             slot.startTime.split(":").map(Number);
 
-        today.setHours(h, m, 0, 0);
+        const start =
+            new Date(
+                reservationDate,
+            );
 
-        const end = new Date(today);
+        start.setHours(h, m, 0, 0);
 
+        const end =
+            new Date(
+                reservationDate,
+            );
         const [eh, em] =
             slot.endTime.split(":").map(Number);
 
         end.setHours(eh, em, 0, 0);
 
+
+
         dialog.open({
+
+            reservationDate,
 
             venueId:
                 currentPlanning.venueId,
@@ -231,7 +290,7 @@ export function PlanningPage() {
                 board.boardNumber,
 
             plannedStartAt:
-                Timestamp.fromDate(today),
+                Timestamp.fromDate(start),
 
             plannedEndAt:
                 Timestamp.fromDate(end),
@@ -293,34 +352,70 @@ export function PlanningPage() {
                         )
 
                     }
+
+                    <PlanningDateSelector
+                        value={reservationDate}
+                        onChange={setReservationDate}
+                    />
+                    <PlanningSummary
+
+                        reservationDate={reservationDate}
+
+                        availableBoards={availableBoards}
+
+                        reservedBoards={reservedBoards}
+
+                    />
                     <PlanningTable
                         planning={planning}
                         onBoardSelected={handleBoardSelected}
                     />
 
-                    <ReservationDialog
+                    <PlanningConfirmDrawer
 
                         open={dialog.opened}
 
-                        selection={dialog.selection}
+                        matchLabel={
+                            selectedMatch
+                                ? `J${selectedMatch.matchDay.number} - ${selectedMatch.homeRegistration.registrationName} vs ${selectedMatch.awayRegistration.registrationName}`
+                                : ""
+                        }
 
-                        matches={matches}
+                        venueName={dialog.selection?.venueName ?? ""}
 
-                        loadingMatches={loadingMatches}
+                        boardNumber={dialog.selection?.boardNumber ?? 0}
+
+                        start={
+                            dialog.selection
+                                ? dialog.selection.plannedStartAt
+                                    .toDate()
+                                    .toLocaleTimeString("fr-FR", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })
+                                : ""
+                        }
+
+                        end={
+                            dialog.selection
+                                ? dialog.selection.plannedEndAt
+                                    .toDate()
+                                    .toLocaleTimeString("fr-FR", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })
+                                : ""
+                        }
+
+                        notes={dialog.selection?.notes ?? ""}
 
                         loading={reservation.loading}
+
+                        onNotesChanged={dialog.updateNotes}
 
                         onClose={dialog.close}
 
                         onConfirm={handleReservation}
-
-                        onNotesChanged={
-                            dialog.updateNotes
-                        }
-
-                        onMatchChanged={
-                            dialog.updateMatch
-                        }
 
                     />
 
@@ -334,17 +429,23 @@ export function PlanningPage() {
                     </Snackbar>
 
                     <Snackbar
-                        open={
-                            reservation.result !== null
-                        }
+                        open={reservationSuccess}
                         autoHideDuration={3000}
-                        onClose={reservation.reset}
+                        onClose={() =>
+                            setReservationSuccess(false)
+                        }
                     >
-                        <Alert severity="success">
 
-                            {reservation.result?.message}
+                        <Alert
+                            severity="success"
+                        >
+
+                            ✅ Votre demande a bien été envoyée.
+                            Elle est en attente de validation
+                            par le gérant.
 
                         </Alert>
+
                     </Snackbar>
                 </Stack>
             </AppCard>

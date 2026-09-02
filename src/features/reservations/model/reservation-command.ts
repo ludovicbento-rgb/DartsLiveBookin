@@ -4,6 +4,8 @@ export interface ReservationCommand {
 
     matchId: string;
 
+    venueId: string;
+
     boardNumber: number;
 
     plannedStartAt: Timestamp;

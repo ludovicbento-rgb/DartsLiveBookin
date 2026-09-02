@@ -13,6 +13,8 @@ export interface UserProfile {
      */
     id: string;
 
+    playerId: string;
+
     /**
      * UID Firebase Authentication.
      * Null tant que le compte n'est pas activé.
@@ -20,7 +22,7 @@ export interface UserProfile {
     firebaseUid: string | null;
 
     /**
-     * Numéro de licence Dartslive.
+     * Numéro de licence Dartslive.         
      */
     licenseNumber: string;
 

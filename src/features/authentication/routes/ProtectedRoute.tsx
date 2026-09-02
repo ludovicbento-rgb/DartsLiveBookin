@@ -11,13 +11,16 @@ interface Props {
 export function ProtectedRoute({
     children,
 }: Props) {
-    const { loading, user } = useAuth();
+    const {
+        loading,
+        firebaseUser,
+    } = useAuth();
 
     if (loading) {
         return null;
     }
 
-    if (!user) {
+    if (!firebaseUser) {
         return <Navigate to="/login" replace />;
     }
 

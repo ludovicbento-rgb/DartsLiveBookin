@@ -1,5 +1,6 @@
 import {
     onAuthStateChanged,
+    type User as FirebaseUser,
 } from "firebase/auth";
 
 import {
@@ -9,12 +10,19 @@ import {
 } from "react";
 
 import type { ReactNode } from "react";
-import type { User } from "firebase/auth";
 
 import { auth } from "@/shared/firebase";
 
 import { authService } from "../api/auth.service";
 import { AuthContext } from "../context/AuthContext";
+
+import {
+    getUserByFirebaseUid,
+} from "@/entities/user";
+
+import type {
+    UserProfile,
+} from "@/entities/user";
 
 interface Props {
     children: ReactNode;
@@ -23,51 +31,118 @@ interface Props {
 export function AuthProvider({
     children,
 }: Props) {
-    const [user, setUser] = useState<User | null>(null);
 
-    const [loading, setLoading] = useState(true);
+    const [
+        firebaseUser,
+        setFirebaseUser,
+    ] = useState<FirebaseUser | null>(null);
+
+    const [
+        userProfile,
+        setUserProfile,
+    ] = useState<UserProfile | null>(null);
+
+    const [
+        loading,
+        setLoading,
+    ] = useState(true);
 
     useEffect(() => {
-        return onAuthStateChanged(auth, currentUser => {
-            setUser(currentUser);
 
-            setLoading(false);
-        });
+        const unsubscribe =
+            onAuthStateChanged(
+                auth,
+                async currentUser => {
+
+                    setFirebaseUser(currentUser);
+
+                    if (currentUser) {
+
+                        const profile =
+                            await getUserByFirebaseUid(
+                                currentUser.uid,
+                            );
+
+                        setUserProfile(profile);
+
+                    } else {
+
+                        setUserProfile(null);
+
+                    }
+
+                    setLoading(false);
+
+                },
+            );
+
+        return unsubscribe;
+
     }, []);
+
+    async function login(
+        email: string,
+        password: string,
+    ) {
+
+        await authService.login({
+            email,
+            password,
+        });
+
+    }
+
+    async function register(
+        email: string,
+        password: string,
+    ) {
+
+        await authService.register({
+            email,
+            password,
+        });
+
+    }
+
+    async function logout() {
+
+        await authService.logout();
+
+    }
 
     const value = useMemo(
         () => ({
-            user,
+
+            firebaseUser,
+
+            userProfile,
+
             loading,
 
-            async login(email: string, password: string) {
-                const user = await authService.login({
-                    email,
-                    password,
-                });
+            login,
 
-                setUser(user);
-            },
+            register,
 
-            async register(email: string, password: string) {
-                const user = await authService.register({
-                    email,
-                    password,
-                });
+            logout,
 
-                setUser(user);
-            },
-
-            async logout() {
-                await authService.logout();
-            },
         }),
-        [loading, user],
+        [
+            firebaseUser,
+            userProfile,
+            loading,
+        ],
     );
 
     return (
-        <AuthContext.Provider value={value}>
+
+        <AuthContext.Provider
+            value={value}
+        >
+
             {children}
+
         </AuthContext.Provider>
+
     );
+
 }

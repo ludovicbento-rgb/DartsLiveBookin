@@ -38,6 +38,9 @@ export async function createReservationCommand(
             matchId:
                 command.matchId,
 
+            venueId:
+                command.venueId,
+
             boardNumber:
                 command.boardNumber,
 

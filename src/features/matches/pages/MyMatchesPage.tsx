@@ -1,8 +1,7 @@
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
 
 import { useNavigate } from "react-router-dom";
 
@@ -12,17 +11,32 @@ import {
     PageTitle,
 } from "@/shared/ui";
 
+import {
+    planningMatchRoute,
+} from "@/shared/routing";
+
 import { useAuth } from "@/features/authentication/hooks/useAuth";
 
 import { useMyMatches } from "../hooks/useMyMatches";
+
+import type {
+    MyMatch,
+} from "../model/my-match";
+import { MatchPager } from "../components/MatchPager/MatchPager";
 
 export function MyMatchesPage() {
 
     const navigate =
         useNavigate();
 
-    const { user } =
-        useAuth();
+    const {
+
+        userProfile,
+
+    } = useAuth();
+    console.log("MyMatchesPage - userProfile", userProfile);
+
+    console.log("PlayerId envoyé", userProfile?.playerId);
 
     const {
 
@@ -30,10 +44,31 @@ export function MyMatchesPage() {
 
         loading,
 
-    } =
-        useMyMatches(
-            user?.uid,
+    } = useMyMatches(
+
+        userProfile?.playerId,
+
+    );
+
+
+
+    function handlePlan(
+        match: MyMatch,
+    ) {
+
+        navigate(
+
+            planningMatchRoute(
+
+                match.venueId,
+
+                match.matchId,
+
+            ),
+
         );
+
+    }
 
     if (loading) {
 
@@ -43,19 +78,13 @@ export function MyMatchesPage() {
 
                 <AppCard>
 
-                    <Stack
-                        sx={{
-                            alignItems: "center",
-                        }}
-                        spacing={2}
-                    >
+                    <Stack spacing={2}>
 
                         <CircularProgress />
 
                         <Typography>
 
-                            Chargement
-                            des matchs...
+                            Chargement...
 
                         </Typography>
 
@@ -98,131 +127,12 @@ export function MyMatchesPage() {
                     }
 
                     {
-
-                        matches.map(match => (
-
-                            <AppCard
-                                key={match.matchId}
-                            >
-
-                                <Stack spacing={2}>
-
-                                    <Typography
-                                        variant="h6"
-                                    >
-
-                                        {match.matchDay}
-
-                                    </Typography>
-
-                                    <Typography>
-
-                                        {match.homeTeam}
-
-                                    </Typography>
-
-                                    <Typography
-                                        align="center"
-                                    >
-
-                                        VS
-
-                                    </Typography>
-
-                                    <Typography>
-
-                                        {match.awayTeam}
-
-                                    </Typography>
-
-                                    <Typography
-                                        variant="body2"
-                                    >
-
-                                        {match.venueName}
-
-                                    </Typography>
-
-                                    {
-
-                                        match.plannedStartAt && (
-
-                                            <Typography
-                                                variant="body2"
-                                            >
-
-                                                {
-
-                                                    match.plannedStartAt
-                                                        .toDate()
-                                                        .toLocaleString(
-                                                            "fr-FR",
-                                                        )
-
-                                                }
-
-                                            </Typography>
-
-                                        )
-
-                                    }
-
-                                    {
-
-                                        match.boardNumber && (
-
-                                            <Typography
-                                                variant="body2"
-                                            >
-
-                                                Cible {match.boardNumber}
-
-                                            </Typography>
-
-                                        )
-
-                                    }
-
-                                    <Button
-
-                                        variant="contained"
-
-                                        disabled={
-                                            match.status !==
-                                            "NOT_PLANNED"
-                                        }
-
-                                        onClick={() =>
-
-                                            navigate(
-
-                                                `/planning?matchId=${match.matchId}`,
-
-                                            )
-
-                                        }
-
-                                    >
-
-                                        {
-
-                                            match.status ===
-                                                "NOT_PLANNED"
-
-                                                ? "Planifier"
-
-                                                : "Voir"
-
-                                        }
-
-                                    </Button>
-
-                                </Stack>
-
-                            </AppCard>
-
-                        ))
-
+                        matches.length > 0 && (
+                            <MatchPager
+                                matches={matches}
+                                onPlan={handlePlan}
+                            />
+                        )
                     }
 
                 </Stack>
@@ -235,4 +145,4 @@ export function MyMatchesPage() {
 
 }
 
-export default MyMatchesPage;
+export default MyMatchesPage;   

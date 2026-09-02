@@ -12,9 +12,9 @@ import type {
 } from "../model/my-match";
 
 export function useMyMatches(
-    playerUid?: string,
+    playerId?: string,
 ) {
-
+    console.log("useMyMatches", playerId);
     const [
         matches,
         setMatches,
@@ -30,18 +30,18 @@ export function useMyMatches(
     useEffect(() => {
 
         async function load() {
-
-            if (!playerUid) {
+            console.log("useEffect lancé");
+            if (!playerId) {
 
                 setLoading(false);
 
                 return;
 
             }
-
+            console.log("Appel de loadMyMatches");
             const result =
                 await loadMyMatches(
-                    playerUid,
+                    playerId,
                 );
 
             setMatches(result);
@@ -52,7 +52,7 @@ export function useMyMatches(
 
         load();
 
-    }, [playerUid]);
+    }, [playerId]);
 
     return {
 

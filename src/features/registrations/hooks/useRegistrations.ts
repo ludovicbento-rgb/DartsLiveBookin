@@ -12,7 +12,9 @@ import { useAuth } from "@/features/authentication/hooks/useAuth";
 
 export function useRegistrations() {
 
-    const { user } = useAuth();
+    const {
+        userProfile,
+    } = useAuth();
 
     const [
         registrations,
@@ -28,7 +30,7 @@ export function useRegistrations() {
 
         async function load() {
 
-            if (!user) {
+            if (!userProfile) {
 
                 setLoading(false);
 
@@ -38,7 +40,7 @@ export function useRegistrations() {
 
             const result =
                 await getRegistrationsByPlayer(
-                    user.uid,
+                    userProfile.playerId,
                 );
 
             setRegistrations(result);
@@ -49,7 +51,7 @@ export function useRegistrations() {
 
         load();
 
-    }, [user]);
+    }, [userProfile]);
 
     return {
 

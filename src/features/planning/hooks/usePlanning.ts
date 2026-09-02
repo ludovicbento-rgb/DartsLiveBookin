@@ -3,58 +3,79 @@ import {
     useState,
 } from "react";
 
-import {
-    subscribePlanning,
-} from "../api/planning.service";
-
 import type {
     VenuePlanning,
 } from "../model/planning.types";
 
 export function usePlanning(
+
     venueId: string,
+
+    reservationDate: Date,
+
 ) {
 
     const [
+
         planning,
-        setPlanning,
-    ] =
-        useState<VenuePlanning | null>(
-            null,
-        );
+
+    ] = useState<VenuePlanning | null>(
+        null,
+    );
 
     const [
+
         loading,
+
         setLoading,
-    ] =
-        useState(true);
+
+    ] = useState(true);
 
     const [
+
         error,
-    ] = useState<string | null>(null);
+
+        setError,
+
+    ] = useState<string | null>(
+        null,
+    );
 
     useEffect(() => {
 
-        if (!venueId) {
-            setLoading(false);
-            return;
+        async function load() {
+
+            try {
+
+                throw new Error("Planning service not integrated yet");
+
+            }
+            catch (e) {
+
+                if (e instanceof Error) {
+
+                    setError(e.message);
+
+                }
+
+            }
+            finally {
+
+                setLoading(false);
+
+            }
+
         }
 
-        const unsubscribe =
-            subscribePlanning(
-                venueId,
-                planning => {
+        load();
 
-                    setPlanning(planning);
+    }, [
 
-                    setLoading(false);
+        venueId,
 
-                },
-            );
+        reservationDate,
 
-        return unsubscribe;
-
-    }, [venueId]);
+    ]);
 
     return {
 

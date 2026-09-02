@@ -56,13 +56,14 @@ export function DashboardHeader({
                     <Stack>
 
                         <Typography
-                            variant="h5"
                             sx={{
                                 fontSize: {
-                                    xs: "2.2rem",
+                                    xs: "2.1rem",
+                                    sm: "2.8rem",
                                     md: "3.2rem",
                                 },
                                 fontWeight: 700,
+                                lineHeight: 1.1,
                             }}
                         >
 
@@ -97,13 +98,7 @@ export function DashboardHeader({
 
                     <Typography>
 
-                        Championnat de France Dartslive
-
-                    </Typography>
-
-                    <Typography>
-
-                        Saison {season}
+                        {season}
 
                     </Typography>
 

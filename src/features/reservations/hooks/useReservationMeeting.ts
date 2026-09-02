@@ -10,7 +10,8 @@ import { useAuth } from "@/features/authentication/hooks/useAuth";
 
 export function useReservationMeeting() {
 
-    const { user } = useAuth();
+    const { userProfile,
+    } = useAuth();
 
     const [
         registrations,
@@ -46,7 +47,7 @@ export function useReservationMeeting() {
 
         async function load() {
 
-            if (!user) {
+            if (!userProfile) {
 
                 setLoading(false);
 
@@ -56,7 +57,7 @@ export function useReservationMeeting() {
 
             const result =
                 await getRegistrationsByPlayer(
-                    user.uid,
+                    userProfile.playerId,
                 );
 
             setRegistrations(result);
@@ -75,7 +76,7 @@ export function useReservationMeeting() {
 
         load();
 
-    }, [user]);
+    }, [userProfile]);
 
     useEffect(() => {
 

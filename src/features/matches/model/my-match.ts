@@ -6,9 +6,15 @@ export interface MyMatch {
 
     matchId: string;
 
+    venueId: string;
+
+    venueLogo: string | null;
+
     reservationId: string | null;
 
-    matchDay: string;
+    matchDayNumber: number;
+
+    matchDayLabel: string;
 
     homeTeam: string;
 

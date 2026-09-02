@@ -19,12 +19,12 @@ import {
 } from "@/entities/reservation";
 
 export async function loadMyMatches(
-    playerUid: string,
+    playerId: string,
 ): Promise<MyMatch[]> {
 
     const registrations =
         await getRegistrationsByPlayer(
-            playerUid,
+            playerId,
         );
 
     const result: MyMatch[] = [];
@@ -35,6 +35,28 @@ export async function loadMyMatches(
             await getMatchesByRegistration(
                 registration.id,
             );
+
+        console.log("Matches", matches);
+
+        console.log("PlayerId", playerId);
+
+        const registrations =
+            await getRegistrationsByPlayer(playerId);
+
+        console.log("Registrations", registrations);
+
+        for (const registration of registrations) {
+
+            console.log("Registration", registration.id);
+
+            const matches =
+                await getMatchesByRegistration(
+                    registration.id,
+                );
+
+            console.log("Matches", matches);
+
+        }
 
         for (const match of matches) {
 
@@ -52,16 +74,27 @@ export async function loadMyMatches(
 
                     : null;
 
+            console.log("Logo :", context.venue.logo);
+
             result.push({
 
                 matchId:
                     match.id,
 
+                venueId:
+                    context.venue.id,
+
+                venueLogo:
+                    context.venue.logo,
+
                 reservationId:
                     reservation?.id ?? null,
 
-                matchDay:
-                    context.matchDay.displayName,
+                matchDayNumber:
+                    context.matchDay.number,
+
+                matchDayLabel:
+                    `J${context.matchDay.number}`,
 
                 homeTeam:
                     context.homeRegistration.registrationName,
@@ -97,9 +130,8 @@ export async function loadMyMatches(
 
         (a, b) =>
 
-            a.matchDay.localeCompare(
-                b.matchDay,
-            ),
+            a.matchDayNumber -
+            b.matchDayNumber,
 
     );
 
