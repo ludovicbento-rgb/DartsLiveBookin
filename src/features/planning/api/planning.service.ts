@@ -68,21 +68,13 @@ export function createPlanning(
             mapAvailabilityClosure,
 
         );
-    const planningBoards =
-
-        buildAvailability({
-
-            openingHours,
-
-            durationMinutes: 90,
-
-            reservations,
-
-            closures,
-
-            reservationDate,
-
-        });
+    const planningBoards = buildAvailability({
+        openingHours,
+        durationMinutes: 90,
+        reservations,
+        closures,
+        reservationDate,
+    });
 
     const suggestion =
 
