@@ -3,11 +3,10 @@ import {
     AlertTitle,
     Box,
     Button,
+    Skeleton,
+    Stack,
+    Typography,
 } from "@mui/material";
-
-import {
-    PlanningSkeleton,
-} from "./PlanningSkeleton";
 
 interface Props {
 
@@ -35,7 +34,23 @@ export function PlanningState({
 
     if (loading) {
 
-        return <PlanningSkeleton />;
+        return (
+
+            <Stack spacing={3}>
+
+                <Skeleton
+                    variant="rounded"
+                    height={120}
+                />
+
+                <Skeleton
+                    variant="rounded"
+                    height={420}
+                />
+
+            </Stack>
+
+        );
 
     }
 
@@ -43,9 +58,7 @@ export function PlanningState({
 
         return (
 
-            <Alert
-                severity="error"
-            >
+            <Alert severity="error">
 
                 <AlertTitle>
 
@@ -53,7 +66,11 @@ export function PlanningState({
 
                 </AlertTitle>
 
-                {error}
+                <Typography>
+
+                    {error}
+
+                </Typography>
 
                 {
 
@@ -90,9 +107,7 @@ export function PlanningState({
 
         return (
 
-            <Alert
-                severity="info"
-            >
+            <Alert severity="info">
 
                 <AlertTitle>
 
@@ -100,8 +115,7 @@ export function PlanningState({
 
                 </AlertTitle>
 
-                Aucun planning n'est disponible
-                pour cette journée.
+                Aucun créneau n'est disponible pour cette journée.
 
             </Alert>
 

@@ -1,15 +1,36 @@
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import type {
+    VenuePlanning,
+} from "../model/planning.types";
+
 interface PlanningHeaderProps {
-    venueName: string;
-    availableBoards: number;
+    planning: VenuePlanning;
 }
 
 export function PlanningHeader({
-    venueName,
-    availableBoards,
+    planning,
 }: PlanningHeaderProps) {
+    const availableBoards =
+
+        planning.slots
+
+            .flatMap(
+
+                slot => slot.boards,
+
+            )
+
+            .filter(
+
+                board =>
+
+                    board.status === "AVAILABLE",
+
+            )
+
+            .length;
     return (
         <Stack spacing={1}>
             <Typography
@@ -18,7 +39,7 @@ export function PlanningHeader({
                     fontWeight: 700,
                 }}
             >
-                {venueName}
+                {planning.venueName}
             </Typography>
 
             <Typography color="text.secondary">
