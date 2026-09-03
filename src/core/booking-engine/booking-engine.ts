@@ -25,13 +25,13 @@ export function findBestSlot(
 
     for (const board of request.planning) {
 
-        const slot = board.slots.find(
+        const availableSlot = board.slots.find(
 
             slot => !slot.reserved,
 
         );
 
-        if (slot) {
+        if (availableSlot) {
 
             return {
 
@@ -39,7 +39,9 @@ export function findBestSlot(
 
                     board.boardNumber,
 
-                slot,
+                slot:
+
+                    availableSlot,
 
             };
 
