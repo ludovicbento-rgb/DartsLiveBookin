@@ -1,60 +1,107 @@
+import {
+    buildAvailability,
+} from "@/core/availability-engine";
 
-import type {
-    OpeningHours,
-    Reservation,
-} from "@/core/reservation-engine";
+import {
+    findBestSlot,
+} from "@/core/booking-engine";
 
 import {
     mapPlanning,
 } from "@/core/planning-mapper";
 
-import type { VenuePlanning, } from "../model/planning.types";
+import {
+    mapOpeningHours,
+} from "@/entities/venue-schedule";
 
-import { buildPlanning, } from "@/core/reservation-engine";
+import {
+    mapCoreReservation,
+} from "@/entities/reservation";
 
-export interface PlanningServiceInput {
+import {
+    mapAvailabilityClosure,
+} from "@/entities/venue-closure";
 
-    venueId: string;
+import type {
+    PlanningData,
+} from "./planning.loader";
 
-    venueName: string;
-
-    openingHours: OpeningHours;
-
-    matchDurationMinutes: number;
-
-    reservations: Reservation[];
-
-}
+import type {
+    VenuePlanning,
+} from "../model/planning.types";
 
 export interface PlanningServiceResult {
+
     planning: VenuePlanning;
+
+    suggestion: ReturnType<typeof findBestSlot>;
+
 }
 
 export function createPlanning(
-    input: PlanningServiceInput,
+
+    data: PlanningData,
+
+    reservationDate: Date,
+
 ): PlanningServiceResult {
+    const openingHours =
 
-    const planningBoards =
+        mapOpeningHours(
 
-        buildPlanning(
-
-            input.openingHours,
-
-            input.matchDurationMinutes,
-
-            input.reservations,
+            data.schedules[0],
 
         );
+
+    const reservations =
+
+        data.reservations.map(
+
+            mapCoreReservation,
+
+        );
+
+    const closures =
+
+        data.closures.map(
+
+            mapAvailabilityClosure,
+
+        );
+    const planningBoards =
+
+        buildAvailability({
+
+            openingHours,
+
+            durationMinutes: 90,
+
+            reservations,
+
+            closures,
+
+            reservationDate,
+
+        });
+
+    const suggestion =
+
+        findBestSlot({
+
+            planning:
+                planningBoards,
+
+        });
 
     const planning =
 
         mapPlanning({
 
             venueId:
-                input.venueId,
+                data.venue.id,
 
             venueName:
-                input.venueName,
+                data.venue.name,
 
             planning:
                 planningBoards,
@@ -65,7 +112,8 @@ export function createPlanning(
 
         planning,
 
+        suggestion,
+
     };
 
 }
-

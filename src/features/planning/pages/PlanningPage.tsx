@@ -82,11 +82,8 @@ export function PlanningPage() {
         loading,
         error,
     } = usePlanning(
-
         venueId ?? "",
-
         reservationDate,
-
     );
 
     const [

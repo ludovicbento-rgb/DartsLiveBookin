@@ -10,6 +10,7 @@ import {
 import type {
     VenuePlanning,
 } from "../model/planning.types";
+import { loadPlanningData } from "../api/planning.loader";
 
 export function usePlanning(
 
@@ -68,28 +69,14 @@ export function usePlanning(
                  *   - schedules
                  *   - reservations
                  */
-
-                const result = createPlanning({
-
+                const data = await loadPlanningData(
                     venueId,
-
-                    venueName: "",
-
-                    openingHours: {
-
-                        openTime: "18:00",
-
-                        closeTime: "22:30",
-
-                        boardNumbers: [1, 2],
-
-                    },
-
-                    matchDurationMinutes: 90,
-
-                    reservations: [],
-
-                });
+                    reservationDate,
+                );
+                const result = createPlanning(
+                    data,
+                    reservationDate,
+                );
 
                 setPlanning(
 
