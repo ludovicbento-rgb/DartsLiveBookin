@@ -249,9 +249,9 @@ export function ReservationDialog({
 
                     <Alert severity="info">
 
-                        Cette demande sera envoyée
-                        au gérant de
-                        l'établissement pour validation.
+                        Cette demande doit être validée
+                        par le gérant de
+                        l'établissement.
 
                     </Alert>
 

@@ -5,19 +5,18 @@ import {
     Drawer,
     Stack,
     TextField,
-    Typography,
     Alert,
 } from "@mui/material";
-
-import {
-    InfoCard,
-} from "@/shared/ui/InfoCard";
+import ReservationSummaryCard
+    from "./ReservationSummaryCard";
 
 interface Props {
 
     open: boolean;
 
-    matchLabel: string;
+    homeTeam: string;
+
+    awayTeam: string;
 
     venueName: string;
 
@@ -26,6 +25,8 @@ interface Props {
     start: string;
 
     end: string;
+
+    reservationDate: Date;
 
     notes: string;
 
@@ -45,7 +46,9 @@ export function PlanningConfirmDrawer({
 
     open,
 
-    matchLabel,
+    homeTeam,
+
+    awayTeam,
 
     venueName,
 
@@ -54,6 +57,8 @@ export function PlanningConfirmDrawer({
     start,
 
     end,
+
+    reservationDate,
 
     notes,
 
@@ -109,60 +114,23 @@ export function PlanningConfirmDrawer({
 
                 <Stack spacing={2}>
 
-                    <Typography
-                        variant="h5"
-                        sx={{
-                            fontWeight: 700,
-                        }}
-                    >
+                    <ReservationSummaryCard
 
-                        Confirmer votre réservation
+                        homeTeam={homeTeam}
 
-                    </Typography>
+                        awayTeam={awayTeam}
 
-                    <Divider />
+                        venueName={venueName}
 
-                    <InfoCard
+                        reservationDate={reservationDate}
 
-                        title="🏆 Match"
+                        start={start}
 
-                        value={matchLabel}
+                        end={end}
 
-                        color="error"
+                        boardNumber={boardNumber}
 
                     />
-
-                    <InfoCard
-
-                        title="📍 Établissement"
-
-                        value={venueName}
-
-                        color="success"
-
-
-                    />
-
-                    <InfoCard
-
-                        title="🕒 Horaire"
-
-                        value={`${start} → ${end}`}
-
-                        color="warning"
-
-                    />
-
-                    <InfoCard
-
-                        title="🎯 Cible"
-
-                        value={`Cible ${boardNumber}`}
-
-                        color="secondary"
-
-                    />
-
                     <TextField
 
                         fullWidth
@@ -194,8 +162,8 @@ export function PlanningConfirmDrawer({
 
                         >
 
-                            Votre demande sera envoyée au gérant
-                            de l'établissement pour validation.
+                            Votre demande doit être validée par le gérant
+                            de l'établissement.
 
                         </Alert>
 
@@ -229,7 +197,7 @@ export function PlanningConfirmDrawer({
 
                                     ? "Envoi..."
 
-                                    : "✓ Envoyer la demande"
+                                    : "✓ Confirmer la réservation"
 
                             }
 

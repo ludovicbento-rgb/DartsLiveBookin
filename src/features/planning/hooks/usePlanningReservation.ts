@@ -23,6 +23,10 @@ import type {
     useReservationNotifications,
 } from "./useReservationNotifications";
 
+import {
+    Timestamp,
+} from "firebase/firestore";
+
 interface OpenSelectionParams {
 
     venueId: string;
@@ -192,14 +196,40 @@ export function usePlanningReservation(
             0,
         );
 
-        openSelection({
+        console.log("openSelection", {
             venueId,
-            venueName,
-            reservationDate,
-            matchId,
             slot,
             board,
         });
+        dialog.open({
+
+            reservationDate,
+
+            venueId,
+
+            venueName,
+
+            boardNumber: board.boardNumber,
+
+            plannedStartAt:
+                Timestamp.fromDate(
+                    start,
+                ),
+
+            plannedEndAt:
+                Timestamp.fromDate(
+                    end,
+                ),
+
+        });
+
+        if (matchId) {
+
+            dialog.updateMatch(
+                matchId,
+            );
+
+        }
 
         if (matchId) {
 

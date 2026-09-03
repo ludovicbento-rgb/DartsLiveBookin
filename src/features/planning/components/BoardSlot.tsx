@@ -94,27 +94,19 @@ export function BoardSlot({
         >
 
             <CardActionArea
-
                 disabled={!clickable}
-
-                onClick={onClick}
-
-                sx={{
-
-                    "&:hover": clickable
-
-                        ? {
-
-                            boxShadow: 3,
-
-                            transform: "scale(1.02)",
-
-                        }
-
-                        : {},
-
+                onClick={() => {
+                    console.log("CLICK", board);
+                    onClick();
                 }}
-
+                sx={{
+                    "&:hover": clickable
+                        ? {
+                            boxShadow: 3,
+                            transform: "scale(1.02)",
+                        }
+                        : {},
+                }}
             >
 
                 <CardContent>

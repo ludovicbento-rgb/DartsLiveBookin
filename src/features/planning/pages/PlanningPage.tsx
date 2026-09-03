@@ -145,7 +145,7 @@ export function PlanningPage() {
             board,
         });
 
-        console.log("Logo :", selectedMatch?.venue.logo);
+        console.log("handleBoardSelected", slot, board);
 
     }
     return (
@@ -198,6 +198,7 @@ export function PlanningPage() {
                         }
                     />
                     <PlanningConfirmDrawer
+                        reservationDate={reservationDate}
                         start={
                             dialog.selection
                                 ? dialog.selection.plannedStartAt
@@ -225,10 +226,13 @@ export function PlanningPage() {
                                 : ""
                         }
                         open={dialog.opened}
-                        matchLabel={
-                            selectedMatch
-                                ? `J${selectedMatch.matchDay.number} - ${selectedMatch.homeRegistration.registrationName} vs ${selectedMatch.awayRegistration.registrationName}`
-                                : ""
+
+                        homeTeam={
+                            selectedMatch?.homeRegistration.registrationName ?? ""
+                        }
+
+                        awayTeam={
+                            selectedMatch?.awayRegistration.registrationName ?? ""
                         }
 
                         venueName={dialog.selection?.venueName ?? ""}
