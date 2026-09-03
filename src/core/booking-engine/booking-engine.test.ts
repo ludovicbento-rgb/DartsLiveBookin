@@ -11,8 +11,70 @@ import {
 import {
 
     findBestSlot,
+    validateSelection,
+    suggestAlternatives,
 
 } from "./index";
+
+import {
+    buildPlanning,
+} from "@/core/reservation-engine";
+
+function createEmptyPlanning() {
+
+    return buildPlanning(
+
+        {
+
+            openTime: "18:00",
+
+            closeTime: "22:30",
+
+            boardNumbers: [1, 2],
+
+        },
+
+        90,
+
+        [],
+
+    );
+
+}
+
+function createReservedPlanning() {
+
+    return buildPlanning(
+
+        {
+
+            openTime: "18:00",
+
+            closeTime: "22:30",
+
+            boardNumbers: [1, 2],
+
+        },
+
+        90,
+
+        [
+
+            {
+
+                boardNumber: 2,
+
+                startTime: "18:00",
+
+                endTime: "19:30",
+
+            },
+
+        ],
+
+    );
+
+}
 
 describe(
 
@@ -277,6 +339,115 @@ describe(
                     suggestion,
 
                 ).toBeNull();
+
+            },
+
+        );
+
+        it(
+
+            "should validate available slot",
+
+            () => {
+
+                const planning = createEmptyPlanning();
+
+                const result =
+
+                    validateSelection(
+
+                        {
+
+                            planning,
+
+                        },
+
+                        1,
+
+                        "18:00",
+
+                    );
+
+                expect(
+
+                    result.available,
+
+                ).toBe(true);
+
+            },
+
+        );
+
+        it(
+
+            "should reject reserved slot",
+
+            () => {
+
+                const planning = createReservedPlanning();
+
+                const result =
+
+                    validateSelection(
+
+                        {
+
+                            planning,
+
+                        },
+
+                        2,
+
+                        "18:00",
+
+                    );
+
+                expect(
+
+                    result.available,
+
+                ).toBe(false);
+
+            },
+
+        );
+
+        it(
+
+            "should return alternatives",
+
+            () => {
+
+                const planning = buildPlanning(
+
+                    {
+
+                        openTime: "18:00",
+
+                        closeTime: "22:30",
+
+                        boardNumbers: [1, 2],
+
+                    },
+
+                    90,
+
+                    [],
+
+                );
+                const result =
+
+                    suggestAlternatives({
+
+                        planning,
+
+                    });
+
+                expect(
+
+                    result.length,
+
+                ).toBeGreaterThan(0);
 
             },
 

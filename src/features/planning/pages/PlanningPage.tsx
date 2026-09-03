@@ -10,7 +10,6 @@ import {
 } from "../hooks/usePlanning";
 
 import { PlanningHeader } from "../components/PlanningHeader";
-import { PlanningTable } from "../components/PlanningTable";
 
 import { useReservationDialog } from "@/features/reservations/hooks/useReservationDialog";
 import { useCreateReservation } from "@/features/reservations/hooks/useCreateReservation";
@@ -19,9 +18,6 @@ import PlanningConfirmDrawer
 
 import { useAuth } from "@/features/authentication/hooks/useAuth";
 import { useParams } from "react-router-dom";
-import {
-    PlanningSummary,
-} from "../components/PlanningSummary";
 import {
     useSearchParams,
 } from "react-router-dom";
@@ -50,6 +46,14 @@ import {
 import {
     MY_MATCHES_ROUTE,
 } from "@/shared/routing";
+
+import {
+    PlanningContent,
+} from "../components/PlanningContent";
+
+import {
+    PlanningState,
+} from "../components/PlanningState";
 
 export function PlanningPage() {
 
@@ -172,13 +176,6 @@ export function PlanningPage() {
             )
             .length;
 
-    const reservedBoards =
-        planning.slots
-            .flatMap((slot: TimeSlot) => slot.boards)
-            .filter((board: BoardSlot) =>
-                board.status !== "AVAILABLE",
-            )
-            .length;
     const currentPlanning = planning;
 
     async function handleReservation() {
@@ -354,20 +351,41 @@ export function PlanningPage() {
                         value={reservationDate}
                         onChange={setReservationDate}
                     />
-                    <PlanningSummary
+                    <PlanningState
 
-                        reservationDate={reservationDate}
+                        loading={loading}
 
-                        availableBoards={availableBoards}
+                        error={error}
 
-                        reservedBoards={reservedBoards}
+                        empty={
+
+                            !!planning &&
+
+                            planning.slots.length === 0
+
+                        }
 
                     />
-                    <PlanningTable
-                        planning={planning}
-                        onBoardSelected={handleBoardSelected}
-                    />
 
+                    {
+
+                        planning &&
+
+                        planning.slots.length > 0 && (
+
+                            <PlanningContent
+
+                                planning={planning}
+
+                                reservationDate={reservationDate}
+
+                                onBoardSelected={handleBoardSelected}
+
+                            />
+
+                        )
+
+                    }
                     <PlanningConfirmDrawer
 
                         open={dialog.opened}

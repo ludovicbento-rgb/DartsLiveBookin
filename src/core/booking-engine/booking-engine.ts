@@ -3,6 +3,10 @@ import type {
     ReservationSlot,
 } from "@/core/reservation-engine";
 
+import type {
+    BookingValidationResult,
+} from "./model/booking-validation-result";
+
 export interface BookingRequest {
 
     planning: PlanningBoard[];
@@ -17,38 +21,156 @@ export interface BookingSuggestion {
 
 }
 
+export function suggestAlternatives(
+
+    request: BookingRequest,
+
+): BookingSuggestion[] {
+
+    const suggestions: BookingSuggestion[] = [];
+
+    for (const board of request.planning) {
+
+        for (const slot of board.slots) {
+
+            if (!slot.reserved) {
+
+                suggestions.push({
+
+                    boardNumber:
+
+                        board.boardNumber,
+
+                    slot,
+
+                });
+
+            }
+
+        }
+
+    }
+
+    return suggestions;
+
+}
+
 export function findBestSlot(
 
     request: BookingRequest,
 
 ): BookingSuggestion | null {
 
-    for (const board of request.planning) {
+    const suggestions =
 
-        const availableSlot = board.slots.find(
+        suggestAlternatives(
 
-            slot => !slot.reserved,
+            request,
 
         );
 
-        if (availableSlot) {
+    return suggestions.length > 0
 
-            return {
+        ? suggestions[0]
 
-                boardNumber:
+        : null;
 
-                    board.boardNumber,
+}
 
-                slot:
+export function validateSelection(
 
-                    availableSlot,
+    request: BookingRequest,
 
-            };
+    boardNumber: number,
 
-        }
+    startTime: string,
+
+): BookingValidationResult {
+
+    const board =
+
+        request.planning.find(
+
+            board =>
+
+                board.boardNumber ===
+
+                boardNumber,
+
+        );
+
+    if (!board) {
+
+        return {
+
+            available: false,
+
+            alternatives:
+
+                suggestAlternatives(
+
+                    request,
+
+                ),
+
+        };
 
     }
 
-    return null;
+    const slot =
+
+        board.slots.find(
+
+            slot =>
+
+                slot.startTime ===
+
+                startTime,
+
+        );
+
+    if (!slot) {
+
+        return {
+
+            available: false,
+
+            alternatives:
+
+                suggestAlternatives(
+
+                    request,
+
+                ),
+
+        };
+
+    }
+
+    if (!slot.reserved) {
+
+        return {
+
+            available: true,
+
+            alternatives: [],
+
+        };
+
+    }
+
+    return {
+
+        available: false,
+
+        alternatives:
+
+            suggestAlternatives(
+
+                request,
+
+            ),
+
+    };
 
 }

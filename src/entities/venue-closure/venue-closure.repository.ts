@@ -17,15 +17,10 @@ import type {
 } from "./venue-closure.types";
 
 export async function getVenueClosuresByVenue(
-
     venueId: string,
-
 ): Promise<VenueClosure[]> {
-
     const q = query(
-
         venueClosuresCollection,
-
         where(
             "venueId",
             "==",
