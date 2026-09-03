@@ -13,8 +13,6 @@ export interface UserProfile {
      */
     id: string;
 
-    playerId: string;
-
     /**
      * UID Firebase Authentication.
      * Null tant que le compte n'est pas activé.

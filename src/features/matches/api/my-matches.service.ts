@@ -27,6 +27,11 @@ export async function loadMyMatches(
             playerId,
         );
 
+    console.log(
+        "Registrations trouvées :",
+        registrations,
+    );
+
     const result: MyMatch[] = [];
 
     for (const registration of registrations) {
@@ -35,28 +40,6 @@ export async function loadMyMatches(
             await getMatchesByRegistration(
                 registration.id,
             );
-
-        console.log("Matches", matches);
-
-        console.log("PlayerId", playerId);
-
-        const registrations =
-            await getRegistrationsByPlayer(playerId);
-
-        console.log("Registrations", registrations);
-
-        for (const registration of registrations) {
-
-            console.log("Registration", registration.id);
-
-            const matches =
-                await getMatchesByRegistration(
-                    registration.id,
-                );
-
-            console.log("Matches", matches);
-
-        }
 
         for (const match of matches) {
 

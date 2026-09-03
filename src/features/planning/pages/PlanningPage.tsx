@@ -114,6 +114,7 @@ export function PlanningPage() {
             return;
         }
 
+
         openSelection({
             venueId:
                 currentPlanning.venueId,

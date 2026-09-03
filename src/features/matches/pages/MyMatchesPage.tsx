@@ -36,7 +36,7 @@ export function MyMatchesPage() {
     } = useAuth();
     console.log("MyMatchesPage - userProfile", userProfile);
 
-    console.log("PlayerId envoyé", userProfile?.playerId);
+    console.log("PlayerId envoyé", userProfile?.id);
 
     const {
 
@@ -46,7 +46,7 @@ export function MyMatchesPage() {
 
     } = useMyMatches(
 
-        userProfile?.playerId,
+        userProfile?.id,
 
     );
 

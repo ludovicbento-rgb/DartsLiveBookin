@@ -57,7 +57,7 @@ export function useReservationMeeting() {
 
             const result =
                 await getRegistrationsByPlayer(
-                    userProfile.playerId,
+                    userProfile.id,
                 );
 
             setRegistrations(result);

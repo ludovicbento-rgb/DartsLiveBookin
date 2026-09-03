@@ -40,7 +40,7 @@ export function useRegistrations() {
 
             const result =
                 await getRegistrationsByPlayer(
-                    userProfile.playerId,
+                    userProfile.id,
                 );
 
             setRegistrations(result);
