@@ -111,7 +111,7 @@ export function VenueSettingsPage() {
 
     const [
 
-        startTime,
+        openTime,
 
         setStartTime,
 
@@ -119,7 +119,7 @@ export function VenueSettingsPage() {
 
     const [
 
-        endTime,
+        closeTime,
 
         setEndTime,
 
@@ -193,11 +193,11 @@ export function VenueSettingsPage() {
         );
 
         setStartTime(
-            schedule.startTime,
+            schedule.openTime,
         );
 
         setEndTime(
-            schedule.endTime,
+            schedule.closeTime,
         );
 
         setBoardNumbers(
@@ -226,9 +226,9 @@ export function VenueSettingsPage() {
 
                 ...selectedSchedule,
 
-                startTime,
+                openTime,
 
-                endTime,
+                closeTime,
 
                 boardNumbers,
 
@@ -245,9 +245,9 @@ export function VenueSettingsPage() {
                 dayOfWeek:
                     selectedDay,
 
-                startTime,
+                openTime,
 
-                endTime,
+                closeTime,
 
                 boardNumbers,
 
@@ -452,9 +452,9 @@ export function VenueSettingsPage() {
 
                 schedule={selectedSchedule}
 
-                startTime={startTime}
+                startTime={openTime}
 
-                endTime={endTime}
+                endTime={closeTime}
 
                 boardNumbers={boardNumbers}
 

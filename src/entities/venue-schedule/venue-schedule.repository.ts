@@ -65,8 +65,8 @@ export async function getVenueSchedules(
 
             }
 
-            return a.startTime.localeCompare(
-                b.startTime,
+            return a.openTime.localeCompare(
+                b.openTime,
             );
 
         });
@@ -114,8 +114,8 @@ export async function createVenueSchedule(
                 mapVenueSchedule(doc);
 
             return !(
-                schedule.endTime <= existing.startTime ||
-                schedule.startTime >= existing.endTime
+                schedule.closeTime <= existing.openTime ||
+                schedule.openTime >= existing.closeTime
             );
 
         });
@@ -153,10 +153,10 @@ export async function updateVenueSchedule(
         {
 
             startTime:
-                schedule.startTime,
+                schedule.openTime,
 
             endTime:
-                schedule.endTime,
+                schedule.closeTime,
 
             boardNumbers:
                 schedule.boardNumbers,

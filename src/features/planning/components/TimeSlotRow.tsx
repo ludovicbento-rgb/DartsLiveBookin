@@ -1,4 +1,5 @@
-import Divider from "@mui/material/Divider";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
@@ -10,71 +11,99 @@ import type {
 } from "../model/planning.types";
 
 interface TimeSlotRowProps {
+
     slot: TimeSlot;
 
-    onBoardSelected: (
+    onBoardSelected(
         slot: TimeSlot,
         board: BoardSlotModel,
-    ) => void;
+    ): void;
+
 }
 
 export function TimeSlotRow({
+
     slot,
+
     onBoardSelected,
+
 }: TimeSlotRowProps) {
 
     return (
 
-        <Stack
-            spacing={2}
-            sx={{
-                py: 2,
-            }}
+        <Card
+            variant="outlined"
         >
 
-            <Typography
-                variant="subtitle1"
-                sx={{
-                    fontWeight: 700,
-                }}
-            >
-                {slot.startTime} - {slot.endTime}
-            </Typography>
+            <CardContent>
 
-            <Stack
-                direction="row"
-                spacing={2}
-                sx={{
-                    flexWrap: "wrap",
-                    gap: 2,
-                }}
-            >
+                <Stack spacing={3}>
 
-                {slot.boards.map(board => (
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            fontWeight: 700,
+                        }}
+                    >
 
-                    <BoardSlot
+                        🕒 {slot.startTime} → {slot.endTime}
 
-                        key={board.boardNumber}
+                    </Typography>
 
-                        board={board}
+                    <Stack
+                        direction="row"
+                        spacing={2}
+                        sx={{
 
-                        onClick={() =>
-                            onBoardSelected(
-                                slot,
-                                board,
+                            flexWrap: "wrap",
+
+                            gap: 2,
+
+                        }}
+                    >
+
+                        {
+
+                            slot.boards.map(
+
+                                board => (
+
+                                    <BoardSlot
+
+                                        key={board.boardNumber}
+
+                                        board={board}
+
+                                        onClick={() =>
+
+                                            onBoardSelected(
+
+                                                slot,
+
+                                                board,
+
+                                            )
+
+                                        }
+
+                                    />
+
+                                ),
+
                             )
+
                         }
 
-                    />
+                    </Stack>
 
-                ))}
+                </Stack>
 
-            </Stack>
+            </CardContent>
 
-            <Divider />
-
-        </Stack>
+        </Card>
 
     );
 
 }
+
+export default TimeSlotRow;

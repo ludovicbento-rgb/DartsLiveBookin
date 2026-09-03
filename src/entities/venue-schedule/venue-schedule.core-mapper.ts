@@ -15,14 +15,14 @@ export function mapOpeningHours(
     return {
 
         openTime:
-            schedule.startTime,
+            schedule.openTime,
 
         closeTime:
-            schedule.endTime,
+            schedule.closeTime,
 
         boardNumbers:
             schedule.boardNumbers,
 
     };
 
-}   
+}

@@ -6,9 +6,9 @@ export interface VenueSchedule {
 
     dayOfWeek: number;
 
-    startTime: string;
+    openTime: string;
 
-    endTime: string;
+    closeTime: string;
 
     boardNumbers: number[];
 

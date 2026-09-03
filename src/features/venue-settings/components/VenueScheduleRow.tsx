@@ -62,7 +62,7 @@ export function VenueScheduleRow({
 
                     {
 
-                        schedule.startTime
+                        schedule.openTime
 
                     }
 
@@ -70,7 +70,7 @@ export function VenueScheduleRow({
 
                     {
 
-                        schedule.endTime
+                        schedule.closeTime
 
                     }
 

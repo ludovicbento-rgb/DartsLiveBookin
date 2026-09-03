@@ -28,8 +28,8 @@ export function useGeneratedSlots(
 
                     {
 
-                        openTime: schedule.startTime,
-                        closeTime: schedule.endTime,
+                        openTime: schedule.openTime,
+                        closeTime: schedule.closeTime,
 
                         boardNumbers:
                             schedule.boardNumbers,

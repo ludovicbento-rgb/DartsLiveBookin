@@ -3,22 +3,26 @@ import {
 } from "@mui/material";
 
 import {
-    PlanningLegend,
-} from "./PlanningLegend";
-
-import {
     PlanningSummary,
 } from "./PlanningSummary";
+
+import {
+    PlanningHeader,
+} from "./PlanningHeader";
 
 import {
     PlanningTable,
 } from "./PlanningTable";
 
 import type {
-    VenuePlanning,
     BoardSlot,
     TimeSlot,
+    VenuePlanning,
 } from "../model/planning.types";
+
+import type {
+    VenueStatus,
+} from "@/entities/venue/venue-status";
 
 interface Props {
 
@@ -26,11 +30,22 @@ interface Props {
 
     reservationDate: Date;
 
+    homeTeam: string;
+
+    awayTeam: string;
+
+    venueLogo: string;
+
+    onReservationDateChanged(
+        value: Date,
+    ): void;
+
     onBoardSelected(
         slot: TimeSlot,
         board: BoardSlot,
     ): void;
 
+    venueStatus: VenueStatus;
 }
 
 export function PlanningContent({
@@ -39,7 +54,17 @@ export function PlanningContent({
 
     reservationDate,
 
+    homeTeam,
+
+    awayTeam,
+
+    venueLogo,
+
+    onReservationDateChanged,
+
     onBoardSelected,
+
+    venueStatus,
 
 }: Props) {
 
@@ -49,13 +74,27 @@ export function PlanningContent({
 
             <PlanningSummary
 
-                planning={planning}
-
                 reservationDate={reservationDate}
+
+                onReservationDateChanged={
+                    onReservationDateChanged
+                }
+
+                homeTeam={homeTeam}
+
+                awayTeam={awayTeam}
 
             />
 
-            <PlanningLegend />
+            <PlanningHeader
+
+                planning={planning}
+
+                logo={venueLogo}
+
+                venueStatus={venueStatus}
+
+            />
 
             <PlanningTable
 
@@ -70,3 +109,5 @@ export function PlanningContent({
     );
 
 }
+
+export default PlanningContent;

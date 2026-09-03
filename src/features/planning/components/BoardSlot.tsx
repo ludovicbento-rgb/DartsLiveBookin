@@ -1,4 +1,10 @@
-import Chip from "@mui/material/Chip";
+import {
+    Card,
+    CardActionArea,
+    CardContent,
+    Stack,
+    Typography,
+} from "@mui/material";
 
 import type {
     BoardSlot as BoardSlotModel,
@@ -8,7 +14,7 @@ interface BoardSlotProps {
 
     board: BoardSlotModel;
 
-    onClick: () => void;
+    onClick(): void;
 
 }
 
@@ -20,51 +26,149 @@ export function BoardSlot({
 
 }: BoardSlotProps) {
 
-    const color =
-        board.status === "AVAILABLE"
-            ? "success"
-            : board.status === "PENDING"
-                ? "warning"
-                : "error";
-
     const clickable =
         board.status === "AVAILABLE";
 
-    const label =
-        `Cible ${board.boardNumber}`;
+    const status =
+
+        board.status === "AVAILABLE"
+
+            ? {
+
+                label: "Disponible",
+
+                icon: "🟢",
+
+                border: "success.main",
+
+                background: "success.50",
+
+            }
+
+            : board.status === "PENDING"
+
+                ? {
+
+                    label: "En attente",
+
+                    icon: "🟠",
+
+                    border: "warning.main",
+
+                    background: "warning.50",
+
+                }
+
+                : {
+
+                    label: "Réservé",
+
+                    icon: "🔴",
+
+                    border: "error.main",
+
+                    background: "error.50",
+
+                };
 
     return (
 
-        <Chip
+        <Card
 
-            label={label}
-
-            color={color}
-
-            variant={
-                clickable
-                    ? "filled"
-                    : "outlined"
-            }
-
-            clickable={clickable}
-
-            onClick={
-                clickable
-                    ? onClick
-                    : undefined
-            }
+            variant="outlined"
 
             sx={{
 
-                width: "100%",
+                minWidth: 180,
 
-                fontWeight: 600,
+                borderColor: status.border,
+
+                bgcolor: status.background,
+
+                transition: "all .20s ease",
+
+                boxShadow: 0,
 
             }}
 
-        />
+        >
+
+            <CardActionArea
+
+                disabled={!clickable}
+
+                onClick={onClick}
+
+                sx={{
+
+                    "&:hover": clickable
+
+                        ? {
+
+                            boxShadow: 3,
+
+                            transform: "scale(1.02)",
+
+                        }
+
+                        : {},
+
+                }}
+
+            >
+
+                <CardContent>
+
+                    <Stack
+
+                        spacing={1}
+
+                        sx={{
+
+                            alignItems: "center",
+
+                        }}
+
+                    >
+
+                        <Typography
+
+                            variant="subtitle1"
+
+                            sx={{
+
+                                fontWeight: 700,
+
+                            }}
+
+                        >
+
+                            🎯 Cible {board.boardNumber}
+
+                        </Typography>
+
+                        <Typography
+
+                            variant="body2"
+
+                            color="text.secondary"
+
+                        >
+
+                            {status.icon} {status.label}
+
+                        </Typography>
+
+                    </Stack>
+
+                </CardContent>
+
+            </CardActionArea>
+
+        </Card>
 
     );
 
 }
+
+export default BoardSlot;

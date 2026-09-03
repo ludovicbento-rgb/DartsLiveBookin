@@ -2,15 +2,13 @@ import Stack from "@mui/material/Stack";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { AppLayout } from "@/app/layouts/AppLayout";
-import { AppCard, PageTitle } from "@/shared/ui";
+import { AppCard, } from "@/shared/ui";
 import {
     useReservationNotifications,
 } from "../hooks/useReservationNotifications";
 import {
     usePlanning,
 } from "../hooks/usePlanning";
-
-import { PlanningHeader } from "../components/PlanningHeader";
 
 import PlanningConfirmDrawer
     from "../components/PlanningConfirmDrawer";
@@ -20,13 +18,9 @@ import {
     useSearchParams,
 } from "react-router-dom";
 
-import PlanningDateSelector
-    from "../components/PlanningDateSelector";
-
 import {
     useMatchPlanningContext,
 } from "../hooks/useMatchPlanningContext";
-
 
 import type {
     BoardSlot,
@@ -46,11 +40,14 @@ import {
 } from "../components/PlanningContent";
 
 import {
+    buildVenueStatus,
+} from "@/entities/venue/venue-status.service";
+
+import {
     PlanningState,
 } from "../components/PlanningState";
 
 export function PlanningPage() {
-
     const { venueId } = useParams();
 
     const [searchParams] =
@@ -102,6 +99,28 @@ export function PlanningPage() {
         matchError ??
         null;
 
+    const venueStatus = buildVenueStatus({
+
+        isOpen: true,
+
+        hasEvent: false,
+
+        hasMaintenance: false,
+
+        availableBoards:
+            planning
+                ? planning.slots
+                    .flatMap(
+                        slot => slot.boards,
+                    )
+                    .filter(
+                        board =>
+                            board.status === "AVAILABLE",
+                    ).length
+                : 0,
+
+    });
+
     function handleBoardSelected(
         slot: TimeSlot,
         board: BoardSlot,
@@ -126,54 +145,39 @@ export function PlanningPage() {
             board,
         });
 
+        console.log("Logo :", selectedMatch?.venue.logo);
+
     }
     return (
         <AppLayout>
             <AppCard>
                 <Stack spacing={4}>
-                    <PageTitle>
-                        Choix d'un créneau
-                    </PageTitle>
 
-                    {
-                        planning && (
-                            <PlanningHeader
-                                planning={planning}
-                            />
-                        )
-                    }
-                    {
-                        selectedMatch && (
-                            <Alert
-                                severity="info"
-                            >
-                                {
-                                    selectedMatch.matchDay.displayName
-                                }
-                                {" - "}
-                                {
-                                    selectedMatch.homeRegistration.registrationName
-                                }
-                                {" vs "}
-                                {
-                                    selectedMatch.awayRegistration.registrationName
-                                }
-                            </Alert>
-                        )
-                    }
-
-                    <PlanningDateSelector
-                        value={reservationDate}
-                        onChange={setReservationDate}
-                    />
                     {
                         !loading &&
                         !error &&
                         planning && (
+
                             <PlanningContent
                                 planning={planning}
                                 reservationDate={reservationDate}
-                                onBoardSelected={handleBoardSelected}
+                                onReservationDateChanged={
+                                    setReservationDate
+                                }
+                                homeTeam={
+                                    selectedMatch?.homeRegistration.registrationName ?? ""
+                                }
+                                awayTeam={
+                                    selectedMatch?.awayRegistration.registrationName ?? ""
+                                }
+                                venueLogo={
+                                    selectedMatch?.venue.logo ?? ""
+                                }
+                                onBoardSelected={
+                                    handleBoardSelected
+                                }
+
+                                venueStatus={venueStatus}
                             />
                         )
                     }
