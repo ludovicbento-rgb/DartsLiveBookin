@@ -28,6 +28,10 @@ interface Props {
         match: MyMatch,
     ) => void;
 
+    onReservation(
+        match: MyMatch,
+    ): void;
+
 }
 
 export function MatchCard({
@@ -35,6 +39,8 @@ export function MatchCard({
     match,
 
     onPlan,
+
+    onReservation,
 
 }: Props) {
 
@@ -226,9 +232,11 @@ export function MatchCard({
                             ? (
 
                                 <Button
+
                                     startIcon={
                                         <CalendarMonthIcon />
                                     }
+
                                     variant="contained"
 
                                     fullWidth
@@ -249,28 +257,23 @@ export function MatchCard({
 
                                 <Button
 
+                                    variant="outlined"
+
                                     fullWidth
 
-                                    disabled
+                                    onClick={() =>
+                                        onReservation(match)
+                                    }
 
                                 >
 
-                                    {
-
-                                        match.status === "PENDING"
-
-                                            ? "En attente de validation"
-
-                                            : "Déjà planifié"
-
-                                    }
+                                    Voir la réservation
 
                                 </Button>
 
                             )
 
                     }
-
                 </Stack>
 
             </CardContent>

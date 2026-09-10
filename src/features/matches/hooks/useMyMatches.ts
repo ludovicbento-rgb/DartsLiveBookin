@@ -27,29 +27,30 @@ export function useMyMatches(
     ] =
         useState(true);
 
-    useEffect(() => {
+    async function load() {
 
-        async function load() {
-            console.log("useEffect lancé");
-            if (!playerId) {
-
-                setLoading(false);
-
-                return;
-
-            }
-            console.log("Appel de loadMyMatches");
-            const result =
-                await loadMyMatches(
-                    playerId,
-
-                );
-
-            setMatches(result);
+        if (!playerId) {
 
             setLoading(false);
 
+            return;
+
         }
+
+        setLoading(true);
+
+        const result =
+            await loadMyMatches(
+                playerId,
+            );
+
+        setMatches(result);
+
+        setLoading(false);
+
+    }
+
+    useEffect(() => {
 
         load();
 
@@ -61,6 +62,8 @@ export function useMyMatches(
 
         loading,
 
+        reload: load,
+
     };
 
-}
+} 

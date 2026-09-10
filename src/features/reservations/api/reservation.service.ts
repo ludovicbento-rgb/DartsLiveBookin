@@ -8,6 +8,8 @@ export interface ReservationResult {
 
     message: string;
 
+    reservationId: string;
+
 }
 
 export async function createReservation(
@@ -16,7 +18,10 @@ export async function createReservation(
 
 ): Promise<ReservationResult> {
 
-    await createReservationCommand(command);
+    const reservationId =
+        await createReservationCommand(
+            command,
+        );
 
     return {
 
@@ -24,6 +29,8 @@ export async function createReservation(
 
         message:
             "Votre réservation a été envoyée au gérant.",
+
+        reservationId,
 
     };
 

@@ -13,6 +13,8 @@ import {
 import PlanningConfirmDrawer
     from "../components/PlanningConfirmDrawer";
 
+import CancelReservationDialog from "../../reservations/components/CancelReservationDialog"
+
 import { useParams } from "react-router-dom";
 import {
     useSearchParams,
@@ -118,8 +120,15 @@ export function PlanningPage() {
                             board.status === "AVAILABLE",
                     ).length
                 : 0,
-
     });
+
+    const [
+
+        cancelDialogOpen,
+
+        setCancelDialogOpen,
+
+    ] = useState(false);
 
     function handleBoardSelected(
         slot: TimeSlot,
@@ -242,6 +251,32 @@ export function PlanningPage() {
                         onNotesChanged={dialog.updateNotes}
                         onClose={dialog.close}
                         onConfirm={confirmReservation}
+                        canCancel={false}
+
+                        onCancel={() => { }}
+                    />
+
+                    <CancelReservationDialog
+
+                        open={cancelDialogOpen}
+
+                        loading={false}
+
+                        onClose={() =>
+
+                            setCancelDialogOpen(false)
+
+                        }
+
+                        onConfirm={() => {
+
+                            console.log(
+
+                                "Reservation cancelled",
+
+                            );
+
+                        }}
 
                     />
 

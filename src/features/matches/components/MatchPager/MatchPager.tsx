@@ -15,13 +15,19 @@ import { useState } from "react";
 
 import { MatchCard } from "../MatchCard";
 
-import type { MyMatch } from "../../model/my-match";
+import type {
+    MyMatch,
+} from "../../model/my-match";
 
 interface Props {
 
     matches: MyMatch[];
 
     onPlan(
+        match: MyMatch,
+    ): void;
+
+    onReservation(
         match: MyMatch,
     ): void;
 
@@ -33,6 +39,8 @@ export function MatchPager({
 
     onPlan,
 
+    onReservation,
+
 }: Props) {
 
     const [
@@ -42,12 +50,6 @@ export function MatchPager({
         setCurrent,
 
     ] = useState(0);
-
-    if (matches.length === 0) {
-
-        return null;
-
-    }
 
     const [
 
@@ -59,20 +61,35 @@ export function MatchPager({
         "left",
     );
 
-    const match =
-        matches[current];
-
     const [
+
         touchStart,
+
         setTouchStart,
-    ] = useState<number | null>(null);
+
+    ] = useState<number | null>(
+        null,
+    );
 
     const [
+
         touchEnd,
+
         setTouchEnd,
-    ] = useState<number | null>(null);
+
+    ] = useState<number | null>(
+        null,
+    );
 
     const MIN_SWIPE_DISTANCE = 60;
+
+    if (matches.length === 0) {
+
+        return null;
+
+    }
+
+    const match = matches[current];
 
     function previous() {
 
@@ -187,12 +204,19 @@ export function MatchPager({
             <Stack spacing={2}>
 
                 <Stack
+
                     direction="row"
+
                     sx={{
+
                         justifyContent: "space-between",
+
                         alignItems: "center",
+
                         px: 1,
+
                     }}
+
                 >
 
                     <IconButton
@@ -230,24 +254,39 @@ export function MatchPager({
                     </IconButton>
 
                     <Stack
+
                         spacing={0.5}
+
                         sx={{
+
                             alignItems: "center",
+
                         }}
+
                     >
 
                         <Typography
+
                             variant="h5"
+
                             sx={{
+
                                 fontWeight: 700,
+
                             }}
+
                         >
+
                             {`Journée ${match.matchDayNumber}`}
+
                         </Typography>
 
                         <Typography
+
                             variant="caption"
+
                             color="text.secondary"
+
                         >
 
                             {current + 1} / {matches.length}
@@ -261,8 +300,11 @@ export function MatchPager({
                         onClick={next}
 
                         disabled={
+
                             current ===
+
                             matches.length - 1
+
                         }
 
                         sx={{
@@ -302,11 +344,17 @@ export function MatchPager({
                 </Stack>
 
                 <Stack
+
                     direction="row"
+
                     spacing={1}
+
                     sx={{
+
                         justifyContent: "center",
+
                     }}
+
                 >
 
                     {
@@ -321,7 +369,13 @@ export function MatchPager({
 
                                     sx={{
 
-                                        width: current === index ? 32 : 14,
+                                        width:
+
+                                            current === index
+
+                                                ? 32
+
+                                                : 14,
 
                                         height: 14,
 
@@ -354,7 +408,9 @@ export function MatchPager({
                                     }}
 
                                     onClick={() =>
+
                                         setCurrent(index)
+
                                     }
 
                                 />
@@ -391,6 +447,8 @@ export function MatchPager({
 
                             onPlan={onPlan}
 
+                            onReservation={onReservation}
+
                         />
 
                     </Box>
@@ -404,3 +462,5 @@ export function MatchPager({
     );
 
 }
+
+export default MatchPager;

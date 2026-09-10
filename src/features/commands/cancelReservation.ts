@@ -3,53 +3,67 @@ import {
 } from "@/features/authentication/api/auth.service";
 
 import {
-    detachReservation,
-} from "@/entities/match";
-
-import {
-    updateReservation,
+    cancelReservation,
 } from "@/entities/reservation";
 
 import {
-    serverTimestamp,
-} from "firebase/firestore";
+    getReservation,
+} from "@/entities/reservation";
+
+import {
+    detachReservation,
+} from "@/entities/match";
 
 export async function cancelReservationCommand(
+
     reservationId: string,
-    matchId: string,
+
 ): Promise<void> {
 
     const currentUser =
+
         authService.getCurrentUser();
 
     if (!currentUser) {
 
         throw new Error(
+
             "USER_NOT_CONNECTED",
+
         );
 
     }
 
-    await updateReservation(
+    const reservation =
+
+        await getReservation(
+
+            reservationId,
+
+        );
+
+    if (!reservation) {
+
+        throw new Error(
+
+            "RESERVATION_NOT_FOUND",
+
+        );
+
+    }
+
+    await cancelReservation(
 
         reservationId,
 
-        {
-
-            status: "CANCELLED",
-
-            cancelledByUserId:
-                currentUser.uid,
-
-            cancelledAt:
-                serverTimestamp(),
-
-        },
+        currentUser.uid,
 
     );
 
     await detachReservation(
-        matchId,
+
+        reservation.matchId,
+
     );
 
 }

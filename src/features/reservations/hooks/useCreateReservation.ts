@@ -2,10 +2,8 @@ import { useState } from "react";
 
 import {
 
-    createReservation,
-
     type ReservationResult,
-
+    createReservation,
 } from "../api/reservation.service";
 
 import type {
@@ -13,6 +11,7 @@ import type {
     ReservationCommand,
 
 } from "../model/reservation-command";
+
 
 export function useCreateReservation() {
 
@@ -42,7 +41,9 @@ export function useCreateReservation() {
                     command,
                 );
 
-            setResult(reservation);
+            setResult(
+                reservation,
+            );
 
             return reservation;
 

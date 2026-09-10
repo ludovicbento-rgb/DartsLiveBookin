@@ -19,7 +19,7 @@ import {
 } from "@/features/commands/match-planning.service";
 export async function createReservationCommand(
     command: ReservationCommand,
-): Promise<void> {
+): Promise<string> {
 
     const currentUser =
         authService.getCurrentUser();
@@ -81,5 +81,7 @@ export async function createReservationCommand(
         reservationId,
 
     );
+
+    return reservationId;
 
 }

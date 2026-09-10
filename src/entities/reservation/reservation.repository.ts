@@ -34,6 +34,34 @@ import type {
     Reservation,
 } from "./reservation.types";
 
+export async function cancelReservation(
+
+    reservationId: string,
+
+    cancelledByUserId: string,
+
+): Promise<void> {
+
+    await updateReservation(
+
+        reservationId,
+
+        {
+
+            status: "CANCELLED",
+
+            cancelledAt:
+
+                serverTimestamp(),
+
+            cancelledByUserId,
+
+        },
+
+    );
+
+}
+
 export async function createReservation(
     request: CreateReservationRequest,
 ): Promise<string> {

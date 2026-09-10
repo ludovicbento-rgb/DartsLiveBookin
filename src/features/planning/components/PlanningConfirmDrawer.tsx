@@ -40,6 +40,10 @@ interface Props {
 
     onConfirm: () => void;
 
+    canCancel: boolean;
+
+    onCancel(): void;
+
 }
 
 export function PlanningConfirmDrawer({
@@ -69,6 +73,10 @@ export function PlanningConfirmDrawer({
     onClose,
 
     onConfirm,
+
+    canCancel,
+
+    onCancel,
 
 }: Props) {
 
@@ -202,6 +210,30 @@ export function PlanningConfirmDrawer({
                             }
 
                         </Button>
+
+                        {
+
+                            canCancel && (
+
+                                <Button
+
+                                    fullWidth
+
+                                    color="error"
+
+                                    variant="outlined"
+
+                                    onClick={onCancel}
+
+                                >
+
+                                    ❌ Annuler la réservation
+
+                                </Button>
+
+                            )
+
+                        }
 
                         <Button
 

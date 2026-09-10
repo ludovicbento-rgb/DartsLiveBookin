@@ -27,6 +27,14 @@ import {
     Timestamp,
 } from "firebase/firestore";
 
+import {
+    attachReservation,
+} from "@/entities/match";
+
+import {
+    getReservationPermissions,
+} from "@/features/reservations/api/reservation-permissions.service";
+
 interface OpenSelectionParams {
 
     venueId: string;
@@ -67,27 +75,36 @@ export function usePlanningReservation(
 
         try {
 
-            await reservation.create({
+            const reservationResult =
+                await reservation.create({
 
-                matchId:
-                    dialog.selection.matchId,
+                    matchId:
+                        dialog.selection.matchId,
 
-                venueId:
-                    dialog.selection.venueId,
+                    venueId:
+                        dialog.selection.venueId,
 
-                boardNumber:
-                    dialog.selection.boardNumber,
+                    boardNumber:
+                        dialog.selection.boardNumber,
 
-                plannedStartAt:
-                    dialog.selection.plannedStartAt,
+                    plannedStartAt:
+                        dialog.selection.plannedStartAt,
 
-                plannedEndAt:
-                    dialog.selection.plannedEndAt,
+                    plannedEndAt:
+                        dialog.selection.plannedEndAt,
 
-                notes:
-                    dialog.selection.notes,
+                    notes:
+                        dialog.selection.notes,
 
-            });
+                });
+
+            await attachReservation(
+
+                dialog.selection.matchId,
+
+                reservationResult.reservationId,
+
+            );
 
             dialog.close();
 
@@ -138,6 +155,71 @@ export function usePlanningReservation(
         }
 
     }
+
+    function getPermissions() {
+
+        if (!dialog.selection) {
+
+            return {
+
+                canCancel: false,
+
+            };
+
+        }
+
+        return getReservationPermissions({
+
+            reservation: {
+
+                id: "",
+
+                matchId:
+                    dialog.selection.matchId,
+
+                boardNumber:
+                    dialog.selection.boardNumber,
+
+                plannedStartAt:
+                    dialog.selection.plannedStartAt,
+
+                plannedEndAt:
+                    dialog.selection.plannedEndAt,
+
+                status: "PENDING",
+
+                createdByUserId: "",
+
+                createdAt:
+                    dialog.selection.plannedStartAt,
+
+                validatedByUserId: null,
+
+                validatedAt: null,
+
+                rejectedByUserId: null,
+
+                rejectedAt: null,
+
+                cancelledByUserId: null,
+
+                cancelledAt: null,
+
+                validationComment: "",
+
+                notes:
+                    dialog.selection.notes,
+
+            },
+
+            isPlayerOfMatch: true,
+
+        });
+
+    }
+
+    const permissions = getPermissions();
+
     function openSelection({
 
         venueId,
@@ -246,6 +328,8 @@ export function usePlanningReservation(
         dialog,
 
         reservation,
+
+        permissions,
 
         confirmReservation,
 
