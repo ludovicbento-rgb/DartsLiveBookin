@@ -33,8 +33,6 @@ export function useReservationValidation() {
 
                 reservation.reservationId,
 
-                reservation.matchId,
-
             );
 
         }
@@ -61,8 +59,6 @@ export function useReservationValidation() {
             await rejectReservationCommand(
 
                 reservation.reservationId,
-
-                reservation.matchId,
 
                 reason,
 

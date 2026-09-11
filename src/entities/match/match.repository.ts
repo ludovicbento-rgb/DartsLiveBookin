@@ -20,6 +20,10 @@ import type {
     MatchStatus,
 } from "./match.types";
 
+import {
+    onSnapshot,
+} from "firebase/firestore";
+
 export async function getMatch(
     matchId: string,
 ): Promise<Match | null> {
@@ -87,6 +91,116 @@ export async function getMatchesByStatus(
 
 }
 
+
+export function subscribeMatchesByStatus(
+
+    status: MatchStatus,
+
+    callback: (
+        matches: Match[],
+    ) => void,
+
+): () => void {
+
+    const q = query(
+
+        matchesCollection,
+
+        where(
+
+            "status",
+
+            "==",
+
+            status,
+
+        ),
+
+    );
+
+    return onSnapshot(
+
+        q,
+
+        snapshot => {
+
+            callback(
+
+                snapshot.docs.map(
+
+                    mapMatch,
+
+                ),
+
+            );
+
+        },
+
+    );
+
+}
+export function subscribePendingMatches(
+
+    callback: (
+        matches: Match[],
+    ) => void,
+
+): () => void {
+
+    const q = query(
+
+        matchesCollection,
+
+        where(
+
+            "status",
+
+            "==",
+
+            "PENDING",
+
+        ),
+
+    );
+
+    return onSnapshot(
+
+        q,
+
+        snapshot => {
+
+            callback(
+
+                snapshot.docs.map(
+
+                    mapMatch,
+
+                ),
+
+            );
+
+        },
+
+    );
+
+}
+export function subscribePlannedMatches(
+
+    callback: (
+        matches: Match[],
+    ) => void,
+
+): () => void {
+
+    return subscribeMatchesByStatus(
+
+        "PLANNED",
+
+        callback,
+
+    );
+
+}
 export async function getMatchesToValidate(
 ): Promise<Match[]> {
 

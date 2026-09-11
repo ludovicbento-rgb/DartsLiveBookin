@@ -3,20 +3,18 @@ import {
 } from "@/features/authentication/api/auth.service";
 
 import {
-    validateMatch,
-} from "@/entities/match";
-
-import {
-    updateReservation,
+    getReservation,
+    validateReservation,
 } from "@/entities/reservation";
 
 import {
-    serverTimestamp,
-} from "firebase/firestore";
+    validateMatch,
+} from "@/entities/match";
 
 export async function validateReservationCommand(
+
     reservationId: string,
-    matchId: string,
+
 ): Promise<void> {
 
     const currentUser =
@@ -30,26 +28,31 @@ export async function validateReservationCommand(
 
     }
 
-    await updateReservation(
+    const reservation =
+        await getReservation(
+            reservationId,
+        );
+
+    if (!reservation) {
+
+        throw new Error(
+            "RESERVATION_NOT_FOUND",
+        );
+
+    }
+
+    await validateReservation(
 
         reservationId,
 
-        {
-
-            status: "CONFIRMED",
-
-            validatedByUserId:
-                currentUser.uid,
-
-            validatedAt:
-                serverTimestamp(),
-
-        },
+        currentUser.uid,
 
     );
 
     await validateMatch(
-        matchId,
+
+        reservation.matchId,
+
     );
 
 }

@@ -1,4 +1,5 @@
 import {
+    useCallback,
     useEffect,
     useState,
 } from "react";
@@ -18,16 +19,19 @@ export function usePendingReservations(
     const [
         reservations,
         setReservations,
-    ] = useState<
-        ReservationValidationItem[]
-    >([]);
+    ] = useState<ReservationValidationItem[]>([]);
 
     const [
         loading,
         setLoading,
     ] = useState(true);
 
-    useEffect(() => {
+    const [
+        error,
+        setError,
+    ] = useState<string | null>(null);
+
+    const load = useCallback(async () => {
 
         if (!managerUserId) {
 
@@ -39,55 +43,70 @@ export function usePendingReservations(
 
         }
 
-        let cancelled = false;
+        setLoading(true);
 
-        async function load() {
+        setError(null);
 
-            setLoading(true);
+        try {
 
-            try {
+            const result =
+                await loadPendingReservations(
+                    managerUserId,
+                );
 
-                const result =
-                    await loadPendingReservations(
-                        managerUserId,
-                    );
+            setReservations(result);
 
-                if (!cancelled) {
+        }
 
-                    setReservations(
-                        result,
-                    );
+        catch (e) {
 
-                }
+            if (e instanceof Error) {
+
+                setError(e.message);
 
             }
-            finally {
 
-                if (!cancelled) {
+            else {
 
-                    setLoading(false);
-
-                }
+                setError(
+                    "Impossible de charger les réservations.",
+                );
 
             }
 
         }
 
-        load();
+        finally {
 
-        return () => {
+            setLoading(false);
 
-            cancelled = true;
+        }
 
-        };
+    }, [
 
-    }, [managerUserId]);
+        managerUserId,
+
+    ]);
+
+    useEffect(() => {
+
+        void load();
+
+    }, [
+
+        load,
+
+    ]);
 
     return {
 
         reservations,
 
         loading,
+
+        error,
+
+        reload: load,
 
     };
 

@@ -20,7 +20,9 @@ export function useReservationValidation() {
     ] = useState(false);
 
     async function accept(
+
         reservation: ReservationValidationItem,
+
     ) {
 
         setLoading(true);
@@ -31,11 +33,10 @@ export function useReservationValidation() {
 
                 reservation.reservationId,
 
-                reservation.matchId,
-
             );
 
         }
+
         finally {
 
             setLoading(false);
@@ -45,6 +46,7 @@ export function useReservationValidation() {
     }
 
     async function reject(
+
         reservation: ReservationValidationItem,
 
         reason: string,
@@ -59,13 +61,12 @@ export function useReservationValidation() {
 
                 reservation.reservationId,
 
-                reservation.matchId,
-
                 reason,
 
             );
 
         }
+
         finally {
 
             setLoading(false);
@@ -73,7 +74,6 @@ export function useReservationValidation() {
         }
 
     }
-
     return {
 
         loading,

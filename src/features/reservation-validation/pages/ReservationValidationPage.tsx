@@ -17,6 +17,10 @@ import {
     ReservationValidationCard,
 } from "../components/ReservationValidationCard";
 
+import {
+    RejectReservationDrawer,
+} from "../components/RejectReservationDrawer";
+
 import type {
     ReservationValidationItem,
 } from "../model/reservation-validation-item";
@@ -33,6 +37,9 @@ export function ReservationValidationPage() {
         reservations,
 
         loading,
+
+        reload,
+
     } = usePendingReservations(
         profile?.id ?? "",
     );
@@ -45,29 +52,75 @@ export function ReservationValidationPage() {
         setSuccess,
     ] = useState(false);
 
+    const [
+
+        rejectDrawerOpen,
+
+        setRejectDrawerOpen,
+
+    ] = useState(false);
+
+    const [
+
+        selectedReservation,
+
+        setSelectedReservation,
+
+    ] = useState<ReservationValidationItem | null>(null);
+
+
+    const [
+
+        rejectReason,
+
+        setRejectReason,
+
+    ] = useState("");
+
     async function handleAccept(
+
         reservation: ReservationValidationItem,
+
     ) {
 
-        await validation.accept(
-            reservation,
-        );
+        try {
 
-        setSuccess(true);
+            await validation.accept(
+
+                reservation,
+
+            );
+
+            await reload();
+
+            setSuccess(true);
+
+        }
+
+        catch {
+
+            // PR suivante :
+            // Snackbar erreur
+
+        }
 
     }
 
-    async function handleReject(
+    function handleReject(
+
         reservation: ReservationValidationItem,
+
     ) {
 
-        // Nous ajouterons le motif
-        // dans la PR suivante.
+        setSelectedReservation(
 
-        await validation.reject(
             reservation,
-            "",
+
         );
+
+        setRejectReason("");
+
+        setRejectDrawerOpen(true);
 
     }
 
@@ -114,7 +167,7 @@ export function ReservationValidationPage() {
 
                     <PageTitle>
 
-                        Demandes de réservation
+                        Réservations à valider
 
                     </PageTitle>
 
@@ -132,9 +185,9 @@ export function ReservationValidationPage() {
 
                             reservations.length <= 1
 
-                                ? " demande en attente"
+                                ? " réservation à traiter"
 
-                                : " demandes en attente"
+                                : " réservations à traiter"
 
                         }
 
@@ -165,9 +218,7 @@ export function ReservationValidationPage() {
 
                                 <ReservationValidationCard
 
-                                    key={
-                                        reservation.reservationId
-                                    }
+                                    key={reservation.reservationId}
 
                                     reservation={reservation}
 
@@ -204,6 +255,67 @@ export function ReservationValidationPage() {
                     </Alert>
 
                 </Snackbar>
+
+                <RejectReservationDrawer
+
+                    open={rejectDrawerOpen}
+
+                    loading={validation.loading}
+
+                    reason={rejectReason}
+
+                    onReasonChange={setRejectReason}
+
+                    onClose={() => {
+
+                        setRejectDrawerOpen(false);
+
+                        setSelectedReservation(null);
+
+                        setRejectReason("");
+
+                    }}
+
+                    onConfirm={async () => {
+
+                        if (!selectedReservation) {
+
+                            return;
+
+                        }
+
+                        try {
+
+                            await validation.reject(
+
+                                selectedReservation,
+
+                                rejectReason,
+
+                            );
+
+                            setRejectDrawerOpen(false);
+
+                            setSelectedReservation(null);
+
+                            setRejectReason("");
+
+                            await reload();
+
+                            setSuccess(true);
+
+                        }
+
+                        catch {
+
+                            // TODO
+                            // Snackbar erreur
+
+                        }
+
+                    }}
+
+                />
 
             </AppCard>
 

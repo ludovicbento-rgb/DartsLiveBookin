@@ -8,9 +8,19 @@ import {
     Typography,
 } from "@mui/material";
 
+import CheckIcon
+    from "@mui/icons-material/Check";
+
 import type {
     ReservationValidationItem,
 } from "../model/reservation-validation-item";
+
+import {
+    formatReservationDate,
+} from "@/shared/utils/date";
+
+import CloseIcon
+    from "@mui/icons-material/Close";
 
 interface Props {
 
@@ -62,7 +72,7 @@ export function ReservationValidationCard({
                             variant="h6"
                         >
 
-                            {`J${reservation.matchDayNumber}`}
+                            {`Journée${reservation.matchDayNumber}`}
 
                         </Typography>
 
@@ -73,36 +83,6 @@ export function ReservationValidationCard({
                             label="En attente"
 
                         />
-
-                        {
-
-                            reservation.isHomeMatch
-
-                                ? (
-
-                                    <Chip
-
-                                        color="success"
-
-                                        label="🏠 Domicile"
-
-                                    />
-
-                                )
-
-                                : (
-
-                                    <Chip
-
-                                        color="info"
-
-                                        label="🚗 Déplacement"
-
-                                    />
-
-                                )
-
-                        }
 
                         <Chip
 
@@ -177,12 +157,50 @@ export function ReservationValidationCard({
 
                     <Typography>
 
-                        🕒 {
+                        {
+
+                            formatReservationDate(
+
+                                reservation.plannedStartAt.toDate(),
+
+                            )
+
+                        }
+
+                    </Typography>
+
+                    <Typography
+                        sx={{
+                            fontWeight: 600,
+                        }}
+                    >
+
+                        {
 
                             reservation.plannedStartAt
                                 .toDate()
-                                .toLocaleString(
+                                .toLocaleTimeString(
                                     "fr-FR",
+                                    {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    },
+                                )
+
+                        }
+
+                        {" → "}
+
+                        {
+
+                            reservation.plannedEndAt
+                                .toDate()
+                                .toLocaleTimeString(
+                                    "fr-FR",
+                                    {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    },
                                 )
 
                         }
@@ -238,17 +256,21 @@ export function ReservationValidationCard({
 
                             size="large"
 
+                            startIcon={<CheckIcon />}
+
                             disabled={loading}
 
                             onClick={() =>
+
                                 onAccept(
                                     reservation,
                                 )
+
                             }
 
                         >
 
-                            ✓ Accepter
+                            Valider
 
                         </Button>
 
@@ -262,17 +284,21 @@ export function ReservationValidationCard({
 
                             size="large"
 
+                            startIcon={<CloseIcon />}
+
                             disabled={loading}
 
                             onClick={() =>
+
                                 onReject(
                                     reservation,
                                 )
+
                             }
 
                         >
 
-                            ✕ Refuser
+                            Refuser
 
                         </Button>
 

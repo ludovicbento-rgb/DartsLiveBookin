@@ -422,3 +422,59 @@ export function subscribeReservations(
     );
 
 }
+
+export async function validateReservation(
+
+    reservationId: string,
+
+    validatedByUserId: string,
+
+): Promise<void> {
+
+    await updateReservation(
+
+        reservationId,
+
+        {
+
+            status: "CONFIRMED",
+
+            validatedByUserId,
+
+            validatedAt: serverTimestamp(),
+
+        },
+
+    );
+
+}
+
+export async function rejectReservation(
+
+    reservationId: string,
+
+    rejectedByUserId: string,
+
+    reason: string,
+
+): Promise<void> {
+
+    await updateReservation(
+
+        reservationId,
+
+        {
+
+            status: "REJECTED",
+
+            rejectedByUserId,
+
+            rejectedAt: serverTimestamp(),
+
+            validationComment: reason,
+
+        },
+
+    );
+
+}

@@ -3,21 +3,20 @@ import {
 } from "@/features/authentication/api/auth.service";
 
 import {
-    detachReservation,
-} from "@/entities/match";
-
-import {
-    updateReservation,
+    getReservation,
+    rejectReservation,
 } from "@/entities/reservation";
 
 import {
-    serverTimestamp,
-} from "firebase/firestore";
+    detachReservation,
+} from "@/entities/match";
 
 export async function rejectReservationCommand(
+
     reservationId: string,
-    matchId: string,
-    comment: string,
+
+    reason: string,
+
 ): Promise<void> {
 
     const currentUser =
@@ -31,29 +30,33 @@ export async function rejectReservationCommand(
 
     }
 
-    await updateReservation(
+    const reservation =
+        await getReservation(
+            reservationId,
+        );
+
+    if (!reservation) {
+
+        throw new Error(
+            "RESERVATION_NOT_FOUND",
+        );
+
+    }
+
+    await rejectReservation(
 
         reservationId,
 
-        {
+        currentUser.uid,
 
-            status: "REJECTED",
-
-            rejectedByUserId:
-                currentUser.uid,
-
-            rejectedAt:
-                serverTimestamp(),
-
-            validationComment:
-                comment,
-
-        },
+        reason,
 
     );
 
     await detachReservation(
-        matchId,
+
+        reservation.matchId,
+
     );
 
 }
