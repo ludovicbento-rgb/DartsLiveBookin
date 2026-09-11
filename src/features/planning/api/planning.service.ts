@@ -88,7 +88,7 @@ export function createPlanning(
 
         closures,
 
-        rules: [],
+        rules: data.rules,
 
         reservationDate,
 

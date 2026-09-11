@@ -29,11 +29,21 @@ import type {
 import {
     getVenueClosuresByVenue,
 } from "@/entities/venue-closure";
+
+import type {
+    AvailabilityRule,
+} from "@/entities/availability-rule";
+
+import {
+    getAvailabilityRulesByVenue,
+} from "@/entities/availability-rule";
+
 export interface PlanningData {
     venue: Venue;
     schedules: VenueSchedule[];
     reservations: Reservation[];
     closures: VenueClosure[];
+    rules: AvailabilityRule[];
 }
 
 export async function loadPlanningData(
@@ -45,19 +55,42 @@ export async function loadPlanningData(
 
     if (!venue) { throw new Error("VENUE_NOT_FOUND"); }
 
-    const schedules = await getVenueSchedules(venueId);
+    const [
 
-    const reservations = await getReservationsByVenueAndDay(
-        venueId,
-        reservationDate,
-    );
+        schedules,
 
-    const closures = await getVenueClosuresByVenue(venueId,);
+        reservations,
+
+        closures,
+
+        rules,
+
+    ] = await Promise.all([
+
+        getVenueSchedules(
+            venueId,
+        ),
+
+        getReservationsByVenueAndDay(
+            venueId,
+            reservationDate,
+        ),
+
+        getVenueClosuresByVenue(
+            venueId,
+        ),
+
+        getAvailabilityRulesByVenue(
+            venueId,
+        ),
+
+    ]);
 
     return {
         venue,
         schedules,
         reservations,
         closures,
+        rules,
     };
 }
