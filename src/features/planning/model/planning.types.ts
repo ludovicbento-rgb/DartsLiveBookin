@@ -1,3 +1,7 @@
+import type {
+    AvailabilityDecision,
+} from "@/core/availability-engine";
+
 export type BoardStatus =
     | "AVAILABLE"
     | "PENDING"
@@ -67,5 +71,13 @@ export interface VenuePlanning {
      * Planning de la journée.
      */
     slots: TimeSlot[];
+
+    availability: VenueAvailability;
+
+}
+
+export interface VenueAvailability {
+
+    decision: AvailabilityDecision;
 
 }

@@ -60,13 +60,17 @@ export function MatchCard({
 
         match.status === "NOT_PLANNED"
 
-            ? "À planifier"
+            ? match.lastReservation?.status === "REJECTED"
+
+                ? "À replanifier"
+
+                : "À planifier"
 
             : match.status === "PENDING"
 
                 ? "En attente"
 
-                : "Planifié";
+                : "Planifié"
 
     return (
 
@@ -231,25 +235,90 @@ export function MatchCard({
 
                             ? (
 
-                                <Button
+                                match.lastReservation?.status === "REJECTED"
 
-                                    startIcon={
-                                        <CalendarMonthIcon />
-                                    }
+                                    ? (
 
-                                    variant="contained"
+                                        <Stack spacing={2}>
 
-                                    fullWidth
+                                            <Alert severity="error">
 
-                                    onClick={() =>
-                                        onPlan(match)
-                                    }
+                                                <Typography
+                                                    sx={{
+                                                        fontWeight: 700,
+                                                    }}
+                                                >
 
-                                >
+                                                    Réservation refusée
 
-                                    Planifier
+                                                </Typography>
 
-                                </Button>
+                                                <Typography
+                                                    variant="body2"
+                                                >
+
+                                                    {
+
+                                                        match.lastReservation
+                                                            .validationComment
+
+                                                    }
+
+                                                </Typography>
+
+                                            </Alert>
+
+                                            <Button
+
+                                                startIcon={
+                                                    <CalendarMonthIcon />
+                                                }
+
+                                                variant="contained"
+
+                                                fullWidth
+
+                                                onClick={() =>
+
+                                                    onPlan(match)
+
+                                                }
+
+                                            >
+
+                                                Planifier à nouveau
+
+                                            </Button>
+
+                                        </Stack>
+
+                                    )
+
+                                    : (
+
+                                        <Button
+
+                                            startIcon={
+                                                <CalendarMonthIcon />
+                                            }
+
+                                            variant="contained"
+
+                                            fullWidth
+
+                                            onClick={() =>
+
+                                                onPlan(match)
+
+                                            }
+
+                                        >
+
+                                            Planifier
+
+                                        </Button>
+
+                                    )
 
                             )
 
@@ -262,7 +331,9 @@ export function MatchCard({
                                     fullWidth
 
                                     onClick={() =>
+
                                         onReservation(match)
+
                                     }
 
                                 >

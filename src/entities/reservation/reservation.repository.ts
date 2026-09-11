@@ -12,6 +12,11 @@ import {
 } from "firebase/firestore";
 
 import {
+    limit,
+    orderBy,
+} from "firebase/firestore";
+
+import {
     reservationDocument,
 } from "./reservation.firestore";
 
@@ -476,5 +481,59 @@ export async function rejectReservation(
         },
 
     );
+
+}
+
+export async function getLastReservationByMatch(
+
+    matchId: string,
+
+): Promise<Reservation | null> {
+
+    const q = query(
+
+        reservationsCollection,
+
+        where(
+
+            "matchId",
+
+            "==",
+
+            matchId,
+
+        ),
+
+        orderBy(
+
+            "createdAt",
+
+            "desc",
+
+        ),
+
+        limit(1),
+
+    );
+
+    const snapshot =
+        await getDocs(q);
+
+    if (snapshot.empty) {
+
+        return null;
+
+    }
+
+    return {
+
+        id: snapshot.docs[0].id,
+
+        ...(snapshot.docs[0].data() as Omit<
+            Reservation,
+            "id"
+        >),
+
+    };
 
 }

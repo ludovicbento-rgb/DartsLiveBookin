@@ -16,6 +16,7 @@ import type {
 
 import {
     getReservation,
+    getLastReservationByMatch,
 } from "@/entities/reservation";
 
 export async function loadMyMatches(
@@ -49,15 +50,20 @@ export async function loadMyMatches(
                 );
 
             const reservation =
+
                 match.plannedReservationId
 
                     ? await getReservation(
+
                         match.plannedReservationId,
+
                     )
 
-                    : null;
+                    : await getLastReservationByMatch(
 
-            console.log("Logo :", context.venue.logo);
+                        match.id,
+
+                    );
 
             result.push({
 
@@ -102,6 +108,23 @@ export async function loadMyMatches(
 
                 notes:
                     reservation?.notes ?? "",
+
+                lastReservation:
+
+                    reservation
+
+                        ? {
+
+                            id: reservation.id,
+
+                            status: reservation.status,
+
+                            validationComment:
+                                reservation.validationComment,
+
+                        }
+
+                        : null,
 
             });
 

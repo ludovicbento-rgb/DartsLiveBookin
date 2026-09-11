@@ -8,6 +8,11 @@ import type {
     BoardSlot,
 } from "@/features/planning/model/planning.types";
 
+import type {
+    AvailabilityDecision,
+} from "@/core/availability-engine";
+
+
 interface PlanningMapperInput {
 
     venueId: string;
@@ -15,6 +20,8 @@ interface PlanningMapperInput {
     venueName: string;
 
     planning: PlanningBoard[];
+
+    availability: AvailabilityDecision;
 
 }
 
@@ -25,6 +32,8 @@ export function mapPlanning({
     venueName,
 
     planning,
+
+    availability,
 
 }: PlanningMapperInput): VenuePlanning {
 
@@ -99,6 +108,14 @@ export function mapPlanning({
             Array.from(
                 slotsMap.values(),
             ),
+
+        availability: {
+
+            decision:
+
+                availability,
+
+        },
 
     };
 

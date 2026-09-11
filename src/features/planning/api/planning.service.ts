@@ -30,11 +30,21 @@ import type {
     VenuePlanning,
 } from "../model/planning.types";
 
+import type {
+    AvailabilityDecision,
+} from "@/core/availability-engine";
+
 export interface PlanningServiceResult {
 
     planning: VenuePlanning;
 
-    suggestion: ReturnType<typeof findBestSlot>;
+    suggestion:
+
+    ReturnType<typeof findBestSlot>
+
+    | null;
+
+    availability: AvailabilityDecision;
 
 }
 
@@ -68,22 +78,38 @@ export function createPlanning(
             mapAvailabilityClosure,
 
         );
-    const planningBoards = buildAvailability({
+    const availability = buildAvailability({
+
         openingHours,
+
         durationMinutes: 90,
+
         reservations,
+
         closures,
+
+        rules: [],
+
         reservationDate,
+
     });
+
+    const planningBoards =
+        availability.planning;
 
     const suggestion =
 
-        findBestSlot({
+        availability.available
 
-            planning:
-                planningBoards,
+            ? findBestSlot({
 
-        });
+                planning:
+
+                    planningBoards,
+
+            })
+
+            : null;
 
     const planning =
 
@@ -98,13 +124,17 @@ export function createPlanning(
             planning:
                 planningBoards,
 
-        });
+            availability,
+
+        })
 
     return {
 
         planning,
 
         suggestion,
+
+        availability,
 
     };
 

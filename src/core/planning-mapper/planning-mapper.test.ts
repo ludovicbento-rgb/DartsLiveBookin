@@ -86,6 +86,20 @@ describe(
 
                     ],
 
+                    availability: {
+
+                        available: true,
+
+                        planning: [],
+
+                        reason: "OPEN",
+
+                        rule: null,
+
+                        closure: null,
+
+                    },
+
                 });
 
                 expect(

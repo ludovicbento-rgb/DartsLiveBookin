@@ -2,6 +2,10 @@ import type {
     Timestamp,
 } from "firebase/firestore";
 
+import type {
+    ReservationStatus,
+} from "@/entities/reservation";
+
 export interface MyMatch {
 
     matchId: string;
@@ -34,5 +38,17 @@ export interface MyMatch {
     | "PLANNED";
 
     notes: string;
+
+    lastReservation: MyMatchReservationInfo | null;
+
+}
+
+export interface MyMatchReservationInfo {
+
+    id: string | null;
+
+    status: ReservationStatus | null;
+
+    validationComment: string | null;
 
 }
