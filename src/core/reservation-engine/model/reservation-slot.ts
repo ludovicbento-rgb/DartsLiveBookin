@@ -1,3 +1,15 @@
+import type {
+    AvailabilityRuleType,
+} from "@/entities/availability-rule";
+
+export type ReservationSlotStatus =
+
+    | "AVAILABLE"
+
+    | "RESERVED"
+
+    | "BLOCKED";
+
 export interface ReservationSlot {
 
     boardNumber: number;
@@ -6,6 +18,14 @@ export interface ReservationSlot {
 
     endTime: string;
 
-    reserved: boolean;
+    status: ReservationSlotStatus;
+
+    reservationId?: string;
+
+    blockType?: AvailabilityRuleType;
+
+    blockTitle?: string;
+
+    blockDescription?: string;
 
 }

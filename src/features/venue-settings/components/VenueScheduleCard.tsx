@@ -7,6 +7,7 @@ import {
     Divider,
     Stack,
     Typography,
+    Tooltip,
 } from "@mui/material";
 
 import type {
@@ -167,16 +168,77 @@ export function VenueScheduleCard({
                                                             >
                                                                 {
                                                                     board.slots.map(slot => (
-                                                                        <Chip
-                                                                            key={`${slot.boardNumber}-${slot.startTime}`}
-                                                                            size="small"
-                                                                            color={
-                                                                                slot.reserved
-                                                                                    ? "error"
-                                                                                    : "success"
+                                                                        <Tooltip
+
+                                                                            title={
+
+                                                                                slot.status === "BLOCKED"
+
+                                                                                    ? (
+
+                                                                                        slot.blockDescription
+
+                                                                                        ??
+
+                                                                                        slot.blockTitle
+
+                                                                                    )
+
+                                                                                    : ""
+
                                                                             }
-                                                                            label={`${slot.startTime} → ${slot.endTime}`}
-                                                                        />
+
+                                                                        >
+                                                                            <Chip
+
+                                                                                key={`${slot.boardNumber}-${slot.startTime}`}
+
+                                                                                size="small"
+
+                                                                                color={
+
+                                                                                    slot.status === "AVAILABLE"
+
+                                                                                        ? "success"
+
+                                                                                        : slot.status === "RESERVED"
+
+                                                                                            ? "error"
+
+                                                                                            : "warning"
+
+                                                                                }
+
+                                                                                variant={
+
+                                                                                    slot.status === "AVAILABLE"
+
+                                                                                        ? "outlined"
+
+                                                                                        : "filled"
+
+                                                                                }
+
+                                                                                label={
+
+                                                                                    slot.status === "BLOCKED"
+
+                                                                                        ? (
+
+                                                                                            slot.blockTitle
+
+                                                                                            ??
+
+                                                                                            "Indisponible"
+
+                                                                                        )
+
+                                                                                        : `${slot.startTime} → ${slot.endTime}`
+
+                                                                                }
+
+                                                                            />
+                                                                        </Tooltip>
                                                                     ))
                                                                 }
                                                             </Stack>

@@ -60,7 +60,31 @@ describe("ReservationEngine", () => {
 
     });
 
-    it("should mark one slot as reserved", () => {
+    it("should create available slots by default", () => {
+
+        const planning = buildPlanning(
+
+            openingHours,
+
+            90,
+
+            [],
+
+        );
+
+        expect(
+
+            planning[0]
+
+                .slots[0]
+
+                .status,
+
+        ).toBe("AVAILABLE");
+
+    });
+
+    it("should mark one slot as RESERVED", () => {
 
         const reservations: Reservation[] = [
 
@@ -87,14 +111,10 @@ describe("ReservationEngine", () => {
         );
 
         expect(
-
             planning[0]
-
                 .slots[1]
-
-                .reserved,
-
-        ).toBe(true);
+                .status,
+        ).toBe("RESERVED");
 
     });
 
@@ -125,18 +145,14 @@ describe("ReservationEngine", () => {
         );
 
         expect(
-
             planning[0]
-
                 .slots[1]
-
-                .reserved,
-
-        ).toBe(false);
+                .status,
+        ).toBe("AVAILABLE");
 
     });
 
-    it("should keep free slots available", () => {
+    it("should keep free slots AVAILABLE", () => {
 
         const planning = buildPlanning(
 
@@ -153,15 +169,11 @@ describe("ReservationEngine", () => {
             planning
 
                 .flatMap(
-
                     board => board.slots,
-
                 )
 
                 .every(
-
-                    slot => !slot.reserved,
-
+                    slot => slot.status === "AVAILABLE",
                 ),
 
         ).toBe(true);

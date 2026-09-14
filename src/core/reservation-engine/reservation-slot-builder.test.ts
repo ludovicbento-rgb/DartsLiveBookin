@@ -37,21 +37,21 @@ describe("ReservationSlotBuilder", () => {
                 boardNumber: 1,
                 startTime: "18:00",
                 endTime: "19:30",
-                reserved: false,
+                status: "AVAILABLE",
             },
 
             {
                 boardNumber: 1,
                 startTime: "19:30",
                 endTime: "21:00",
-                reserved: false,
+                status: "AVAILABLE",
             },
 
             {
                 boardNumber: 1,
                 startTime: "21:00",
                 endTime: "22:30",
-                reserved: false,
+                status: "AVAILABLE",
             },
 
         ]);

@@ -3,9 +3,14 @@ import type {
 } from "@/core/availability-engine";
 
 export type BoardStatus =
+
     | "AVAILABLE"
+
     | "PENDING"
-    | "CONFIRMED";
+
+    | "CONFIRMED"
+
+    | "BLOCKED";
 
 export interface BoardSlot {
 

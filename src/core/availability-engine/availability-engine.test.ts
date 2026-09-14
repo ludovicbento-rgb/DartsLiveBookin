@@ -189,7 +189,7 @@ describe(
 
                 expect(
                     availability.available,
-                ).toBe(false);
+                ).toBe(true);
 
                 expect(
                     availability.reason,
@@ -200,8 +200,26 @@ describe(
                 ).not.toBeNull();
 
                 expect(
-                    availability.planning,
-                ).toEqual([]);
+                    availability.planning.length,
+                ).toBeGreaterThan(0);
+
+                expect(
+
+                    availability.planning
+
+                        .some(board =>
+
+                            board.slots.some(
+
+                                slot =>
+
+                                    slot.status === "BLOCKED",
+
+                            ),
+
+                        ),
+
+                ).toBe(true);
 
             },
 

@@ -41,7 +41,7 @@ export function buildReservationSlots(
                     current + durationMinutes,
                 ),
 
-                reserved: false,
+                status: "AVAILABLE",
 
             });
 

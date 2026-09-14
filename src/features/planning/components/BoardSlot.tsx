@@ -59,17 +59,35 @@ export function BoardSlot({
 
                 }
 
-                : {
+                : board.status === "CONFIRMED"
 
-                    label: "Réservé",
+                    ? {
 
-                    icon: "🔴",
+                        label: "Réservé",
 
-                    border: "error.main",
+                        icon: "🔴",
 
-                    background: "error.50",
+                        border: "error.main",
 
-                };
+                        background: "error.50",
+
+                    }
+
+                    : {
+
+                        label:
+
+                            board.label ??
+
+                            "Indisponible",
+
+                        icon: "⛔",
+
+                        border: "grey.500",
+
+                        background: "grey.100",
+
+                    };
 
     return (
 
@@ -94,19 +112,39 @@ export function BoardSlot({
         >
 
             <CardActionArea
+
                 disabled={!clickable}
+
                 onClick={() => {
-                    console.log("CLICK", board);
+
+                    if (!clickable) {
+
+                        return;
+
+                    }
+
                     onClick();
+
                 }}
+
                 sx={{
-                    "&:hover": clickable
-                        ? {
-                            boxShadow: 3,
-                            transform: "scale(1.02)",
-                        }
-                        : {},
+
+                    "&:hover":
+
+                        clickable
+
+                            ? {
+
+                                boxShadow: 3,
+
+                                transform: "scale(1.02)",
+
+                            }
+
+                            : {},
+
                 }}
+
             >
 
                 <CardContent>
@@ -138,19 +176,52 @@ export function BoardSlot({
                             🎯 Cible {board.boardNumber}
 
                         </Typography>
-
                         <Typography
 
                             variant="body2"
 
                             color="text.secondary"
 
+                            align="center"
+
                         >
 
                             {status.icon} {status.label}
 
                         </Typography>
+                        {
 
+                            board.status === "BLOCKED"
+
+                            &&
+
+                            board.label
+
+                            &&
+
+                            (
+
+                                <Typography
+
+                                    variant="caption"
+
+                                    align="center"
+
+                                    sx={{
+
+                                        fontWeight: 600,
+
+                                    }}
+
+                                >
+
+                                    {board.label}
+
+                                </Typography>
+
+                            )
+
+                        }
                     </Stack>
 
                 </CardContent>

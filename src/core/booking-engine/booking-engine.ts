@@ -21,6 +21,16 @@ export interface BookingSuggestion {
 
 }
 
+function isBookable(
+
+    slot: ReservationSlot,
+
+): boolean {
+
+    return slot.status === "AVAILABLE";
+
+}
+
 export function suggestAlternatives(
 
     request: BookingRequest,
@@ -33,16 +43,11 @@ export function suggestAlternatives(
 
         for (const slot of board.slots) {
 
-            if (!slot.reserved) {
+            if (isBookable(slot,)) {
 
                 suggestions.push({
-
-                    boardNumber:
-
-                        board.boardNumber,
-
+                    boardNumber: board.boardNumber,
                     slot,
-
                 });
 
             }
@@ -147,30 +152,42 @@ export function validateSelection(
 
     }
 
-    if (!slot.reserved) {
+    switch (
 
-        return {
+    slot.status
 
-            available: true,
+    ) {
 
-            alternatives: [],
+        case "AVAILABLE":
 
-        };
+            return {
+
+                available: true,
+
+                alternatives: [],
+
+            };
+
+        case "BLOCKED":
+
+        case "RESERVED":
+
+        default:
+
+            return {
+
+                available: false,
+
+                alternatives:
+
+                    suggestAlternatives(
+
+                        request,
+
+                    ),
+
+            };
 
     }
-
-    return {
-
-        available: false,
-
-        alternatives:
-
-            suggestAlternatives(
-
-                request,
-
-            ),
-
-    };
 
 }

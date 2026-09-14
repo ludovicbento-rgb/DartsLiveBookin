@@ -108,8 +108,7 @@ describe(
 
                                         endTime: "19:30",
 
-                                        reserved: false,
-
+                                        status: "AVAILABLE",
                                     },
 
                                 ],
@@ -168,7 +167,7 @@ describe(
 
                                         endTime: "19:30",
 
-                                        reserved: true,
+                                        status: "RESERVED",
 
                                     },
 
@@ -180,7 +179,7 @@ describe(
 
                                         endTime: "21:00",
 
-                                        reserved: false,
+                                        status: "AVAILABLE",
 
                                     },
 
@@ -228,7 +227,7 @@ describe(
 
                                         endTime: "19:30",
 
-                                        reserved: true,
+                                        status: "RESERVED",
 
                                     },
 
@@ -250,7 +249,7 @@ describe(
 
                                         endTime: "19:30",
 
-                                        reserved: false,
+                                        status: "AVAILABLE",
 
                                     },
 
@@ -322,7 +321,7 @@ describe(
 
                                         endTime: "19:30",
 
-                                        reserved: true,
+                                        status: "RESERVED",
 
                                     },
 
@@ -412,6 +411,110 @@ describe(
 
         );
 
+        it(
+
+            "should reject blocked slot",
+
+            () => {
+
+                const result =
+
+                    validateSelection({
+
+                        planning: [
+
+                            {
+
+                                boardNumber: 1,
+
+                                slots: [
+
+                                    {
+
+                                        boardNumber: 1,
+
+                                        startTime: "18:00",
+
+                                        endTime: "19:30",
+
+                                        status: "BLOCKED",
+
+                                        blockTitle: "Championnat",
+
+                                    },
+
+                                ],
+
+                            },
+
+                        ],
+
+                    },
+
+                        1,
+
+                        "18:00",
+
+                    );
+
+                expect(
+
+                    result.available,
+
+                ).toBe(false);
+
+            },
+
+        );
+        it(
+
+            "should not suggest blocked slot",
+
+            () => {
+
+                const result =
+
+                    suggestAlternatives({
+
+                        planning: [
+
+                            {
+
+                                boardNumber: 1,
+
+                                slots: [
+
+                                    {
+
+                                        boardNumber: 1,
+
+                                        startTime: "18:00",
+
+                                        endTime: "19:30",
+
+                                        status: "BLOCKED",
+
+                                        blockTitle: "Championnat",
+
+                                    },
+
+                                ],
+
+                            },
+
+                        ],
+
+                    });
+
+                expect(
+
+                    result,
+
+                ).toHaveLength(0);
+
+            },
+
+        );
         it(
 
             "should return alternatives",

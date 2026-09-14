@@ -66,6 +66,26 @@ export function buildPlanning(
 
                                 ),
 
+                            status:
+
+                                reservations.some(
+
+                                    reservation =>
+
+                                        reservation.boardNumber ===
+                                        slot.boardNumber
+
+                                        &&
+
+                                        reservation.startTime ===
+                                        slot.startTime,
+
+                                )
+
+                                    ? "RESERVED"
+
+                                    : slot.status,
+
                         })),
 
             }),

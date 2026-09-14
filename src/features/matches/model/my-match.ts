@@ -39,11 +39,11 @@ export interface MyMatch {
 
     notes: string;
 
-    lastReservation: MyMatchReservationInfo | null;
+    lastReservation: LastReservationInfo | null;
 
 }
 
-export interface MyMatchReservationInfo {
+export interface LastReservationInfo {
 
     id: string | null;
 

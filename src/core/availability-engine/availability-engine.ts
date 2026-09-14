@@ -152,6 +152,45 @@ function findMatchingRule(
 
 }
 
+function applyAvailabilityRules(
+
+    planning: PlanningBoard[],
+
+    rule: AvailabilityRule,
+
+): void {
+
+    for (const board of planning) {
+
+        for (const slot of board.slots) {
+
+            if (
+
+                slot.startTime >= rule.startTime
+
+                &&
+
+                slot.endTime <= rule.endTime
+
+            ) {
+
+                slot.status = "BLOCKED";
+
+                slot.blockType = rule.type;
+
+                slot.blockTitle = rule.title;
+
+                slot.blockDescription =
+                    rule.description;
+
+            }
+
+        }
+
+    }
+
+}
+
 export function buildAvailability(
 
     input: AvailabilityInput,
@@ -192,29 +231,9 @@ export function buildAvailability(
 
         );
 
-    if (rule) {
+    const planning =
 
-        return {
-
-            available: false,
-
-            planning: [],
-
-            reason: "RULE",
-
-            closure: null,
-
-            rule,
-
-        };
-
-    }
-
-    return {
-
-        available: true,
-
-        planning: buildPlanning(
+        buildPlanning(
 
             input.openingHours,
 
@@ -222,13 +241,37 @@ export function buildAvailability(
 
             input.reservations,
 
-        ),
+        );
 
-        reason: "OPEN",
+    if (rule) {
+
+        applyAvailabilityRules(
+
+            planning,
+
+            rule,
+
+        );
+
+    }
+
+    return {
+
+        available: true,
+
+        planning,
+
+        reason:
+
+            rule
+
+                ? "RULE"
+
+                : "OPEN",
 
         closure: null,
 
-        rule: null,
+        rule,
 
     };
 

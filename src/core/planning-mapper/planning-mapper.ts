@@ -77,11 +77,23 @@ export function mapPlanning({
 
                 status:
 
-                    slot.reserved
+                    slot.status === "BLOCKED"
 
-                        ? "CONFIRMED"
+                        ? "BLOCKED"
 
-                        : "AVAILABLE",
+                        : slot.status === "RESERVED"
+
+                            ? "CONFIRMED"
+
+                            : "AVAILABLE",
+
+                label:
+
+                    slot.status === "BLOCKED"
+
+                        ? slot.blockTitle
+
+                        : undefined,
 
             };
 
