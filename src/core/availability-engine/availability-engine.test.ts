@@ -121,7 +121,7 @@ describe(
 
         it(
 
-            "should return rule decision when a weekly rule blocks the day",
+            "should block every slot overlapping a weekly event",
 
             () => {
 
@@ -139,7 +139,310 @@ describe(
 
                                 id: "RULE_1",
 
-                                venueId: "VENUE_1",
+                                venueId: "VENUE",
+
+                                title: "Championnat",
+
+                                description: "Championnat régional",
+
+                                type: "EVENT",
+
+                                frequency: "WEEKLY",
+
+                                weekDays: [
+
+                                    today.getDay(),
+
+                                ],
+
+                                startTime: "20:00",
+
+                                endTime: "00:00",
+
+                                validFrom: {
+
+                                    toDate: () =>
+                                        new Date("2026-01-01"),
+
+                                } as any,
+
+                                validTo: {
+
+                                    toDate: () =>
+                                        new Date("2027-12-31"),
+
+                                } as any,
+
+                                isActive: true,
+
+                                createdByUserId: "USER",
+
+                                createdAt: {} as any,
+
+                                updatedByUserId: null,
+
+                                updatedAt: null,
+
+                            },
+
+                        ],
+
+                    });
+
+                expect(
+
+                    availability.available,
+
+                ).toBe(true);
+
+                expect(
+
+                    availability.reason,
+
+                ).toBe("RULE");
+
+                const board =
+                    availability.planning[0];
+
+                expect(
+
+                    board.slots[0].status,
+
+                ).toBe("AVAILABLE");
+
+                expect(
+
+                    board.slots[1].status,
+
+                ).toBe("BLOCKED");
+
+                expect(
+
+                    board.slots[2].status,
+
+                ).toBe("BLOCKED");
+
+            },
+
+        );
+
+        it(
+
+            "should keep every slot available without rule",
+
+            () => {
+
+                const availability =
+                    buildAvailability(
+
+                        input,
+
+                    );
+
+                expect(
+
+                    availability.planning
+
+                        .flatMap(
+
+                            board => board.slots,
+
+                        )
+
+                        .every(
+
+                            slot =>
+
+                                slot.status === "AVAILABLE",
+
+                        ),
+
+                ).toBe(true);
+
+            },
+
+        );
+
+        it(
+
+            "should apply multiple rules",
+
+            () => {
+
+                const today =
+                    new Date();
+
+                const availability =
+                    buildAvailability({
+
+                        ...input,
+
+                        rules: [
+
+                            {
+
+                                id: "RULE_1",
+
+                                venueId: "VENUE",
+
+                                title: "Début",
+
+                                description: "",
+
+                                type: "EVENT",
+
+                                frequency: "WEEKLY",
+
+                                weekDays: [
+
+                                    today.getDay(),
+
+                                ],
+
+                                startTime: "18:00",
+
+                                endTime: "19:30",
+
+                                validFrom: {
+
+                                    toDate: () =>
+                                        new Date("2026-01-01"),
+
+                                } as any,
+
+                                validTo: {
+
+                                    toDate: () =>
+                                        new Date("2027-12-31"),
+
+                                } as any,
+
+                                isActive: true,
+
+                                createdByUserId: "USER",
+
+                                createdAt: {} as any,
+
+                                updatedByUserId: null,
+
+                                updatedAt: null,
+
+                            },
+
+                            {
+
+                                id: "RULE_2",
+
+                                venueId: "VENUE",
+
+                                title: "Fin",
+
+                                description: "",
+
+                                type: "EVENT",
+
+                                frequency: "WEEKLY",
+
+                                weekDays: [
+
+                                    today.getDay(),
+
+                                ],
+
+                                startTime: "21:00",
+
+                                endTime: "22:30",
+
+                                validFrom: {
+
+                                    toDate: () =>
+                                        new Date("2026-01-01"),
+
+                                } as any,
+
+                                validTo: {
+
+                                    toDate: () =>
+                                        new Date("2027-12-31"),
+
+                                } as any,
+
+                                isActive: true,
+
+                                createdByUserId: "USER",
+
+                                createdAt: {} as any,
+
+                                updatedByUserId: null,
+
+                                updatedAt: null,
+
+                            },
+
+                        ],
+
+                    });
+
+                const board =
+                    availability.planning[0];
+
+                expect(
+
+                    board.slots[0].status,
+
+                ).toBe("BLOCKED");
+
+                expect(
+
+                    board.slots[1].status,
+
+                ).toBe("AVAILABLE");
+
+                expect(
+
+                    board.slots[2].status,
+
+                ).toBe("BLOCKED");
+
+            },
+
+        );
+
+        it(
+
+            "should never overwrite a reserved slot",
+
+            () => {
+
+                const today =
+                    new Date();
+
+                const availability =
+                    buildAvailability({
+
+                        ...input,
+
+                        reservations: [
+
+                            {
+
+                                boardNumber: 1,
+
+                                startTime: "19:30",
+
+                                endTime: "21:00",
+
+                            },
+
+                        ],
+
+                        rules: [
+
+                            {
+
+                                id: "RULE",
+
+                                venueId: "VENUE",
 
                                 title: "Championnat",
 
@@ -161,19 +464,21 @@ describe(
 
                                 validFrom: {
 
-                                    toDate: () => new Date("2026-01-01"),
+                                    toDate: () =>
+                                        new Date("2026-01-01"),
 
                                 } as any,
 
                                 validTo: {
 
-                                    toDate: () => new Date("2027-12-31"),
+                                    toDate: () =>
+                                        new Date("2027-12-31"),
 
                                 } as any,
 
                                 isActive: true,
 
-                                createdByUserId: "USR",
+                                createdByUserId: "USER",
 
                                 createdAt: {} as any,
 
@@ -187,39 +492,14 @@ describe(
 
                     });
 
-                expect(
-                    availability.available,
-                ).toBe(true);
-
-                expect(
-                    availability.reason,
-                ).toBe("RULE");
-
-                expect(
-                    availability.rule,
-                ).not.toBeNull();
-
-                expect(
-                    availability.planning.length,
-                ).toBeGreaterThan(0);
+                const board =
+                    availability.planning[0];
 
                 expect(
 
-                    availability.planning
+                    board.slots[1].status,
 
-                        .some(board =>
-
-                            board.slots.some(
-
-                                slot =>
-
-                                    slot.status === "BLOCKED",
-
-                            ),
-
-                        ),
-
-                ).toBe(true);
+                ).toBe("RESERVED");
 
             },
 

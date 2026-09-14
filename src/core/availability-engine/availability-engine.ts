@@ -9,6 +9,10 @@ import type {
     AvailabilityClosure,
 } from "./model/availability-closure";
 
+import {
+    toMinutes,
+} from "@/core/reservation-engine";
+
 import type {
     AvailabilityRule,
 } from "../../entities/availability-rule/availability-rule.types";
@@ -55,6 +59,55 @@ export interface AvailabilityInput {
 
 }
 
+function overlaps(
+
+    slotStart: string,
+
+    slotEnd: string,
+
+    ruleStart: string,
+
+    ruleEnd: string,
+
+): boolean {
+
+    const slotStartMinutes =
+        toMinutes(slotStart);
+
+    let slotEndMinutes =
+        toMinutes(slotEnd);
+
+    const ruleStartMinutes =
+        toMinutes(ruleStart);
+
+    let ruleEndMinutes =
+        toMinutes(ruleEnd);
+
+    // Gestion des plages après minuit
+    if (slotEndMinutes <= slotStartMinutes) {
+
+        slotEndMinutes += 24 * 60;
+
+    }
+
+    if (ruleEndMinutes <= ruleStartMinutes) {
+
+        ruleEndMinutes += 24 * 60;
+
+    }
+
+    return (
+
+        slotStartMinutes < ruleEndMinutes
+
+        &&
+
+        slotEndMinutes > ruleStartMinutes
+
+    );
+
+}
+
 function findMatchingClosure(
 
     input: AvailabilityInput,
@@ -89,70 +142,66 @@ function findMatchingClosure(
 
 }
 
-function findMatchingRule(
+function findMatchingRules(
 
     input: AvailabilityInput,
 
-): AvailabilityRule | null {
+): AvailabilityRule[] {
 
-    return (
+    return input.rules.filter(rule => {
 
-        input.rules.find(rule => {
+        if (!rule.isActive) {
 
-            if (!rule.isActive) {
+            return false;
+
+        }
+
+        const reservationDate =
+            input.reservationDate;
+
+        if (
+
+            reservationDate < rule.validFrom.toDate()
+
+            ||
+
+            reservationDate > rule.validTo.toDate()
+
+        ) {
+
+            return false;
+
+        }
+
+        switch (
+
+        rule.frequency
+
+        ) {
+
+            case "DAILY":
+
+                return true;
+
+            case "WEEKLY":
+
+                return rule.weekDays.includes(
+
+                    reservationDate.getDay(),
+
+                );
+
+            default:
 
                 return false;
 
-            }
+        }
 
-            const reservationDate =
-                input.reservationDate;
-
-            if (
-
-                reservationDate < rule.validFrom.toDate()
-
-                ||
-
-                reservationDate > rule.validTo.toDate()
-
-            ) {
-
-                return false;
-
-            }
-
-            switch (rule.frequency) {
-
-                case "DAILY":
-
-                    return true;
-
-                case "WEEKLY":
-
-                    return rule.weekDays.includes(
-
-                        reservationDate.getDay(),
-
-                    );
-
-                default:
-
-                    return false;
-
-            }
-
-        })
-
-        ??
-
-        null
-
-    );
+    });
 
 }
 
-function applyAvailabilityRules(
+function applyAvailabilityRule(
 
     planning: PlanningBoard[],
 
@@ -166,24 +215,42 @@ function applyAvailabilityRules(
 
             if (
 
-                slot.startTime >= rule.startTime
+                !overlaps(
 
-                &&
+                    slot.startTime,
 
-                slot.endTime <= rule.endTime
+                    slot.endTime,
+
+                    rule.startTime,
+
+                    rule.endTime,
+
+                )
 
             ) {
 
-                slot.status = "BLOCKED";
-
-                slot.blockType = rule.type;
-
-                slot.blockTitle = rule.title;
-
-                slot.blockDescription =
-                    rule.description;
+                continue;
 
             }
+
+            // Une réservation reste prioritaire
+            if (
+
+                slot.status !== "AVAILABLE"
+
+            ) {
+
+                continue;
+
+            }
+
+            slot.status = "BLOCKED";
+
+            slot.blockType = rule.type;
+
+            slot.blockTitle = rule.title;
+
+            slot.blockDescription = rule.description;
 
         }
 
@@ -223,14 +290,6 @@ export function buildAvailability(
 
     }
 
-    const rule =
-
-        findMatchingRule(
-
-            input,
-
-        );
-
     const planning =
 
         buildPlanning(
@@ -243,9 +302,20 @@ export function buildAvailability(
 
         );
 
-    if (rule) {
 
-        applyAvailabilityRules(
+    const matchingRules =
+
+        findMatchingRules(
+            input,
+        );
+
+    for (
+
+        const rule of matchingRules
+
+    ) {
+
+        applyAvailabilityRule(
 
             planning,
 
@@ -263,7 +333,7 @@ export function buildAvailability(
 
         reason:
 
-            rule
+            matchingRules.length > 0
 
                 ? "RULE"
 
@@ -271,7 +341,13 @@ export function buildAvailability(
 
         closure: null,
 
-        rule,
+        rule:
+
+            matchingRules.length > 0
+
+                ? matchingRules[0]
+
+                : null,
 
     };
 
