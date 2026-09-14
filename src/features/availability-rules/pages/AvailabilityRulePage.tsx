@@ -32,6 +32,10 @@ import AvailabilityRuleCard
 import AvailabilityRuleDrawer
     from "../components/AvailabilityRuleDrawer";
 
+import {
+    createAvailabilityRuleCommand,
+} from "@/features/commands/createAvailabilityRule";
+
 interface Props {
 
     venueId: string;
@@ -51,6 +55,8 @@ export function AvailabilityRulesPage({
         loading,
 
         error,
+
+        reload,
 
     } = useAvailabilityRules(
 
@@ -201,6 +207,36 @@ export function AvailabilityRulesPage({
                 open={drawerOpen}
 
                 onClose={closeDrawer}
+
+                loading={loading}
+
+                onCreate={async form => {
+
+                    try {
+
+                        await createAvailabilityRuleCommand({
+
+                            venueId,
+
+                            ...form,
+
+                        });
+
+                        await reload();
+
+                        closeDrawer();
+
+                        console.error(error);
+
+                    }
+
+                    catch (e) {
+
+                        console.error(error);
+
+                    }
+
+                }}
 
             />
 

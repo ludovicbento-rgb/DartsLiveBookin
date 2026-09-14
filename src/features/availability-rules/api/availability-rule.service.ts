@@ -2,6 +2,11 @@ import {
     getAvailabilityRulesByVenue,
 } from "@/entities/availability-rule";
 
+import {
+    createAvailabilityRule,
+    type CreateAvailabilityRuleInput,
+} from "@/entities/availability-rule";
+
 export async function loadAvailabilityRules(
 
     venueId: string,
@@ -11,6 +16,20 @@ export async function loadAvailabilityRules(
     return getAvailabilityRulesByVenue(
 
         venueId,
+
+    );
+
+}
+
+export async function saveAvailabilityRule(
+
+    input: CreateAvailabilityRuleInput,
+
+) {
+
+    return createAvailabilityRule(
+
+        input,
 
     );
 

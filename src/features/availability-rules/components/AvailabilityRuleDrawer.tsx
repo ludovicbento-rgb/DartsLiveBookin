@@ -14,6 +14,10 @@ import {
     CardContent,
 } from "@mui/material";
 
+import type {
+    AvailabilityRuleType,
+} from "@/entities/availability-rule";
+
 import {
     useState,
 } from "react";
@@ -22,7 +26,13 @@ interface Props {
 
     open: boolean;
 
+    loading: boolean;
+
     onClose(): void;
+
+    onCreate(
+        form: AvailabilityRuleForm,
+    ): Promise<void>;
 
 }
 
@@ -65,11 +75,37 @@ const DAYS = [
 
 ];
 
+export interface AvailabilityRuleForm {
+
+    title: string;
+
+    description: string;
+
+    type: "EVENT"
+    | "MAINTENANCE"
+    | "CLOSED";
+
+    frequency: "WEEKLY";
+
+    weekDays: number[];
+
+    startTime: string;
+
+    endTime: string;
+
+    validFrom: Date;
+
+    validTo: Date;
+
+}
+
 export function AvailabilityRuleDrawer({
 
     open,
 
     onClose,
+
+    onCreate,
 
 }: Props) {
 
@@ -95,7 +131,11 @@ export function AvailabilityRuleDrawer({
 
         setType,
 
-    ] = useState("EVENT");
+    ] = useState<AvailabilityRuleType>(
+
+        "EVENT",
+
+    );
 
     const [
 
@@ -144,6 +184,10 @@ export function AvailabilityRuleDrawer({
         onClose();
 
     }
+
+    const [validFrom] = useState(new Date());
+    const [validTo] = useState(new Date());
+
 
     return (
 
@@ -401,6 +445,24 @@ export function AvailabilityRuleDrawer({
                         fullWidth
 
                     />
+                    <TextField
+
+                        label="Valide du"
+
+                        type="date"
+
+                        value={""}
+
+                    />
+                    <TextField
+
+                        label="Valide jusqu'au"
+
+                        type="date"
+
+                        value={""}
+
+                    />
 
                 </Stack>
 
@@ -428,10 +490,6 @@ export function AvailabilityRuleDrawer({
 
                     <Button
 
-                        fullWidth
-
-                        variant="contained"
-
                         disabled={
 
                             title.trim() === ""
@@ -441,6 +499,34 @@ export function AvailabilityRuleDrawer({
                             weekDays.length === 0
 
                         }
+
+                        onClick={async () => {
+
+                            await onCreate({
+
+                                title,
+
+                                description,
+
+                                type,
+
+                                frequency: "WEEKLY",
+
+                                weekDays,
+
+                                startTime,
+
+                                endTime,
+
+                                validFrom,
+
+                                validTo,
+
+                            });
+
+                            reset();
+
+                        }}
 
                     >
 
