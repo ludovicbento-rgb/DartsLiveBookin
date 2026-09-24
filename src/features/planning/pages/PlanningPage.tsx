@@ -153,9 +153,19 @@ export function PlanningPage() {
 
         );
 
+    const availabilityDecision =
+        planning
+            ?.availability
+            .decision;
+
+    const isClosure =
+        availabilityDecision
+            ?.reason === "CLOSURE";
+
     const venueStatus = buildVenueStatus({
 
-        isOpen: true,
+        isOpen:
+            !isClosure,
 
         hasMaintenance:
 
@@ -253,6 +263,10 @@ export function PlanningPage() {
                         }
 
                         error={pageError}
+
+                        availability={
+                            planning?.availability.decision
+                        }
                         empty={
                             !loading &&
                             !matchLoading &&

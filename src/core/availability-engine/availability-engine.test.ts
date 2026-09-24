@@ -29,7 +29,11 @@ describe(
 
             reservations: [],
 
-            closures: [],
+            closures: [
+
+
+
+            ],
 
             rules: [],
 
@@ -89,9 +93,17 @@ describe(
 
                                 active: true,
 
-                                startDate: new Date(),
+                                startDate:
+                                    new Date(),
 
-                                endDate: new Date(),
+                                endDate:
+                                    new Date(),
+
+                                reasonType:
+                                    "VACATION",
+
+                                comment:
+                                    "Fermeture de Noël",
 
                             },
 
@@ -114,6 +126,14 @@ describe(
                 expect(
                     availability.closure,
                 ).not.toBeNull();
+
+                expect(
+                    availability.closure?.reasonType,
+                ).toBe("VACATION");
+
+                expect(
+                    availability.closure?.comment,
+                ).toBe("Fermeture de Noël");
 
             },
 

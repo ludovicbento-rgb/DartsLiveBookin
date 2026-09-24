@@ -8,6 +8,14 @@ import {
     Typography,
 } from "@mui/material";
 
+import type {
+    AvailabilityDecision,
+} from "@/core/availability-engine";
+
+import type {
+    VenueClosureReason,
+} from "@/entities/venue-closure";
+
 interface Props {
 
     loading: boolean;
@@ -16,7 +24,34 @@ interface Props {
 
     empty: boolean;
 
+    availability?: AvailabilityDecision;
+
     onRetry?(): void;
+
+}
+
+function getClosureTitle(
+    reasonType: VenueClosureReason,
+): string {
+
+    switch (reasonType) {
+
+        case "VACATION":
+            return "🏖️ Vacances";
+
+        case "PRIVATE_EVENT":
+            return "🎉 Privatisation";
+
+        case "MAINTENANCE":
+            return "🔧 Maintenance";
+
+        case "INVENTORY":
+            return "📦 Inventaire";
+
+        case "OTHER":
+            return "🔒 Fermeture exceptionnelle";
+
+    }
 
 }
 
@@ -28,9 +63,13 @@ export function PlanningState({
 
     empty,
 
+    availability,
+
     onRetry,
 
 }: Props) {
+
+
 
     if (loading) {
 
@@ -95,6 +134,41 @@ export function PlanningState({
 
                     )
 
+                }
+
+            </Alert>
+
+        );
+
+    }
+
+    if (
+        availability?.reason === "CLOSURE"
+        &&
+        availability.closure
+    ) {
+
+        const closure =
+            availability.closure;
+
+        return (
+
+            <Alert severity="warning">
+
+                <AlertTitle>
+
+                    {getClosureTitle(
+                        closure.reasonType,
+                    )}
+
+                </AlertTitle>
+
+                {
+                    closure.comment
+
+                        ? closure.comment
+
+                        : "L'établissement est exceptionnellement fermé pour cette journée."
                 }
 
             </Alert>

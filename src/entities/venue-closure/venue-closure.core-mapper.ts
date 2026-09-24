@@ -23,6 +23,12 @@ export function mapAvailabilityClosure(
         endDate:
             closure.endDate.toDate(),
 
+        reasonType:
+            closure.reasonType,
+
+        comment:
+            closure.comment,
+
     };
 
 }

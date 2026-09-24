@@ -1,3 +1,7 @@
+import type {
+    VenueClosureReason,
+} from "@/entities/venue-closure";
+
 export interface AvailabilityClosure {
 
     active: boolean;
@@ -5,5 +9,9 @@ export interface AvailabilityClosure {
     startDate: Date;
 
     endDate: Date;
+
+    reasonType: VenueClosureReason;
+
+    comment: string;
 
 }

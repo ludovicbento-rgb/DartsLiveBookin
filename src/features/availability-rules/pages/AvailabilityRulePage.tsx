@@ -63,6 +63,24 @@ import {
     deleteAvailabilityRuleCommand,
 } from "@/features/commands/deleteAvailabilityRule";
 
+import {
+    useVenueClosures,
+} from "../hooks/useVenueClosures";
+
+import VenueClosureCard
+    from "../components/VenueClosureCard";
+
+import VenueClosureDrawer
+    from "../components/VenueClosureDrawer";
+
+import type {
+    VenueClosureForm,
+} from "../components/VenueClosureDrawer";
+
+import {
+    createVenueClosureCommand,
+} from "@/features/commands/createVenueClosure";
+
 export function AvailabilityRulesPage() {
 
     const {
@@ -101,6 +119,16 @@ export function AvailabilityRulesPage() {
         setDeleting,
     ] = useState(false);
 
+    const [
+        closureDrawerOpen,
+        setClosureDrawerOpen,
+    ] = useState(false);
+
+    const [
+        savingClosure,
+        setSavingClosure,
+    ] = useState(false);
+
     const {
 
         rules,
@@ -130,6 +158,24 @@ export function AvailabilityRulesPage() {
 
     ] = useState(false);
 
+
+    const {
+
+        closures,
+
+        loading:
+        closuresLoading,
+
+        error:
+        closuresError,
+
+        reload:
+        reloadClosures,
+
+    } = useVenueClosures(
+        venueId,
+    );
+
     function handleCreateRequested() {
 
         setSelectedRule(
@@ -152,6 +198,69 @@ export function AvailabilityRulesPage() {
 
     }
 
+
+    async function handleCreateClosure(
+
+        form: VenueClosureForm,
+
+    ) {
+
+        try {
+
+            setSavingClosure(
+                true,
+            );
+
+            const startDate =
+                new Date(
+                    `${form.startDate}T00:00:00`,
+                );
+
+            const endDate =
+                new Date(
+                    `${form.endDate}T23:59:59.999`,
+                );
+
+            await createVenueClosureCommand({
+
+                venueId,
+
+                reasonType:
+                    form.reasonType,
+
+                comment:
+                    form.comment,
+
+                startDate,
+
+                endDate,
+
+            });
+
+            await reloadClosures();
+
+            setClosureDrawerOpen(
+                false,
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "CREATE_VENUE_CLOSURE_FAILED",
+                error,
+            );
+
+        }
+        finally {
+
+            setSavingClosure(
+                false,
+            );
+
+        }
+
+    }
     async function handleActiveChanged(
 
         rule: AvailabilityRule,
@@ -471,8 +580,189 @@ export function AvailabilityRulesPage() {
 
                     }
 
-                </Stack>
+                    <Stack
+                        spacing={2}
+                        sx={{
+                            pt: 3,
+                            width: "100%",
+                        }}
+                    >
 
+                        {/* Header */}
+                        <Stack
+                            direction={{
+                                xs: "column",
+                                sm: "row",
+                            }}
+                            spacing={2}
+                            sx={{
+                                width: "100%",
+
+                                justifyContent:
+                                    "space-between",
+
+                                alignItems: {
+                                    xs: "stretch",
+                                    sm: "flex-start",
+                                },
+                            }}
+                        >
+
+                            {/* Titre + description */}
+                            <Stack
+                                spacing={0.5}
+                                sx={{
+                                    minWidth: 0,
+                                    flex: 1,
+                                }}
+                            >
+
+                                <Typography
+                                    variant="h5"
+                                    sx={{
+                                        fontWeight: 700,
+                                    }}
+                                >
+
+                                    Fermetures exceptionnelles
+
+                                </Typography>
+
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                >
+
+                                    Gérez les périodes pendant
+                                    lesquelles l'établissement est
+                                    totalement fermé aux réservations.
+
+                                </Typography>
+
+                            </Stack>
+
+                            {/* Bouton */}
+                            <Button
+
+                                variant="contained"
+
+                                startIcon={
+                                    <AddIcon />
+                                }
+
+                                onClick={() =>
+
+                                    setClosureDrawerOpen(
+                                        true,
+                                    )
+
+                                }
+
+                                sx={{
+                                    flexShrink: 0,
+
+                                    alignSelf: {
+                                        xs: "stretch",
+                                        sm: "flex-start",
+                                    },
+
+                                    whiteSpace: "nowrap",
+                                }}
+
+                            >
+
+                                Nouvelle fermeture
+
+                            </Button>
+
+                        </Stack>
+
+                        {/* Chargement */}
+                        {
+                            closuresLoading && (
+
+                                <Stack
+                                    sx={{
+                                        alignItems: "center",
+                                        py: 2,
+                                    }}
+                                >
+
+                                    <CircularProgress />
+
+                                </Stack>
+
+                            )
+                        }
+
+                        {/* Erreur */}
+                        {
+                            closuresError && (
+
+                                <Alert
+                                    severity="error"
+                                    sx={{
+                                        width: "100%",
+                                    }}
+                                >
+
+                                    {closuresError}
+
+                                </Alert>
+
+                            )
+                        }
+
+                        {/* Aucune fermeture */}
+                        {
+                            !closuresLoading
+                            &&
+                            !closuresError
+                            &&
+                            closures.length === 0
+                            &&
+                            (
+
+                                <Alert
+                                    severity="info"
+                                    sx={{
+                                        width: "100%",
+                                    }}
+                                >
+
+                                    Aucune fermeture exceptionnelle
+                                    n'est configurée.
+
+                                </Alert>
+
+                            )
+                        }
+
+                        {/* Liste des fermetures */}
+                        {
+                            !closuresLoading
+                            &&
+                            !closuresError
+                            &&
+                            closures.map(
+
+                                closure => (
+
+                                    <VenueClosureCard
+
+                                        key={closure.id}
+
+                                        closure={closure}
+
+                                    />
+
+                                ),
+
+                            )
+                        }
+
+                    </Stack>
+                </Stack>
             </AppCard>
 
             <AvailabilityRuleDrawer
@@ -537,6 +827,36 @@ export function AvailabilityRulesPage() {
 
                 onConfirm={
                     handleDeleteConfirmed
+                }
+
+            />
+
+            <VenueClosureDrawer
+
+                open={
+                    closureDrawerOpen
+                }
+
+                loading={
+                    savingClosure
+                }
+
+                onClose={() => {
+
+                    if (savingClosure) {
+
+                        return;
+
+                    }
+
+                    setClosureDrawerOpen(
+                        false,
+                    );
+
+                }}
+
+                onCreate={
+                    handleCreateClosure
                 }
 
             />
