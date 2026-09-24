@@ -1,11 +1,12 @@
 import {
     addDoc,
+    deleteDoc,
+    doc,
     getDocs,
     query,
     Timestamp,
-    where,
-    doc,
     updateDoc,
+    where,
 } from "firebase/firestore";
 
 import {
@@ -30,6 +31,22 @@ export interface UpdateVenueClosureInput {
     reasonType: VenueClosureReason;
 
     comment: string;
+
+}
+
+export async function deleteVenueClosure(
+    closureId: string,
+): Promise<void> {
+
+    const reference =
+        doc(
+            venueClosuresCollection,
+            closureId,
+        );
+
+    await deleteDoc(
+        reference,
+    );
 
 }
 

@@ -22,6 +22,13 @@ import {
     PageTitle,
 } from "@/shared/ui";
 
+import DeleteVenueClosureDialog
+    from "../components/DeleteVenueClosureDialog";
+
+import {
+    deleteVenueClosureCommand,
+} from "@/features/commands/deleteVenueClosure";
+
 import {
     useAvailabilityRules,
 } from "../hooks/useAvailabilityRules";
@@ -142,6 +149,18 @@ export function AvailabilityRulesPage() {
     ] = useState(false);
 
     const [
+        closureToDelete,
+        setClosureToDelete,
+    ] = useState<VenueClosure | null>(
+        null,
+    );
+
+    const [
+        deletingClosure,
+        setDeletingClosure,
+    ] = useState(false);
+
+    const [
         selectedClosure,
         setSelectedClosure,
     ] = useState<VenueClosure | null>(
@@ -195,6 +214,16 @@ export function AvailabilityRulesPage() {
         venueId,
     );
 
+    function handleClosureDeleteRequested(
+        closure: VenueClosure,
+    ) {
+
+        setClosureToDelete(
+            closure,
+        );
+
+    }
+
     function handleCreateRequested() {
 
         setSelectedRule(
@@ -228,6 +257,49 @@ export function AvailabilityRulesPage() {
         setRuleToDelete(
             rule,
         );
+
+    }
+
+    async function handleClosureDeleteConfirmed() {
+
+        if (!closureToDelete) {
+
+            return;
+
+        }
+
+        try {
+
+            setDeletingClosure(
+                true,
+            );
+
+            await deleteVenueClosureCommand(
+                closureToDelete.id,
+            );
+
+            await reloadClosures();
+
+            setClosureToDelete(
+                null,
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "DELETE_VENUE_CLOSURE_FAILED",
+                error,
+            );
+
+        }
+        finally {
+
+            setDeletingClosure(
+                false,
+            );
+
+        }
 
     }
 
@@ -901,6 +973,11 @@ export function AvailabilityRulesPage() {
                                             handleClosureActiveChanged
                                         }
 
+                                        onDelete={
+                                            handleClosureDeleteRequested
+                                        }
+
+
                                     />
 
                                 ),
@@ -1008,6 +1085,40 @@ export function AvailabilityRulesPage() {
                     handleUpdateClosure
                 }
 
+
+            />
+
+            <DeleteVenueClosureDialog
+
+                open={
+                    closureToDelete !== null
+                }
+
+                closure={
+                    closureToDelete
+                }
+
+                loading={
+                    deletingClosure
+                }
+
+                onClose={() => {
+
+                    if (deletingClosure) {
+
+                        return;
+
+                    }
+
+                    setClosureToDelete(
+                        null,
+                    );
+
+                }}
+
+                onConfirm={
+                    handleClosureDeleteConfirmed
+                }
 
             />
 

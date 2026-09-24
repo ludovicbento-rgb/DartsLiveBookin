@@ -17,6 +17,9 @@ import type {
     VenueClosureReason,
 } from "@/entities/venue-closure";
 
+import DeleteIcon
+    from "@mui/icons-material/Delete";
+
 interface Props {
 
     closure: VenueClosure;
@@ -31,6 +34,10 @@ interface Props {
         closure: VenueClosure,
         active: boolean,
     ): Promise<void>;
+
+    onDelete(
+        closure: VenueClosure,
+    ): void;
 
 }
 
@@ -102,7 +109,9 @@ export function VenueClosureCard({
 
     onEdit,
 
-    onActiveChanged
+    onActiveChanged,
+
+    onDelete,
 
 }: Props) {
 
@@ -231,18 +240,42 @@ export function VenueClosureCard({
                         }
                     />
 
-                    <Button
-                        variant="outlined"
-                        startIcon={
-                            <EditIcon />
-                        }
-                        disabled={loading}
-                        onClick={() =>
-                            onEdit(closure)
-                        }
+                    <Stack
+                        direction={{
+                            xs: "column",
+                            sm: "row",
+                        }}
+                        spacing={1}
                     >
-                        Modifier
-                    </Button>
+
+                        <Button
+                            variant="outlined"
+                            startIcon={
+                                <EditIcon />
+                            }
+                            disabled={loading}
+                            onClick={() =>
+                                onEdit(closure)
+                            }
+                        >
+                            Modifier
+                        </Button>
+
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            startIcon={
+                                <DeleteIcon />
+                            }
+                            disabled={loading}
+                            onClick={() =>
+                                onDelete(closure)
+                            }
+                        >
+                            Supprimer
+                        </Button>
+
+                    </Stack>
 
                 </Stack>
 
