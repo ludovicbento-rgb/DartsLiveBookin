@@ -16,6 +16,9 @@ import type {
     AvailabilityRule,
 } from "@/entities/availability-rule";
 
+import DeleteIcon
+    from "@mui/icons-material/Delete";
+
 interface Props {
 
     rule: AvailabilityRule;
@@ -30,6 +33,10 @@ interface Props {
         rule: AvailabilityRule,
         active: boolean,
     ): Promise<void>;
+
+    onDelete(
+        rule: AvailabilityRule,
+    ): void;
 
 }
 
@@ -125,6 +132,8 @@ export function AvailabilityRuleCard({
 
     onActiveChanged,
 
+    onDelete,
+
 }: Props) {
 
     const days =
@@ -209,7 +218,7 @@ export function AvailabilityRuleCard({
                         xs: "column",
                         sm: "row",
                     }}
-                    spacing={2}
+                    spacing={1}
                     sx={{
                         justifyContent: "space-between",
                         alignItems: {
@@ -251,6 +260,18 @@ export function AvailabilityRuleCard({
                         }
                     >
                         Modifier
+                    </Button>
+
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        disabled={loading}
+                        onClick={() =>
+                            onDelete(rule)
+                        }
+                    >
+                        Supprimer
                     </Button>
 
                 </Stack>

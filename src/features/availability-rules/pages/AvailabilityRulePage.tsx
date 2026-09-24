@@ -56,6 +56,13 @@ import {
     setAvailabilityRuleActiveCommand,
 } from "@/features/commands/setAvailabilityRuleActive";
 
+import DeleteAvailabilityRuleDialog
+    from "../components/DeleteAvailabilityRuleDialog";
+
+import {
+    deleteAvailabilityRuleCommand,
+} from "@/features/commands/deleteAvailabilityRule";
+
 export function AvailabilityRulesPage() {
 
     const {
@@ -81,6 +88,18 @@ export function AvailabilityRulesPage() {
     ] = useState<AvailabilityRule | null>(
         null,
     );
+
+    const [
+        ruleToDelete,
+        setRuleToDelete,
+    ] = useState<AvailabilityRule | null>(
+        null,
+    );
+
+    const [
+        deleting,
+        setDeleting,
+    ] = useState(false);
 
     const {
 
@@ -119,6 +138,16 @@ export function AvailabilityRulesPage() {
 
         setDrawerOpen(
             true,
+        );
+
+    }
+
+    function handleDeleteRequested(
+        rule: AvailabilityRule,
+    ) {
+
+        setRuleToDelete(
+            rule,
         );
 
     }
@@ -251,6 +280,45 @@ export function AvailabilityRulesPage() {
         finally {
 
             setSaving(false);
+
+        }
+
+    }
+
+    async function handleDeleteConfirmed() {
+
+        if (!ruleToDelete) {
+
+            return;
+
+        }
+
+        try {
+
+            setDeleting(true);
+
+            await deleteAvailabilityRuleCommand(
+                ruleToDelete.id,
+            );
+
+            await reload();
+
+            setRuleToDelete(
+                null,
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "DELETE_AVAILABILITY_RULE_FAILED",
+                error,
+            );
+
+        }
+        finally {
+
+            setDeleting(false);
 
         }
 
@@ -393,6 +461,10 @@ export function AvailabilityRulesPage() {
                                     handleActiveChanged
                                 }
 
+                                onDelete={
+                                    handleDeleteRequested
+                                }
+
                             />
 
                         ))
@@ -431,6 +503,40 @@ export function AvailabilityRulesPage() {
 
                 onUpdate={
                     handleUpdate
+                }
+
+            />
+
+            <DeleteAvailabilityRuleDialog
+
+                open={
+                    ruleToDelete !== null
+                }
+
+                rule={
+                    ruleToDelete
+                }
+
+                loading={
+                    deleting
+                }
+
+                onClose={() => {
+
+                    if (deleting) {
+
+                        return;
+
+                    }
+
+                    setRuleToDelete(
+                        null,
+                    );
+
+                }}
+
+                onConfirm={
+                    handleDeleteConfirmed
                 }
 
             />

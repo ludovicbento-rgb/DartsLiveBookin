@@ -4,6 +4,7 @@ import {
     where,
     doc,
     updateDoc,
+    deleteDoc,
 } from "firebase/firestore";
 
 import {
@@ -75,6 +76,24 @@ export interface UpdateAvailabilityRuleInput {
     validTo: string;
 
     updatedByUserId: string;
+
+}
+
+export async function deleteAvailabilityRule(
+
+    ruleId: string,
+
+): Promise<void> {
+
+    const reference =
+        doc(
+            availabilityRulesCollection,
+            ruleId,
+        );
+
+    await deleteDoc(
+        reference,
+    );
 
 }
 
