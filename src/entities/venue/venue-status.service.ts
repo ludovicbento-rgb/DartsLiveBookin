@@ -50,7 +50,7 @@ export function buildVenueStatus({
             title: "Maintenance",
 
             message:
-                "Les cibles sont indisponibles.",
+                "Des créneaux sont indisponibles pour maintenance.",
 
         };
 
@@ -65,7 +65,7 @@ export function buildVenueStatus({
             title: "Évènement",
 
             message:
-                "Réservation impossible aujourd'hui.",
+                "Des créneaux sont indisponibles en raison d'un événement.",
 
         };
 
@@ -80,7 +80,7 @@ export function buildVenueStatus({
             title: "Complet",
 
             message:
-                "Tous les créneaux sont réservés.",
+                "Aucun créneau n'est disponible.",
 
         };
 

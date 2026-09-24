@@ -48,6 +48,9 @@ import ExportSeasonPage
 import VenueSettingsPage
   from "@/features/venue-settings/pages/VenueSettingsPage";
 
+import AvailabilityRulesPage
+  from "@/features/availability-rules/pages/AvailabilityRulePage";
+
 export const routes = [
   {
     path: "/",
@@ -212,6 +215,13 @@ export const routes = [
       <ProtectedRoute>
         <VenueSettingsPage />
       </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/venue-settings/:venueId/availability-rules",
+    element: (
+      <AvailabilityRulesPage />
     ),
   },
 ];

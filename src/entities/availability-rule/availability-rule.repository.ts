@@ -2,11 +2,12 @@ import {
     getDocs,
     query,
     where,
+    doc,
+    updateDoc,
 } from "firebase/firestore";
 
 import {
     addDoc,
-    Timestamp,
     serverTimestamp,
 } from "firebase/firestore";
 
@@ -45,11 +46,35 @@ export interface CreateAvailabilityRuleInput {
 
     endTime: string;
 
-    validFrom: Date;
+    validFrom: string;
 
-    validTo: Date;
+    validTo: string;
 
     createdByUserId: string;
+
+}
+
+export interface UpdateAvailabilityRuleInput {
+
+    title: string;
+
+    description: string;
+
+    type: AvailabilityRuleType;
+
+    frequency: AvailabilityFrequency;
+
+    weekDays: number[];
+
+    startTime: string;
+
+    endTime: string;
+
+    validFrom: string;
+
+    validTo: string;
+
+    updatedByUserId: string;
 
 }
 
@@ -81,17 +106,9 @@ export async function createAvailabilityRule(
 
             endTime: input.endTime,
 
-            validFrom: Timestamp.fromDate(
+            validFrom: input.validFrom,
 
-                input.validFrom,
-
-            ),
-
-            validTo: Timestamp.fromDate(
-
-                input.validTo,
-
-            ),
+            validTo: input.validTo,
 
             isActive: true,
 
@@ -115,6 +132,100 @@ export async function createAvailabilityRule(
 
 }
 
+export async function updateAvailabilityRule(
+
+    ruleId: string,
+
+    input: UpdateAvailabilityRuleInput,
+
+): Promise<void> {
+
+    const reference =
+        doc(
+            availabilityRulesCollection,
+            ruleId,
+        );
+
+    await updateDoc(
+
+        reference,
+
+        {
+
+            title:
+                input.title,
+
+            description:
+                input.description,
+
+            type:
+                input.type,
+
+            frequency:
+                input.frequency,
+
+            weekDays:
+                input.weekDays,
+
+            startTime:
+                input.startTime,
+
+            endTime:
+                input.endTime,
+
+            validFrom:
+                input.validFrom,
+
+            validTo:
+                input.validTo,
+
+            updatedByUserId:
+                input.updatedByUserId,
+
+            updatedAt:
+                serverTimestamp(),
+
+        },
+
+    );
+
+}
+
+export async function setAvailabilityRuleActive(
+
+    ruleId: string,
+
+    isActive: boolean,
+
+    updatedByUserId: string,
+
+): Promise<void> {
+
+    const reference =
+        doc(
+            availabilityRulesCollection,
+            ruleId,
+        );
+
+    await updateDoc(
+
+        reference,
+
+        {
+
+            isActive,
+
+            updatedByUserId,
+
+            updatedAt:
+                serverTimestamp(),
+
+        },
+
+    );
+
+}
+
 export async function getAvailabilityRulesByVenue(
 
     venueId: string,
@@ -129,12 +240,6 @@ export async function getAvailabilityRulesByVenue(
             "venueId",
             "==",
             venueId,
-        ),
-
-        where(
-            "isActive",
-            "==",
-            true,
         ),
 
     );

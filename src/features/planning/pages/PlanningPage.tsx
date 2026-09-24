@@ -101,25 +101,80 @@ export function PlanningPage() {
         matchError ??
         null;
 
+    const boards =
+
+        planning
+
+            ? planning.slots.flatMap(
+                slot => slot.boards,
+            )
+
+            : [];
+
+    const availableBoards =
+
+        boards.filter(
+
+            board =>
+                board.status === "AVAILABLE",
+
+        ).length;
+
+    const hasAvailableBoards =
+        availableBoards > 0;
+
+    const hasMaintenance =
+
+        boards.some(
+
+            board =>
+
+                board.status === "BLOCKED"
+
+                &&
+
+                board.blockType ===
+                "MAINTENANCE",
+
+        );
+
+    const hasEvent =
+
+        boards.some(
+
+            board =>
+
+                board.status === "BLOCKED"
+
+                &&
+
+                board.blockType ===
+                "EVENT",
+
+        );
+
     const venueStatus = buildVenueStatus({
 
         isOpen: true,
 
-        hasEvent: false,
+        hasMaintenance:
 
-        hasMaintenance: false,
+            !hasAvailableBoards
 
-        availableBoards:
-            planning
-                ? planning.slots
-                    .flatMap(
-                        slot => slot.boards,
-                    )
-                    .filter(
-                        board =>
-                            board.status === "AVAILABLE",
-                    ).length
-                : 0,
+            &&
+
+            hasMaintenance,
+
+        hasEvent:
+
+            !hasAvailableBoards
+
+            &&
+
+            hasEvent,
+
+        availableBoards,
+
     });
 
     const [

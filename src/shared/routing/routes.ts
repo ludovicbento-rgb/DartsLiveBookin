@@ -72,6 +72,11 @@ export const ADMIN_SETTINGS_ROUTE =
 export const VENUE_SETTINGS_ROUTE =
     "/venue-settings";
 
+export const availabilityRulesRoute = (
+    venueId: string,
+) =>
+    `/venue-settings/${venueId}/availability-rules`;
+
 export function venueSettingsRoute() {
 
     return VENUE_SETTINGS_ROUTE;

@@ -36,17 +36,51 @@ import {
     createAvailabilityRuleCommand,
 } from "@/features/commands/createAvailabilityRule";
 
-interface Props {
+import type {
+    AvailabilityRule,
+} from "@/entities/availability-rule";
 
-    venueId: string;
+import {
+    useParams,
+} from "react-router-dom";
 
-}
+import type {
+    AvailabilityRuleForm,
+} from "../components/AvailabilityRuleDrawer";
 
-export function AvailabilityRulesPage({
+import {
+    updateAvailabilityRuleCommand,
+} from "@/features/commands/updateAvailabilityRule";
 
-    venueId,
+import {
+    setAvailabilityRuleActiveCommand,
+} from "@/features/commands/setAvailabilityRuleActive";
 
-}: Props) {
+export function AvailabilityRulesPage() {
+
+    const {
+        venueId: venueIdParam,
+    } = useParams<{
+        venueId: string;
+    }>();
+
+    const venueId =
+        venueIdParam ?? "";
+
+    if (!venueId) {
+
+        throw new Error(
+            "VENUE_ID_REQUIRED",
+        );
+
+    }
+
+    const [
+        selectedRule,
+        setSelectedRule,
+    ] = useState<AvailabilityRule | null>(
+        null,
+    );
 
     const {
 
@@ -65,12 +99,162 @@ export function AvailabilityRulesPage({
     );
 
     const [
+        saving,
+        setSaving,
+    ] = useState(false);
+
+    const [
 
         drawerOpen,
 
         setDrawerOpen,
 
     ] = useState(false);
+
+    function handleCreateRequested() {
+
+        setSelectedRule(
+            null,
+        );
+
+        setDrawerOpen(
+            true,
+        );
+
+    }
+
+    async function handleActiveChanged(
+
+        rule: AvailabilityRule,
+
+        active: boolean,
+
+    ) {
+
+        try {
+
+            setSaving(true);
+
+            await setAvailabilityRuleActiveCommand(
+
+                rule.id,
+
+                active,
+
+            );
+
+            await reload();
+
+        }
+        catch (error) {
+
+            console.error(
+                "SET_AVAILABILITY_RULE_ACTIVE_FAILED",
+                error,
+            );
+
+        }
+        finally {
+
+            setSaving(false);
+
+        }
+
+    }
+
+    async function handleUpdate(
+
+        ruleId: string,
+
+        form: AvailabilityRuleForm,
+
+    ) {
+
+        try {
+
+            setSaving(true);
+
+            await updateAvailabilityRuleCommand(
+
+                ruleId,
+
+                form,
+
+            );
+
+            await reload();
+
+            setDrawerOpen(false);
+
+            setSelectedRule(null);
+
+        }
+        catch (error) {
+
+            console.error(
+                "UPDATE_AVAILABILITY_RULE_FAILED",
+                error,
+            );
+
+        }
+        finally {
+
+            setSaving(false);
+
+        }
+
+    }
+
+    function handleEditRequested(
+        rule: AvailabilityRule,
+    ) {
+
+        setSelectedRule(
+            rule,
+        );
+
+        setDrawerOpen(
+            true,
+        );
+
+    }
+
+    async function handleCreate(
+        form: AvailabilityRuleForm,
+    ) {
+
+        try {
+
+            setSaving(true);
+
+            await createAvailabilityRuleCommand({
+
+                venueId,
+
+                ...form,
+
+            });
+
+            await reload();
+
+            closeDrawer();
+
+        }
+        catch (error) {
+
+            console.error(
+                "CREATE_AVAILABILITY_RULE_FAILED",
+                error,
+            );
+
+        }
+        finally {
+
+            setSaving(false);
+
+        }
+
+    }
 
     function closeDrawer() {
 
@@ -87,50 +271,57 @@ export function AvailabilityRulesPage({
                 <Stack spacing={3}>
 
                     <Stack
-
-                        direction="row"
-
-                        sx={{
-
-                            justifyContent: "space-between",
-
-                            alignItems: "center",
-
+                        direction={{
+                            xs: "column",
+                            sm: "row",
                         }}
-
+                        spacing={2}
+                        sx={{
+                            justifyContent: "space-between",
+                            alignItems: {
+                                xs: "stretch",
+                                sm: "flex-start",
+                            },
+                        }}
                     >
 
-                        <PageTitle>
-
-                            Règles de disponibilité
-
-                        </PageTitle>
-
-                        <Typography
-                            color="text.secondary"
+                        <Stack
+                            spacing={0.5}
+                            sx={{
+                                minWidth: 0,
+                            }}
                         >
 
-                            Configurez les événements qui rendent un établissement
-                            indisponible de manière récurrente.
+                            <PageTitle>
+                                Règles de disponibilité
+                            </PageTitle>
 
-                        </Typography>
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                            >
+                                Configurez les événements qui rendent
+                                l'établissement indisponible de manière
+                                récurrente.
+                            </Typography>
+
+                        </Stack>
 
                         <Button
-
                             variant="contained"
-
                             startIcon={<AddIcon />}
-
-                            onClick={() =>
-
-                                setDrawerOpen(true)
-
+                            onClick={
+                                handleCreateRequested
                             }
-
+                            sx={{
+                                flexShrink: 0,
+                                alignSelf: {
+                                    xs: "stretch",
+                                    sm: "flex-start",
+                                },
+                            }}
                         >
-
                             Nouvelle règle
-
                         </Button>
 
                     </Stack>
@@ -192,6 +383,16 @@ export function AvailabilityRulesPage({
 
                                 rule={rule}
 
+                                loading={saving}
+
+                                onEdit={
+                                    handleEditRequested
+                                }
+
+                                onActiveChanged={
+                                    handleActiveChanged
+                                }
+
                             />
 
                         ))
@@ -206,37 +407,31 @@ export function AvailabilityRulesPage({
 
                 open={drawerOpen}
 
-                onClose={closeDrawer}
+                loading={saving}
 
-                loading={loading}
+                rule={selectedRule}
 
-                onCreate={async form => {
+                onClose={() => {
 
-                    try {
+                    if (saving) {
 
-                        await createAvailabilityRuleCommand({
-
-                            venueId,
-
-                            ...form,
-
-                        });
-
-                        await reload();
-
-                        closeDrawer();
-
-                        console.error(error);
+                        return;
 
                     }
 
-                    catch (e) {
+                    setDrawerOpen(false);
 
-                        console.error(error);
-
-                    }
+                    setSelectedRule(null);
 
                 }}
+
+                onCreate={
+                    handleCreate
+                }
+
+                onUpdate={
+                    handleUpdate
+                }
 
             />
 

@@ -32,9 +32,9 @@ export interface AvailabilityRule {
 
     endTime: string;
 
-    validFrom: Timestamp;
+    validFrom: string;
 
-    validTo: Timestamp;
+    validTo: string;
 
     isActive: boolean;
 

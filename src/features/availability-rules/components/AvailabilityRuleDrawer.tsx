@@ -12,13 +12,16 @@ import {
     Typography,
     Card,
     CardContent,
+    Alert,
 } from "@mui/material";
 
 import type {
+    AvailabilityRule,
     AvailabilityRuleType,
 } from "@/entities/availability-rule";
 
 import {
+    useEffect,
     useState,
 } from "react";
 
@@ -28,9 +31,16 @@ interface Props {
 
     loading: boolean;
 
+    rule: AvailabilityRule | null;
+
     onClose(): void;
 
     onCreate(
+        form: AvailabilityRuleForm,
+    ): Promise<void>;
+
+    onUpdate(
+        ruleId: string,
         form: AvailabilityRuleForm,
     ): Promise<void>;
 
@@ -93,9 +103,9 @@ export interface AvailabilityRuleForm {
 
     endTime: string;
 
-    validFrom: Date;
+    validFrom: string;
 
-    validTo: Date;
+    validTo: string;
 
 }
 
@@ -103,9 +113,15 @@ export function AvailabilityRuleDrawer({
 
     open,
 
+    loading,
+
+    rule,
+
     onClose,
 
     onCreate,
+
+    onUpdate,
 
 }: Props) {
 
@@ -116,6 +132,9 @@ export function AvailabilityRuleDrawer({
         setTitle,
 
     ] = useState("");
+
+    const editing =
+        rule !== null;
 
     const [
 
@@ -175,6 +194,10 @@ export function AvailabilityRuleDrawer({
 
         setEndTime("00:00");
 
+        setValidFrom("");
+
+        setValidTo("");
+
     }
 
     function handleClose() {
@@ -185,10 +208,146 @@ export function AvailabilityRuleDrawer({
 
     }
 
-    const [validFrom] = useState(new Date());
-    const [validTo] = useState(new Date());
+    const [
+        validFrom,
+        setValidFrom,
+    ] = useState("");
 
+    const [
+        validTo,
+        setValidTo,
+    ] = useState("");
 
+    useEffect(() => {
+
+        if (!open) {
+
+            return;
+
+        }
+
+        if (!rule) {
+
+            reset();
+
+            return;
+
+        }
+
+        setTitle(
+            rule.title,
+        );
+
+        setDescription(
+            rule.description,
+        );
+
+        setType(
+            rule.type,
+        );
+
+        setWeekDays(
+            [...rule.weekDays],
+        );
+
+        setStartTime(
+            rule.startTime,
+        );
+
+        setEndTime(
+            rule.endTime,
+        );
+
+        setValidFrom(
+            rule.validFrom,
+        );
+
+        setValidTo(
+            rule.validTo,
+        );
+
+    }, [
+        open,
+        rule,
+    ]);
+
+    async function handleSubmit() {
+
+        if (
+            loading
+            ||
+            title.trim() === ""
+            ||
+            weekDays.length === 0
+            ||
+            validFrom === ""
+            ||
+            validTo === ""
+            ||
+            startTime === ""
+            ||
+            endTime === ""
+            ||
+            invalidDateRange
+        ) {
+
+            return;
+
+        }
+
+        const form: AvailabilityRuleForm = {
+
+            title:
+                title.trim(),
+
+            description:
+                description.trim(),
+
+            type,
+
+            frequency:
+                "WEEKLY",
+
+            weekDays,
+
+            startTime,
+
+            endTime,
+
+            validFrom,
+
+            validTo,
+
+        };
+
+        if (rule) {
+
+            await onUpdate(
+                rule.id,
+                form,
+            );
+
+            return;
+
+        }
+
+        await onCreate(
+            form,
+        );
+
+    }
+
+    const invalidDateRange =
+
+        validFrom !== ""
+
+        &&
+
+        validTo !== ""
+
+        &&
+
+        validFrom > validTo;
     return (
 
         <Drawer
@@ -197,7 +356,11 @@ export function AvailabilityRuleDrawer({
 
             open={open}
 
-            onClose={handleClose}
+            onClose={
+                loading
+                    ? undefined
+                    : handleClose
+            }
 
             slotProps={{
 
@@ -226,19 +389,16 @@ export function AvailabilityRuleDrawer({
             <Stack spacing={3}>
 
                 <Typography
-
                     variant="h5"
-
                     sx={{
-
                         fontWeight: 700,
-
                     }}
-
                 >
-
-                    Nouvelle règle de disponibilité
-
+                    {
+                        editing
+                            ? "Modifier la règle de disponibilité"
+                            : "Nouvelle règle de disponibilité"
+                    }
                 </Typography>
 
                 <TextField
@@ -340,15 +500,22 @@ export function AvailabilityRuleDrawer({
                 </Typography>
 
                 <ToggleButtonGroup
-
                     value={weekDays}
-
                     onChange={(_, value) =>
-
                         setWeekDays(value)
-
                     }
+                    sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 0.5,
 
+                        "& .MuiToggleButtonGroup-grouped": {
+                            borderRadius: 1,
+                            border: "1px solid",
+                            borderColor: "divider",
+                            m: 0,
+                        },
+                    }}
                 >
 
                     {
@@ -356,15 +523,17 @@ export function AvailabilityRuleDrawer({
                         DAYS.map(day => (
 
                             <ToggleButton
-
                                 key={day.value}
-
                                 value={day.value}
-
+                                sx={{
+                                    flex: {
+                                        xs: "1 0 22%",
+                                        sm: "1 1 0",
+                                    },
+                                    minWidth: 0,
+                                }}
                             >
-
                                 {day.label}
-
                             </ToggleButton>
 
                         ))
@@ -374,97 +543,106 @@ export function AvailabilityRuleDrawer({
                 </ToggleButtonGroup>
 
                 <Stack
-
-                    direction="row"
-
+                    direction={{
+                        xs: "column",
+                        sm: "row",
+                    }}
                     spacing={2}
-
                 >
 
                     <TextField
-
                         label="Heure de début"
-
                         type="time"
-
                         value={startTime}
-
                         onChange={event =>
-
                             setStartTime(
-
                                 event.target.value,
-
                             )
-
                         }
-
-                        fullWidth
-
                         slotProps={{
-
                             inputLabel: {
-
                                 shrink: true,
-
                             },
-
                         }}
-
-
+                        fullWidth
                     />
 
                     <TextField
-
                         label="Heure de fin"
-
                         type="time"
-
                         value={endTime}
-
                         onChange={event =>
-
                             setEndTime(
-
                                 event.target.value,
-
                             )
-
                         }
-
                         slotProps={{
-
                             inputLabel: {
-
                                 shrink: true,
-
                             },
-
                         }}
-
                         fullWidth
-
-                    />
-                    <TextField
-
-                        label="Valide du"
-
-                        type="date"
-
-                        value={""}
-
-                    />
-                    <TextField
-
-                        label="Valide jusqu'au"
-
-                        type="date"
-
-                        value={""}
-
                     />
 
                 </Stack>
+
+                <Stack
+                    direction={{
+                        xs: "column",
+                        sm: "row",
+                    }}
+                    spacing={2}
+                >
+
+                    <TextField
+                        label="Valide du"
+                        type="date"
+                        value={validFrom}
+                        onChange={event =>
+                            setValidFrom(
+                                event.target.value,
+                            )
+                        }
+                        slotProps={{
+                            inputLabel: {
+                                shrink: true,
+                            },
+                        }}
+                        fullWidth
+                    />
+
+                    <TextField
+                        label="Valide jusqu'au"
+                        type="date"
+                        value={validTo}
+                        onChange={event =>
+                            setValidTo(
+                                event.target.value,
+                            )
+                        }
+                        slotProps={{
+                            inputLabel: {
+                                shrink: true,
+                            },
+                        }}
+                        fullWidth
+                    />
+
+                </Stack>
+
+                {
+                    invalidDateRange && (
+
+                        <Alert severity="error">
+
+                            La date de fin doit être
+                            postérieure ou égale à la
+                            date de début.
+
+                        </Alert>
+
+                    )
+                }
 
                 <Stack
 
@@ -480,6 +658,7 @@ export function AvailabilityRuleDrawer({
 
                         variant="outlined"
 
+                        disabled={loading}
                         onClick={handleClose}
 
                     >
@@ -489,49 +668,42 @@ export function AvailabilityRuleDrawer({
                     </Button>
 
                     <Button
-
+                        fullWidth
+                        variant="contained"
                         disabled={
-
-                            title.trim() === ""
-
+                            loading
                             ||
-
+                            title.trim() === ""
+                            ||
                             weekDays.length === 0
-
+                            ||
+                            validFrom === ""
+                            ||
+                            validTo === ""
+                            ||
+                            startTime === ""
+                            ||
+                            endTime === ""
+                            ||
+                            invalidDateRange
                         }
-
-                        onClick={async () => {
-
-                            await onCreate({
-
-                                title,
-
-                                description,
-
-                                type,
-
-                                frequency: "WEEKLY",
-
-                                weekDays,
-
-                                startTime,
-
-                                endTime,
-
-                                validFrom,
-
-                                validTo,
-
-                            });
-
-                            reset();
-
-                        }}
-
+                        onClick={handleSubmit}
                     >
+                        {
+                            loading
 
-                        Créer la règle
+                                ? (
+                                    editing
+                                        ? "Enregistrement..."
+                                        : "Création..."
+                                )
 
+                                : (
+                                    editing
+                                        ? "Enregistrer les modifications"
+                                        : "Créer la règle"
+                                )
+                        }
                     </Button>
 
                 </Stack>

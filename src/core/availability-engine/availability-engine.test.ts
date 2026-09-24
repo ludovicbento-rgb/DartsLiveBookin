@@ -159,19 +159,8 @@ describe(
 
                                 endTime: "00:00",
 
-                                validFrom: {
-
-                                    toDate: () =>
-                                        new Date("2026-01-01"),
-
-                                } as any,
-
-                                validTo: {
-
-                                    toDate: () =>
-                                        new Date("2027-12-31"),
-
-                                } as any,
+                                validFrom: "2026-01-01",
+                                validTo: "2027-12-31",
 
                                 isActive: true,
 
@@ -303,19 +292,8 @@ describe(
 
                                 endTime: "19:30",
 
-                                validFrom: {
-
-                                    toDate: () =>
-                                        new Date("2026-01-01"),
-
-                                } as any,
-
-                                validTo: {
-
-                                    toDate: () =>
-                                        new Date("2027-12-31"),
-
-                                } as any,
+                                validFrom: "2026-01-01",
+                                validTo: "2027-12-31",
 
                                 isActive: true,
 
@@ -353,19 +331,8 @@ describe(
 
                                 endTime: "22:30",
 
-                                validFrom: {
-
-                                    toDate: () =>
-                                        new Date("2026-01-01"),
-
-                                } as any,
-
-                                validTo: {
-
-                                    toDate: () =>
-                                        new Date("2027-12-31"),
-
-                                } as any,
+                                validFrom: "2026-01-01",
+                                validTo: "2027-12-31",
 
                                 isActive: true,
 
@@ -462,19 +429,8 @@ describe(
 
                                 endTime: "22:30",
 
-                                validFrom: {
-
-                                    toDate: () =>
-                                        new Date("2026-01-01"),
-
-                                } as any,
-
-                                validTo: {
-
-                                    toDate: () =>
-                                        new Date("2027-12-31"),
-
-                                } as any,
+                                validFrom: "2026-01-01",
+                                validTo: "2027-12-31",
 
                                 isActive: true,
 

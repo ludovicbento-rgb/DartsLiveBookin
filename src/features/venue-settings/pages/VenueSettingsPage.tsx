@@ -6,6 +6,7 @@ import {
     Fragment,
 } from "react";
 
+import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import CircularProgress from "@mui/material/CircularProgress";
 
@@ -54,10 +55,24 @@ import type {
     PlanningBoard,
 } from "@/core/reservation-engine";
 
+import {
+    useNavigate,
+} from "react-router-dom";
+
+import {
+    availabilityRulesRoute,
+} from "@/shared/routing";
+
+import SettingsIcon
+    from "@mui/icons-material/Settings";
+
 export function VenueSettingsPage() {
 
     const profile =
         useCurrentUser();
+
+    const navigate =
+        useNavigate();
 
     const {
 
@@ -358,6 +373,34 @@ export function VenueSettingsPage() {
                                         Horaires hebdomadaires
 
                                     </Typography>
+
+                                    <Button
+
+                                        variant="outlined"
+
+                                        startIcon={
+                                            <SettingsIcon />
+                                        }
+
+                                        onClick={() => {
+
+                                            navigate(
+
+                                                availabilityRulesRoute(
+
+                                                    venue.id,
+
+                                                ),
+
+                                            );
+
+                                        }}
+
+                                    >
+
+                                        Règles de disponibilité
+
+                                    </Button>
 
                                 </Stack>
 

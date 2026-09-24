@@ -2,6 +2,10 @@ import type {
     AvailabilityDecision,
 } from "@/core/availability-engine";
 
+import type {
+    AvailabilityRuleType,
+} from "@/entities/availability-rule";
+
 export type BoardStatus =
 
     | "AVAILABLE"
@@ -32,6 +36,8 @@ export interface BoardSlot {
     matchId?: string;
 
     label?: string;
+
+    blockType?: AvailabilityRuleType;
 
 
 }

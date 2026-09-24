@@ -95,6 +95,14 @@ export function mapPlanning({
 
                         : undefined,
 
+                blockType:
+
+                    slot.status === "BLOCKED"
+
+                        ? slot.blockType
+
+                        : undefined,
+
             };
 
             timeSlot.boards.push(
