@@ -4,6 +4,8 @@ import {
     query,
     Timestamp,
     where,
+    doc,
+    updateDoc,
 } from "firebase/firestore";
 
 import {
@@ -18,6 +20,85 @@ import type {
     VenueClosure,
     VenueClosureReason,
 } from "./venue-closure.types";
+
+export interface UpdateVenueClosureInput {
+
+    startDate: Date;
+
+    endDate: Date;
+
+    reasonType: VenueClosureReason;
+
+    comment: string;
+
+}
+
+export async function updateVenueClosure(
+
+    closureId: string,
+
+    input: UpdateVenueClosureInput,
+
+): Promise<void> {
+
+    const reference =
+        doc(
+            venueClosuresCollection,
+            closureId,
+        );
+
+    await updateDoc(
+
+        reference,
+
+        {
+            startDate:
+                Timestamp.fromDate(
+                    input.startDate,
+                ),
+
+            endDate:
+                Timestamp.fromDate(
+                    input.endDate,
+                ),
+
+            reasonType:
+                input.reasonType,
+
+            comment:
+                input.comment,
+
+        },
+
+    );
+
+}
+
+export async function setVenueClosureActive(
+
+    closureId: string,
+
+    active: boolean,
+
+): Promise<void> {
+
+    const reference =
+        doc(
+            venueClosuresCollection,
+            closureId,
+        );
+
+    await updateDoc(
+
+        reference,
+
+        {
+            active,
+        },
+
+    );
+
+}
 
 export interface CreateVenueClosureInput {
 

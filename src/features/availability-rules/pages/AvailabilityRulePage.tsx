@@ -81,6 +81,18 @@ import {
     createVenueClosureCommand,
 } from "@/features/commands/createVenueClosure";
 
+import type {
+    VenueClosure,
+} from "@/entities/venue-closure";
+
+import {
+    updateVenueClosureCommand,
+} from "@/features/commands/updateVenueClosure";
+
+import {
+    setVenueClosureActiveCommand,
+} from "@/features/commands/setVenueClosureActive";
+
 export function AvailabilityRulesPage() {
 
     const {
@@ -128,6 +140,13 @@ export function AvailabilityRulesPage() {
         savingClosure,
         setSavingClosure,
     ] = useState(false);
+
+    const [
+        selectedClosure,
+        setSelectedClosure,
+    ] = useState<VenueClosure | null>(
+        null,
+    );
 
     const {
 
@@ -188,6 +207,20 @@ export function AvailabilityRulesPage() {
 
     }
 
+    function handleClosureEditRequested(
+        closure: VenueClosure,
+    ) {
+
+        setSelectedClosure(
+            closure,
+        );
+
+        setClosureDrawerOpen(
+            true,
+        );
+
+    }
+
     function handleDeleteRequested(
         rule: AvailabilityRule,
     ) {
@@ -195,6 +228,108 @@ export function AvailabilityRulesPage() {
         setRuleToDelete(
             rule,
         );
+
+    }
+
+    async function handleClosureActiveChanged(
+
+        closure: VenueClosure,
+
+        active: boolean,
+
+    ) {
+
+        try {
+
+            setSavingClosure(true);
+
+            await setVenueClosureActiveCommand(
+
+                closure.id,
+
+                active,
+
+            );
+
+            await reloadClosures();
+
+        }
+        catch (error) {
+
+            console.error(
+                "SET_VENUE_CLOSURE_ACTIVE_FAILED",
+                error,
+            );
+
+        }
+        finally {
+
+            setSavingClosure(false);
+
+        }
+
+    }
+
+    async function handleUpdateClosure(
+
+        closureId: string,
+
+        form: VenueClosureForm,
+
+    ) {
+
+        try {
+
+            setSavingClosure(true);
+
+            const startDate =
+                new Date(
+                    `${form.startDate}T00:00:00`,
+                );
+
+            const endDate =
+                new Date(
+                    `${form.endDate}T23:59:59.999`,
+                );
+
+            await updateVenueClosureCommand(
+
+                closureId,
+
+                {
+                    reasonType:
+                        form.reasonType,
+
+                    comment:
+                        form.comment.trim(),
+
+                    startDate,
+
+                    endDate,
+                },
+
+            );
+
+            await reloadClosures();
+
+            setClosureDrawerOpen(false);
+
+            setSelectedClosure(null);
+
+        }
+        catch (error) {
+
+            console.error(
+                "UPDATE_VENUE_CLOSURE_FAILED",
+                error,
+            );
+
+        }
+        finally {
+
+            setSavingClosure(false);
+
+        }
 
     }
 
@@ -650,13 +785,13 @@ export function AvailabilityRulesPage() {
                                     <AddIcon />
                                 }
 
-                                onClick={() =>
+                                onClick={() => {
 
-                                    setClosureDrawerOpen(
-                                        true,
-                                    )
+                                    setSelectedClosure(null);
 
-                                }
+                                    setClosureDrawerOpen(true);
+
+                                }}
 
                                 sx={{
                                     flexShrink: 0,
@@ -754,6 +889,18 @@ export function AvailabilityRulesPage() {
 
                                         closure={closure}
 
+                                        loading={
+                                            savingClosure
+                                        }
+
+                                        onEdit={
+                                            handleClosureEditRequested
+                                        }
+
+                                        onActiveChanged={
+                                            handleClosureActiveChanged
+                                        }
+
                                     />
 
                                 ),
@@ -833,13 +980,11 @@ export function AvailabilityRulesPage() {
 
             <VenueClosureDrawer
 
-                open={
-                    closureDrawerOpen
-                }
+                open={closureDrawerOpen}
 
-                loading={
-                    savingClosure
-                }
+                loading={savingClosure}
+
+                closure={selectedClosure}
 
                 onClose={() => {
 
@@ -849,15 +994,20 @@ export function AvailabilityRulesPage() {
 
                     }
 
-                    setClosureDrawerOpen(
-                        false,
-                    );
+                    setClosureDrawerOpen(false);
+
+                    setSelectedClosure(null);
 
                 }}
 
                 onCreate={
                     handleCreateClosure
                 }
+
+                onUpdate={
+                    handleUpdateClosure
+                }
+
 
             />
 

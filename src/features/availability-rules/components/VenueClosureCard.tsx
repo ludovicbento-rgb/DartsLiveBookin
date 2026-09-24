@@ -1,10 +1,16 @@
 import {
+    Button,
     Card,
     CardContent,
     Chip,
+    FormControlLabel,
     Stack,
+    Switch,
     Typography,
 } from "@mui/material";
+
+import EditIcon
+    from "@mui/icons-material/Edit";
 
 import type {
     VenueClosure,
@@ -14,6 +20,17 @@ import type {
 interface Props {
 
     closure: VenueClosure;
+
+    loading?: boolean;
+
+    onEdit(
+        closure: VenueClosure,
+    ): void;
+
+    onActiveChanged(
+        closure: VenueClosure,
+        active: boolean,
+    ): Promise<void>;
 
 }
 
@@ -80,6 +97,12 @@ function formatDate(
 export function VenueClosureCard({
 
     closure,
+
+    loading = false,
+
+    onEdit,
+
+    onActiveChanged
 
 }: Props) {
 
@@ -167,6 +190,59 @@ export function VenueClosureCard({
 
                         )
                     }
+
+                </Stack>
+
+                <Stack
+                    direction={{
+                        xs: "column",
+                        sm: "row",
+                    }}
+                    spacing={2}
+                    sx={{
+                        justifyContent: "space-between",
+                        alignItems: {
+                            xs: "stretch",
+                            sm: "center",
+                        },
+                        pt: 1,
+                    }}
+                >
+
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={closure.active}
+                                disabled={loading}
+                                onChange={(_, checked) => {
+
+                                    void onActiveChanged(
+                                        closure,
+                                        checked,
+                                    );
+
+                                }}
+                            />
+                        }
+                        label={
+                            closure.active
+                                ? "Actif"
+                                : "Inactif"
+                        }
+                    />
+
+                    <Button
+                        variant="outlined"
+                        startIcon={
+                            <EditIcon />
+                        }
+                        disabled={loading}
+                        onClick={() =>
+                            onEdit(closure)
+                        }
+                    >
+                        Modifier
+                    </Button>
 
                 </Stack>
 

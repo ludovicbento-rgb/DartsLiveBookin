@@ -17,6 +17,7 @@ import {
 } from "react";
 
 import type {
+    VenueClosure,
     VenueClosureReason,
 } from "@/entities/venue-closure";
 
@@ -38,9 +39,16 @@ interface Props {
 
     loading: boolean;
 
+    closure: VenueClosure | null;
+
     onClose(): void;
 
     onCreate(
+        form: VenueClosureForm,
+    ): Promise<void>;
+
+    onUpdate(
+        closureId: string,
         form: VenueClosureForm,
     ): Promise<void>;
 
@@ -52,9 +60,13 @@ export function VenueClosureDrawer({
 
     loading,
 
+    closure,
+
     onClose,
 
     onCreate,
+
+    onUpdate,
 
 }: Props) {
 
@@ -80,6 +92,9 @@ export function VenueClosureDrawer({
         setComment,
     ] = useState("");
 
+    const editing =
+        closure !== null;
+
     const invalidDateRange =
 
         startDate !== ""
@@ -91,6 +106,28 @@ export function VenueClosureDrawer({
         &&
 
         startDate > endDate;
+
+
+    function toDateInputValue(
+        date: Date,
+    ): string {
+
+        const year =
+            date.getFullYear();
+
+        const month =
+            String(
+                date.getMonth() + 1,
+            ).padStart(2, "0");
+
+        const day =
+            String(
+                date.getDate(),
+            ).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+
+    }
 
     function reset() {
 
@@ -112,10 +149,41 @@ export function VenueClosureDrawer({
 
             reset();
 
+            return;
+
         }
+
+        if (!closure) {
+
+            reset();
+
+            return;
+
+        }
+
+        setReasonType(
+            closure.reasonType,
+        );
+
+        setStartDate(
+            toDateInputValue(
+                closure.startDate.toDate(),
+            ),
+        );
+
+        setEndDate(
+            toDateInputValue(
+                closure.endDate.toDate(),
+            ),
+        );
+
+        setComment(
+            closure.comment,
+        );
 
     }, [
         open,
+        closure,
     ]);
 
 
@@ -149,7 +217,7 @@ export function VenueClosureDrawer({
 
         }
 
-        await onCreate({
+        const form: VenueClosureForm = {
 
             reasonType,
 
@@ -160,7 +228,22 @@ export function VenueClosureDrawer({
             comment:
                 comment.trim(),
 
-        });
+        };
+
+        if (closure) {
+
+            await onUpdate(
+                closure.id,
+                form,
+            );
+
+            return;
+
+        }
+
+        await onCreate(
+            form,
+        );
 
     }
 
@@ -211,7 +294,11 @@ export function VenueClosureDrawer({
                     }}
                 >
 
-                    Nouvelle fermeture exceptionnelle
+                    {
+                        editing
+                            ? "Modifier la fermeture exceptionnelle"
+                            : "Nouvelle fermeture exceptionnelle"
+                    }
 
                 </Typography>
 
@@ -439,8 +526,18 @@ export function VenueClosureDrawer({
 
                         {
                             loading
-                                ? "Création..."
-                                : "Créer la fermeture"
+
+                                ? (
+                                    editing
+                                        ? "Enregistrement..."
+                                        : "Création..."
+                                )
+
+                                : (
+                                    editing
+                                        ? "Enregistrer les modifications"
+                                        : "Créer la fermeture"
+                                )
                         }
 
                     </Button>
