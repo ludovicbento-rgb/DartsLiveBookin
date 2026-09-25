@@ -15,9 +15,34 @@ import type {
 } from "../model/reservation-validation-item";
 import { getVenuesManagedByUser } from "@/entities/venue/venue.repository";
 
+import type {
+    Match,
+} from "@/entities/match";
+
+
+
 export async function loadPendingReservations(
     managerUserId: string,
 ): Promise<ReservationValidationItem[]> {
+
+    const pendingMatches =
+        await getPendingMatches();
+
+    return buildPendingReservations(
+        managerUserId,
+        pendingMatches,
+    );
+
+}
+
+export async function buildPendingReservations(
+
+    managerUserId: string,
+
+    pendingMatches: Match[],
+
+): Promise<ReservationValidationItem[]> {
+
     const managedVenues =
         await getVenuesManagedByUser(
             managerUserId,
@@ -27,13 +52,6 @@ export async function loadPendingReservations(
         managedVenues.map(
             venue => venue.id,
         );
-    const pendingMatches =
-        await getPendingMatches();
-
-    console.log(
-        "Pending matches",
-        pendingMatches,
-    );
 
     const result: ReservationValidationItem[] = [];
 
@@ -58,26 +76,18 @@ export async function loadPendingReservations(
 
         ]);
 
-        console.log(
-            "Match",
-            match.id,
-            match.status,
-            match.plannedReservationId,
-        );
         if (!reservation) {
             continue;
         }
 
         /*
-         * Un gérant ne voit que les réservations
-         * de son établissement.
+         * Le gérant ne voit que les réservations
+         * de ses établissements.
          */
         if (
-
             !managedVenueIds.includes(
                 context.venue.id,
             )
-
         ) {
 
             continue;
@@ -90,22 +100,30 @@ export async function loadPendingReservations(
         const today =
             new Date();
 
-        today.setHours(0, 0, 0, 0);
+        today.setHours(
+            0,
+            0,
+            0,
+            0,
+        );
 
-        reservationDate.setHours(0, 0, 0, 0);
+        reservationDate.setHours(
+            0,
+            0,
+            0,
+            0,
+        );
 
         const daysBeforeReservation =
             Math.floor(
 
                 (
-
-                    reservationDate.getTime() -
-
+                    reservationDate.getTime()
+                    -
                     today.getTime()
-
                 )
-
-                / 86400000,
+                /
+                86400000,
 
             );
 
@@ -145,8 +163,8 @@ export async function loadPendingReservations(
                 reservation.notes,
 
             isHomeMatch:
-
-                context.homeRegistration.homeVenueId ===
+                context.homeRegistration.homeVenueId
+                ===
                 context.venue.id,
 
             daysBeforeReservation,
@@ -155,28 +173,25 @@ export async function loadPendingReservations(
 
     }
 
-    result.sort((a, b) => {
+    result.sort(
+        (a, b) => {
 
-        const date =
-            a.plannedStartAt
-                .toMillis() -
-            b.plannedStartAt
-                .toMillis();
+            const date =
+                a.plannedStartAt.toMillis()
+                -
+                b.plannedStartAt.toMillis();
 
-        if (date !== 0) {
-            return date;
-        }
+            if (date !== 0) {
+                return date;
+            }
 
-        return (
-            a.boardNumber -
-            b.boardNumber
-        );
+            return (
+                a.boardNumber
+                -
+                b.boardNumber
+            );
 
-    });
-
-    console.log(
-        "Result",
-        result,
+        },
     );
 
     return result;

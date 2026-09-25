@@ -33,13 +33,9 @@ export function ReservationValidationPage() {
     const profile =
         useCurrentUser();
     const {
-
         reservations,
-
         loading,
-
-        reload,
-
+        error,
     } = usePendingReservations(
         profile?.id ?? "",
     );
@@ -48,9 +44,17 @@ export function ReservationValidationPage() {
         useReservationValidation();
 
     const [
-        success,
-        setSuccess,
-    ] = useState(false);
+        notification,
+        setNotification,
+    ] = useState<{
+        open: boolean;
+        severity: "success" | "error";
+        message: string;
+    }>({
+        open: false,
+        severity: "success",
+        message: "",
+    });
 
     const [
 
@@ -91,9 +95,11 @@ export function ReservationValidationPage() {
 
             );
 
-            await reload();
-
-            setSuccess(true);
+            setNotification({
+                open: true,
+                severity: "success",
+                message: "Réservation validée.",
+            });
 
         }
 
@@ -104,8 +110,14 @@ export function ReservationValidationPage() {
                 error,
             );
 
-        }
+            setNotification({
+                open: true,
+                severity: "error",
+                message:
+                    "Impossible de valider la réservation.",
+            });
 
+        }
     }
 
     function handleReject(
@@ -196,6 +208,18 @@ export function ReservationValidationPage() {
                     </Typography>
 
                     {
+                        error && (
+
+                            <Alert severity="error">
+
+                                Impossible de charger les réservations à valider.
+
+                            </Alert>
+
+                        )
+                    }
+
+                    {
 
                         reservations.length === 0 && (
 
@@ -241,18 +265,31 @@ export function ReservationValidationPage() {
                 </Stack>
 
                 <Snackbar
-                    open={success}
+                    open={
+                        notification.open
+                    }
                     autoHideDuration={3000}
                     onClose={() =>
-                        setSuccess(false)
+                        setNotification(current => ({
+                            ...current,
+                            open: false,
+                        }))
                     }
                 >
 
                     <Alert
-                        severity="success"
+                        severity={
+                            notification.severity
+                        }
+                        onClose={() =>
+                            setNotification(current => ({
+                                ...current,
+                                open: false,
+                            }))
+                        }
                     >
 
-                        Réservation validée.
+                        {notification.message}
 
                     </Alert>
 
@@ -302,9 +339,11 @@ export function ReservationValidationPage() {
 
                             setRejectReason("");
 
-                            await reload();
-
-                            setSuccess(true);
+                            setNotification({
+                                open: true,
+                                severity: "success",
+                                message: "Réservation refusée.",
+                            });
 
                         }
 
@@ -314,6 +353,14 @@ export function ReservationValidationPage() {
                                 "RESERVATION_REJECT_FAILED",
                                 error,
                             );
+
+                            setNotification({
+                                open: true,
+                                severity: "error",
+                                message:
+                                    "Impossible de refuser la réservation.",
+                            });
+
                         }
 
                     }}

@@ -1,11 +1,14 @@
 import {
-    useCallback,
     useEffect,
     useState,
 } from "react";
 
 import {
-    loadPendingReservations,
+    subscribePendingMatches,
+} from "@/entities/match";
+
+import {
+    buildPendingReservations,
 } from "../api/reservation-validation.service";
 
 import type {
@@ -19,7 +22,9 @@ export function usePendingReservations(
     const [
         reservations,
         setReservations,
-    ] = useState<ReservationValidationItem[]>([]);
+    ] = useState<
+        ReservationValidationItem[]
+    >([]);
 
     const [
         loading,
@@ -29,9 +34,11 @@ export function usePendingReservations(
     const [
         error,
         setError,
-    ] = useState<string | null>(null);
+    ] = useState<string | null>(
+        null,
+    );
 
-    const load = useCallback(async () => {
+    useEffect(() => {
 
         if (!managerUserId) {
 
@@ -47,55 +54,88 @@ export function usePendingReservations(
 
         setError(null);
 
-        try {
+        let generation = 0;
 
-            const result =
-                await loadPendingReservations(
-                    managerUserId,
-                );
+        const unsubscribe =
+            subscribePendingMatches(
 
-            setReservations(result);
+                pendingMatches => {
 
-        }
+                    const currentGeneration =
+                        ++generation;
 
-        catch (e) {
+                    void buildPendingReservations(
+                        managerUserId,
+                        pendingMatches,
+                    )
+                        .then(result => {
 
-            if (e instanceof Error) {
+                            /*
+                             * Évite qu'une ancienne réponse
+                             * async écrase une snapshot plus récente.
+                             */
+                            if (
+                                currentGeneration
+                                !==
+                                generation
+                            ) {
 
-                setError(e.message);
+                                return;
 
-            }
+                            }
 
-            else {
+                            setReservations(
+                                result,
+                            );
 
-                setError(
-                    "Impossible de charger les réservations.",
-                );
+                            setLoading(
+                                false,
+                            );
 
-            }
+                        })
+                        .catch(error => {
 
-        }
+                            if (
+                                currentGeneration
+                                !==
+                                generation
+                            ) {
 
-        finally {
+                                return;
 
-            setLoading(false);
+                            }
 
-        }
+                            console.error(
+                                "PENDING_RESERVATIONS_LOAD_FAILED",
+                                error,
+                            );
+
+                            setError(
+                                error instanceof Error
+                                    ? error.message
+                                    : "Impossible de charger les réservations.",
+                            );
+
+                            setLoading(
+                                false,
+                            );
+
+                        });
+
+                },
+
+            );
+
+        return () => {
+
+            generation++;
+
+            unsubscribe();
+
+        };
 
     }, [
-
         managerUserId,
-
-    ]);
-
-    useEffect(() => {
-
-        void load();
-
-    }, [
-
-        load,
-
     ]);
 
     return {
@@ -105,8 +145,6 @@ export function usePendingReservations(
         loading,
 
         error,
-
-        reload: load,
 
     };
 

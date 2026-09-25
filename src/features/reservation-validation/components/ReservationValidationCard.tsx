@@ -50,6 +50,25 @@ export function ReservationValidationCard({
 
 }: Props) {
 
+    const timingLabel =
+        reservation.daysBeforeReservation < 0
+            ? "Date dépassée"
+            : reservation.daysBeforeReservation <= 1
+                ? "Urgent"
+                : reservation.daysBeforeReservation <= 7
+                    ? "Cette semaine"
+                    : "Plus tard";
+
+    const timingColor:
+        "error" |
+        "warning" |
+        "success" =
+        reservation.daysBeforeReservation <= 1
+            ? "error"
+            : reservation.daysBeforeReservation <= 7
+                ? "warning"
+                : "success";
+
     return (
 
         <Card
@@ -61,60 +80,55 @@ export function ReservationValidationCard({
                 <Stack spacing={2}>
 
                     <Stack
-                        direction="row"
+                        direction={{
+                            xs: "column",
+                            sm: "row",
+                        }}
+                        spacing={1}
                         sx={{
-                            justifyContent: "space-between",
-                            alignItems: "center",
+                            justifyContent:
+                                "space-between",
+
+                            alignItems: {
+                                xs: "flex-start",
+                                sm: "center",
+                            },
                         }}
                     >
 
                         <Typography
                             variant="h6"
+                            sx={{
+                                fontWeight: 700,
+                            }}
                         >
 
-                            {`Journée${reservation.matchDayNumber}`}
+                            {`Journée ${reservation.matchDayNumber}`}
 
                         </Typography>
 
-                        <Chip
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                            sx={{
+                                flexWrap: "wrap",
+                                gap: 1,
+                            }}
+                        >
 
-                            color="warning"
+                            <Chip
+                                size="small"
+                                color="warning"
+                                label="En attente"
+                            />
 
-                            label="En attente"
+                            <Chip
+                                size="small"
+                                color={timingColor}
+                                label={timingLabel}
+                            />
 
-                        />
-
-                        <Chip
-
-                            color={
-
-                                reservation.daysBeforeReservation <= 1
-
-                                    ? "error"
-
-                                    : reservation.daysBeforeReservation <= 7
-
-                                        ? "warning"
-
-                                        : "success"
-
-                            }
-
-                            label={
-
-                                reservation.daysBeforeReservation <= 1
-
-                                    ? "Urgent"
-
-                                    : reservation.daysBeforeReservation <= 7
-
-                                        ? "Cette semaine"
-
-                                        : "Plus tard"
-
-                            }
-
-                        />
+                        </Stack>
 
                     </Stack>
 
@@ -242,7 +256,10 @@ export function ReservationValidationCard({
                     }
 
                     <Stack
-                        direction="row"
+                        direction={{
+                            xs: "column",
+                            sm: "row",
+                        }}
                         spacing={2}
                     >
 
