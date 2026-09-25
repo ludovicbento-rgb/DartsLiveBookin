@@ -9,8 +9,19 @@ import {
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
-import { AppLayout } from "@/app/layouts/AppLayout";
+import SettingsIcon
+    from "@mui/icons-material/Settings";
+
+import {
+    useNavigate,
+} from "react-router-dom";
+
+import {
+    AppLayout,
+} from "@/app/layouts/AppLayout";
 
 import {
     AppCard,
@@ -21,8 +32,24 @@ import type {
 } from "@/entities/venue-schedule";
 
 import {
+    availabilityRulesRoute,
+} from "@/shared/routing";
+
+import {
+    useCurrentUser,
+} from "@/features/authentication/hooks/useCurrentUser";
+
+import {
     useVenueSchedules,
 } from "../hooks/useVenueSchedules";
+
+import {
+    useManagedVenue,
+} from "../hooks/useManagedVenue";
+
+import {
+    useVenueScheduleEditor,
+} from "../hooks/useVenueScheduleEditor";
 
 import {
     VenueScheduleCard,
@@ -33,38 +60,8 @@ import {
 } from "../components/VenueScheduleDrawer";
 
 import {
-    GeneratedPlanningCard,
-} from "@/features/planning/components/GeneratedPlanning";
-
-import {
-    useVenueScheduleEditor,
-} from "../hooks/useVenueScheduleEditor";
-
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-
-import {
-    useCurrentUser,
-} from "@/features/authentication/hooks/useCurrentUser";
-
-import {
-    useManagedVenue,
-} from "../hooks/useManagedVenue";
-
-import type {
-    PlanningBoard,
-} from "@/core/reservation-engine";
-
-import {
-    useNavigate,
-} from "react-router-dom";
-
-import {
-    availabilityRulesRoute,
-} from "@/shared/routing";
-
-import SettingsIcon
-    from "@mui/icons-material/Settings";
+    useConfiguration,
+} from "@/features/configuration/hooks/useConfiguration";
 
 export function VenueSettingsPage() {
 
@@ -75,83 +72,59 @@ export function VenueSettingsPage() {
         useNavigate();
 
     const {
-
         venue,
-
         loading: loadingVenue,
-
     } = useManagedVenue(
-
         profile?.id ?? "",
-
     );
 
     const {
-
         schedules,
-
         loading,
+    } = useVenueSchedules(
+        venue?.id ?? "",
+    );
 
-    } =
-        useVenueSchedules(
-            venue?.id ?? "",
-
-        );
+    const {
+        configuration,
+        loading: loadingConfiguration,
+        error: configurationError,
+    } = useConfiguration();
 
     const [
-
         drawerOpen,
-
         setDrawerOpen,
-
     ] = useState(false);
 
     const [
-
         selectedDay,
-
         setSelectedDay,
-
     ] = useState(1);
 
     const [
-
         selectedSchedule,
-
         setSelectedSchedule,
-
     ] = useState<VenueSchedule | null>(
         null,
     );
 
     const [
-
         openTime,
-
         setStartTime,
-
     ] = useState("");
 
     const [
-
         closeTime,
-
         setEndTime,
-
     ] = useState("");
 
     const [
-
         boardNumbers,
-
         setBoardNumbers,
-
     ] = useState<number[]>([]);
 
     const editor =
         useVenueScheduleEditor();
-
-    const generatedPlanning: PlanningBoard[] = [];
 
     if (loadingVenue) {
 
@@ -171,8 +144,6 @@ export function VenueSettingsPage() {
 
     }
 
-
-
     function handleAdd(
         dayOfWeek: number,
     ) {
@@ -185,13 +156,21 @@ export function VenueSettingsPage() {
             dayOfWeek,
         );
 
-        setStartTime("");
+        setStartTime(
+            "",
+        );
 
-        setEndTime("");
+        setEndTime(
+            "",
+        );
 
-        setBoardNumbers([]);
+        setBoardNumbers(
+            [],
+        );
 
-        setDrawerOpen(true);
+        setDrawerOpen(
+            true,
+        );
 
     }
 
@@ -219,7 +198,9 @@ export function VenueSettingsPage() {
             schedule.boardNumbers,
         );
 
-        setDrawerOpen(true);
+        setDrawerOpen(
+            true,
+        );
 
     }
 
@@ -230,6 +211,13 @@ export function VenueSettingsPage() {
         await editor.remove(
             schedule.id,
         );
+
+        /*
+         * Aucun refresh manuel nécessaire.
+         *
+         * useVenueSchedules utilise maintenant
+         * onSnapshot().
+         */
 
     }
 
@@ -252,10 +240,14 @@ export function VenueSettingsPage() {
         }
         else {
 
+            if (!venue) {
+                return;
+            }
+
             await editor.create({
 
                 venueId:
-                    venue!.id,
+                    venue.id,
 
                 dayOfWeek:
                     selectedDay,
@@ -266,17 +258,24 @@ export function VenueSettingsPage() {
 
                 boardNumbers,
 
-                active: true,
+                active:
+                    true,
 
             });
 
         }
 
-        setDrawerOpen(false);
+        setDrawerOpen(
+            false,
+        );
 
     }
 
-    if (loading) {
+    if (
+        loading
+        ||
+        loadingConfiguration
+    ) {
 
         return (
 
@@ -294,8 +293,35 @@ export function VenueSettingsPage() {
 
     }
 
-    const schedulesByDay =
+    if (
+        configurationError
+        ||
+        !configuration
+    ) {
 
+        return (
+
+            <AppLayout>
+
+                <AppCard>
+
+                    <Typography
+                        color="error"
+                    >
+
+                        Impossible de charger la configuration de l'application.
+
+                    </Typography>
+
+                </AppCard>
+
+            </AppLayout>
+
+        );
+
+    }
+
+    const schedulesByDay =
         Array.from(
 
             {
@@ -308,11 +334,9 @@ export function VenueSettingsPage() {
                     index + 1,
 
                 schedules:
-
                     schedules.filter(
 
                         schedule =>
-
                             schedule.dayOfWeek ===
                             index + 1,
 
@@ -337,19 +361,31 @@ export function VenueSettingsPage() {
                                 direction="row"
                                 spacing={2}
                                 sx={{
-                                    alignItems: "center",
-                                    mb: 3,
+                                    alignItems:
+                                        "center",
+
+                                    mb:
+                                        3,
                                 }}
                             >
 
                                 <Box
                                     component="img"
-                                    src={`/images/venues/${venue.logo}`}
-                                    alt={venue.name}
+                                    src={
+                                        `/images/venues/${venue.logo}`
+                                    }
+                                    alt={
+                                        venue.name
+                                    }
                                     sx={{
-                                        width: 64,
-                                        height: 64,
-                                        objectFit: "contain",
+                                        width:
+                                            64,
+
+                                        height:
+                                            64,
+
+                                        objectFit:
+                                            "contain",
                                     }}
                                 />
 
@@ -358,7 +394,8 @@ export function VenueSettingsPage() {
                                     <Typography
                                         variant="h4"
                                         sx={{
-                                            fontWeight: 700,
+                                            fontWeight:
+                                                700,
                                         }}
                                     >
 
@@ -375,27 +412,21 @@ export function VenueSettingsPage() {
                                     </Typography>
 
                                     <Button
-
                                         variant="outlined"
-
                                         startIcon={
                                             <SettingsIcon />
                                         }
-
                                         onClick={() => {
 
                                             navigate(
 
                                                 availabilityRulesRoute(
-
                                                     venue.id,
-
                                                 ),
 
                                             );
 
                                         }}
-
                                     >
 
                                         Règles de disponibilité
@@ -410,79 +441,49 @@ export function VenueSettingsPage() {
                     }
 
                     {
-
                         schedulesByDay.map(
 
                             day => (
+
                                 <Fragment
-                                    key={day.dayOfWeek}
+                                    key={
+                                        day.dayOfWeek
+                                    }
                                 >
+
                                     <VenueScheduleCard
 
-                                        dayOfWeek={day.dayOfWeek}
-
-                                        schedules={day.schedules}
-
-                                        generatedPlanning={
-
-                                            generatedPlanning.filter(
-
-                                                board =>
-
-                                                    day.schedules.some(
-
-                                                        schedule =>
-
-                                                            schedule.boardNumbers.includes(
-
-                                                                board.boardNumber,
-
-                                                            ),
-
-                                                    ),
-
-                                            )
-
+                                        dayOfWeek={
+                                            day.dayOfWeek
                                         }
 
-                                        onAdd={handleAdd}
+                                        schedules={
+                                            day.schedules
+                                        }
 
-                                        onEdit={handleEdit}
+                                        durationMinutes={
+                                            configuration.reservationDuration
+                                        }
 
-                                        onDelete={handleDelete}
+                                        onAdd={
+                                            handleAdd
+                                        }
 
-                                    />
+                                        onEdit={
+                                            handleEdit
+                                        }
 
-                                    <GeneratedPlanningCard
-
-                                        planning={
-
-                                            generatedPlanning.filter(
-
-                                                board =>
-
-                                                    day.schedules.some(
-
-                                                        schedule =>
-
-                                                            schedule.boardNumbers.includes(
-
-                                                                board.boardNumber,
-
-                                                            ),
-
-                                                    ),
-
-                                            )
-
+                                        onDelete={
+                                            handleDelete
                                         }
 
                                     />
+
                                 </Fragment>
+
                             ),
 
                         )
-
                     }
 
                 </Stack>
@@ -491,33 +492,62 @@ export function VenueSettingsPage() {
 
             <VenueScheduleDrawer
 
-                open={drawerOpen}
+                open={
+                    drawerOpen
+                }
 
-                schedule={selectedSchedule}
+                schedule={
+                    selectedSchedule
+                }
 
-                startTime={openTime}
+                startTime={
+                    openTime
+                }
 
-                endTime={closeTime}
+                endTime={
+                    closeTime
+                }
 
-                boardNumbers={boardNumbers}
+                boardNumbers={
+                    boardNumbers
+                }
 
-                maxBoards={4}
+                maxBoards={
+                    4
+                }
 
-                loading={editor.loading}
+                loading={
+                    editor.loading
+                }
 
-                error={editor.error}
+                error={
+                    editor.error
+                }
 
-                onStartTimeChanged={setStartTime}
+                onStartTimeChanged={
+                    setStartTime
+                }
 
-                onEndTimeChanged={setEndTime}
+                onEndTimeChanged={
+                    setEndTime
+                }
 
-                onBoardNumbersChanged={setBoardNumbers}
+                onBoardNumbersChanged={
+                    setBoardNumbers
+                }
 
-                onClose={() => setDrawerOpen(false)}
+                onClose={() =>
+                    setDrawerOpen(
+                        false,
+                    )
+                }
 
-                onSave={handleSave}
+                onSave={
+                    handleSave
+                }
 
             />
+
         </AppLayout>
 
     );

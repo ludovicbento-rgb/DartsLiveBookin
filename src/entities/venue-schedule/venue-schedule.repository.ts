@@ -2,6 +2,7 @@ import {
     getDocs,
     query,
     where,
+    onSnapshot,
     addDoc,
     updateDoc,
 } from "firebase/firestore";
@@ -21,6 +22,75 @@ import type {
 import {
     venueScheduleDocument,
 } from "./venue-schedule.firestore";
+
+export function subscribeVenueSchedules(
+    venueId: string,
+    callback: (
+        schedules: VenueSchedule[],
+    ) => void,
+): () => void {
+
+    const q = query(
+
+        venueSchedulesCollection,
+
+        where(
+            "venueId",
+            "==",
+            venueId,
+        ),
+
+        where(
+            "active",
+            "==",
+            true,
+        ),
+
+    );
+
+    return onSnapshot(
+
+        q,
+
+        snapshot => {
+
+            const schedules =
+                snapshot.docs
+                    .map(
+                        mapVenueSchedule,
+                    )
+                    .sort(
+                        (a, b) => {
+
+                            if (
+                                a.dayOfWeek !==
+                                b.dayOfWeek
+                            ) {
+
+                                return (
+                                    a.dayOfWeek -
+                                    b.dayOfWeek
+                                );
+
+                            }
+
+                            return a.openTime
+                                .localeCompare(
+                                    b.openTime,
+                                );
+
+                        },
+                    );
+
+            callback(
+                schedules,
+            );
+
+        },
+
+    );
+
+}
 
 export async function getVenueSchedules(
 
@@ -151,11 +221,10 @@ export async function updateVenueSchedule(
         ),
 
         {
-
-            startTime:
+            openTime:
                 schedule.openTime,
 
-            endTime:
+            closeTime:
                 schedule.closeTime,
 
             boardNumbers:
@@ -163,7 +232,6 @@ export async function updateVenueSchedule(
 
             active:
                 schedule.active,
-
         },
 
     );

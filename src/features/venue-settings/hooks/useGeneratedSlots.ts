@@ -27,13 +27,14 @@ export function useGeneratedSlots(
                 buildReservationSlots(
 
                     {
+                        openTime:
+                            schedule.openTime,
 
-                        openTime: schedule.openTime,
-                        closeTime: schedule.closeTime,
+                        closeTime:
+                            schedule.closeTime,
 
                         boardNumbers:
                             schedule.boardNumbers,
-
                     },
 
                     durationMinutes,
@@ -43,11 +44,8 @@ export function useGeneratedSlots(
         ),
 
         [
-
             schedules,
-
             durationMinutes,
-
         ]);
 
 }

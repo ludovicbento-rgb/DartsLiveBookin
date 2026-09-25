@@ -4,7 +4,7 @@ import {
 } from "react";
 
 import {
-    getVenueSchedules,
+    subscribeVenueSchedules,
 } from "@/entities/venue-schedule";
 
 import type {
@@ -39,56 +39,38 @@ export function useVenueSchedules(
 
         }
 
-        let cancelled = false;
+        setLoading(true);
 
-        async function load() {
+        const unsubscribe =
+            subscribeVenueSchedules(
 
-            setLoading(true);
+                venueId,
 
-            try {
-
-                const result =
-                    await getVenueSchedules(
-                        venueId,
-                    );
-
-                if (!cancelled) {
+                result => {
 
                     setSchedules(
                         result,
                     );
 
-                }
+                    setLoading(
+                        false,
+                    );
 
-            }
-            finally {
+                },
 
-                if (!cancelled) {
-
-                    setLoading(false);
-
-                }
-
-            }
-
-        }
-
-        load();
+            );
 
         return () => {
 
-            cancelled = true;
+            unsubscribe();
 
         };
 
     }, [venueId]);
 
     return {
-
         schedules,
-
         loading,
-
     };
 
 }

@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState,
+} from "react";
 
 import {
     getConfiguration,
-    type Configuration,
+} from "@/entities/configuration";
+
+import type {
+    Configuration,
 } from "@/entities/configuration";
 
 export function useConfiguration() {
@@ -10,7 +16,9 @@ export function useConfiguration() {
     const [
         configuration,
         setConfiguration,
-    ] = useState<Configuration | null>(null);
+    ] = useState<Configuration | null>(
+        null,
+    );
 
     const [
         loading,
@@ -20,31 +28,49 @@ export function useConfiguration() {
     const [
         error,
         setError,
-    ] = useState<string | null>(null);
+    ] = useState<Error | null>(
+        null,
+    );
 
     useEffect(() => {
+
+        let cancelled =
+            false;
 
         async function load() {
 
             try {
 
-                const config =
+                setLoading(
+                    true,
+                );
+
+                setError(
+                    null,
+                );
+
+                const result =
                     await getConfiguration();
 
-                setConfiguration(config);
+                if (!cancelled) {
 
-            }
-            catch (e) {
-
-                if (e instanceof Error) {
-
-                    setError(e.message);
+                    setConfiguration(
+                        result,
+                    );
 
                 }
-                else {
+
+            }
+            catch (error) {
+
+                if (!cancelled) {
 
                     setError(
-                        "Une erreur est survenue.",
+                        error instanceof Error
+                            ? error
+                            : new Error(
+                                "CONFIGURATION_LOAD_FAILED",
+                            ),
                     );
 
                 }
@@ -52,13 +78,26 @@ export function useConfiguration() {
             }
             finally {
 
-                setLoading(false);
+                if (!cancelled) {
+
+                    setLoading(
+                        false,
+                    );
+
+                }
 
             }
 
         }
 
-        load();
+        void load();
+
+        return () => {
+
+            cancelled =
+                true;
+
+        };
 
     }, []);
 
