@@ -39,6 +39,57 @@ import type {
     Reservation,
 } from "./reservation.types";
 
+export function subscribeConfirmedReservations(
+
+    callback: (
+        reservations: Reservation[],
+    ) => void,
+
+): () => void {
+
+    const q =
+        query(
+
+            reservationsCollection,
+
+            where(
+                "status",
+                "==",
+                "CONFIRMED",
+            ),
+
+        );
+
+    return onSnapshot(
+
+        q,
+
+        snapshot => {
+
+            callback(
+
+                snapshot.docs.map(
+                    doc => ({
+
+                        id:
+                            doc.id,
+
+                        ...(doc.data() as Omit<
+                            Reservation,
+                            "id"
+                        >),
+
+                    }),
+                ),
+
+            );
+
+        },
+
+    );
+
+}
+
 export async function cancelReservation(
 
     reservationId: string,
