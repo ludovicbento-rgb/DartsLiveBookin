@@ -138,6 +138,9 @@ export async function createReservation(
                     matchId:
                         request.matchId,
 
+                    venueId:
+                        request.venueId,
+
                     boardNumber:
                         request.boardNumber,
 

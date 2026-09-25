@@ -1,0 +1,877 @@
+rules_version = '2';
+
+service cloud.firestore {
+
+  match /databases/{database}/documents {
+
+    /*
+     * ============================================================
+     * HELPERS GENERAUX
+     * ============================================================
+     */
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function hasAuthLink() {
+      return signedIn()
+        && exists(
+          /databases/$(database)/documents/user-auth/$(request.auth.uid)
+        );
+    }
+
+    function authLink() {
+      return get(
+        /databases/$(database)/documents/user-auth/$(request.auth.uid)
+      );
+    }
+
+    function currentUserId() {
+      return authLink().data.userId;
+    }
+
+    function currentUser() {
+      return get(
+        /databases/$(database)/documents/users/$(currentUserId())
+      );
+    }
+
+    function hasActiveProfile() {
+      return hasAuthLink()
+        && currentUser().data.status == "ACTIVE"
+        && currentUser().data.accountActivated == true;
+    }
+
+
+    /*
+     * ============================================================
+     * ROLES
+     * ============================================================
+     */
+
+    function isAdmin() {
+      return hasActiveProfile()
+        && currentUser().data.roles.administrator == true;
+    }
+
+    function isManager() {
+      return hasActiveProfile()
+        && currentUser().data.roles.manager == true;
+    }
+
+    function isPlayer() {
+      return hasActiveProfile()
+        && currentUser().data.roles.player == true;
+    }
+
+    function isAdminOrManager() {
+      return isAdmin()
+        || isManager();
+    }
+
+
+    /*
+     * ============================================================
+     * ETABLISSEMENTS
+     * ============================================================
+     */
+
+    function managesVenue(venueId) {
+      return isManager()
+        && currentUserId() in get(
+          /databases/$(database)/documents/venues/$(venueId)
+        ).data.managerUserIds;
+    }
+
+    function canManageVenue(venueId) {
+      return isAdmin()
+        || managesVenue(venueId);
+    }
+
+
+    /*
+     * ============================================================
+     * MATCH / REGISTRATION HELPERS
+     * ============================================================
+     */
+
+    function matchDocument(matchId) {
+      return get(
+        /databases/$(database)/documents/matches/$(matchId)
+      );
+    }
+
+    function registrationDocument(registrationId) {
+      return get(
+        /databases/$(database)/documents/registrations/$(registrationId)
+      );
+    }
+
+    /*
+     * Un membre autorisé d'une inscription est :
+     *
+     * - son capitaine
+     * OU
+     * - un joueur présent dans playerIds.
+     *
+     * Le capitaine peut donc jouer ou ne pas jouer.
+     */
+    function isRegistrationMember(registrationId) {
+
+      let registration =
+        registrationDocument(registrationId);
+
+      return registration.data.captainId == currentUserId()
+        || currentUserId() in registration.data.playerIds;
+    }
+
+    /*
+     * L'utilisateur peut planifier le match s'il appartient
+     * à l'inscription domicile OU à l'inscription extérieure.
+     */
+    function canPlanMatch(matchId) {
+
+        let matchDoc =
+            matchDocument(matchId);
+
+        return isRegistrationMember(
+            matchDoc.data.homeRegistrationId
+        )
+        || isRegistrationMember(
+            matchDoc.data.awayRegistrationId
+        );
+    }
+
+
+    /*
+     * ============================================================
+     * ACTIVATION DE COMPTE
+     * ============================================================
+     */
+
+    function isActivationProfile(userId) {
+      return signedIn()
+        && !hasAuthLink()
+        && resource.data.accountActivated == false
+        && resource.data.firebaseUid == null
+        && resource.data.status == "ACTIVE"
+        && exists(
+          /databases/$(database)/documents/activation-licenses/$(resource.data.licenseNumber)
+        )
+        && get(
+          /databases/$(database)/documents/activation-licenses/$(resource.data.licenseNumber)
+        ).data.userId == userId;
+    }
+
+
+    /*
+     * ============================================================
+     * ACTIVATION-LICENSES
+     * ============================================================
+     */
+
+    match /activation-licenses/{licenseNumber} {
+
+      allow get:
+        if signedIn();
+
+      allow list:
+        if isAdmin();
+
+      allow create, update, delete:
+        if isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * USER-AUTH
+     * ============================================================
+     */
+
+    match /user-auth/{firebaseUid} {
+
+      allow get:
+        if signedIn()
+        && (
+          request.auth.uid == firebaseUid
+          || isAdmin()
+        );
+
+      allow list:
+        if isAdmin();
+
+      allow create:
+        if signedIn()
+        && request.auth.uid == firebaseUid
+        && request.resource.data.keys().hasOnly([
+          "userId"
+        ])
+        && request.resource.data.userId is string
+
+        && getAfter(
+          /databases/$(database)/documents/users/$(request.resource.data.userId)
+        ).data.firebaseUid == request.auth.uid
+
+        && getAfter(
+          /databases/$(database)/documents/users/$(request.resource.data.userId)
+        ).data.accountActivated == true;
+
+      allow update, delete:
+        if isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * USERS
+     * ============================================================
+     */
+
+    match /users/{userId} {
+
+      allow get:
+        if (
+          hasAuthLink()
+          && currentUserId() == userId
+        )
+        || isActivationProfile(userId)
+        || isAdmin();
+
+      allow list:
+        if isAdmin();
+
+      allow create, delete:
+        if isAdmin();
+
+      allow update:
+        if isAdmin()
+        || (
+          isActivationProfile(userId)
+
+          && request.resource.data.firebaseUid
+            == request.auth.uid
+
+          && request.resource.data.accountActivated
+            == true
+
+          && getAfter(
+            /databases/$(database)/documents/user-auth/$(request.auth.uid)
+          ).data.userId == userId
+
+          && request.resource.data
+            .diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              "firebaseUid",
+              "email",
+              "accountActivated",
+              "lastLoginAt",
+              "updatedAt"
+            ])
+
+          && request.resource.data.licenseNumber
+            == resource.data.licenseNumber
+
+          && request.resource.data.roles
+            == resource.data.roles
+
+          && request.resource.data.status
+            == resource.data.status
+
+          && request.resource.data.firstname
+            == resource.data.firstname
+
+          && request.resource.data.lastname
+            == resource.data.lastname
+
+          && request.resource.data.seasonId
+            == resource.data.seasonId
+        );
+    }
+
+
+    /*
+     * ============================================================
+     * VENUES
+     * ============================================================
+     */
+
+    match /venues/{venueId} {
+
+      allow read:
+        if hasActiveProfile();
+
+      allow create, update, delete:
+        if isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * VENUE SCHEDULES
+     * ============================================================
+     */
+
+    match /venue-schedules/{scheduleId} {
+
+      allow read:
+        if hasActiveProfile();
+
+      allow create:
+        if hasActiveProfile()
+        && canManageVenue(
+          request.resource.data.venueId
+        );
+
+      allow update:
+        if hasActiveProfile()
+        && canManageVenue(
+          resource.data.venueId
+        )
+        && request.resource.data.venueId
+          == resource.data.venueId;
+
+      allow delete:
+        if hasActiveProfile()
+        && canManageVenue(
+          resource.data.venueId
+        );
+    }
+
+
+    /*
+     * ============================================================
+     * VENUE CLOSURES
+     * ============================================================
+     */
+
+    match /venue-closures/{closureId} {
+
+      allow read:
+        if hasActiveProfile();
+
+      allow create:
+        if hasActiveProfile()
+        && canManageVenue(
+          request.resource.data.venueId
+        );
+
+      allow update:
+        if hasActiveProfile()
+        && canManageVenue(
+          resource.data.venueId
+        )
+        && request.resource.data.venueId
+          == resource.data.venueId;
+
+      allow delete:
+        if hasActiveProfile()
+        && canManageVenue(
+          resource.data.venueId
+        );
+    }
+
+
+    /*
+     * ============================================================
+     * AVAILABILITY RULES
+     * ============================================================
+     */
+
+    match /availabilityRules/{ruleId} {
+
+      allow read:
+        if hasActiveProfile();
+
+      allow create:
+        if hasActiveProfile()
+        && canManageVenue(
+          request.resource.data.venueId
+        );
+
+      allow update:
+        if hasActiveProfile()
+        && canManageVenue(
+          resource.data.venueId
+        )
+        && request.resource.data.venueId
+          == resource.data.venueId;
+
+      allow delete:
+        if hasActiveProfile()
+        && canManageVenue(
+          resource.data.venueId
+        );
+    }
+
+
+    /*
+     * ============================================================
+     * UNAVAILABLE SLOTS
+     * ============================================================
+     */
+
+    match /unavailableSlots/{slotId} {
+
+      allow read:
+        if hasActiveProfile();
+
+      allow create, update, delete:
+        if isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * RESERVATIONS
+     * ============================================================
+     */
+
+    match /reservations/{reservationId} {
+
+      /*
+       * Le planning et les écrans de validation ont besoin
+       * de consulter les réservations.
+       */
+      allow read:
+        if hasActiveProfile();
+
+
+      /*
+       * ----------------------------------------------------------
+       * CREATION
+       * ----------------------------------------------------------
+       */
+
+      allow create:
+        if hasActiveProfile()
+
+        /*
+         * L'utilisateur doit être capitaine ou joueur
+         * d'une des deux inscriptions du match.
+         */
+        && canPlanMatch(
+          request.resource.data.matchId
+        )
+
+        /*
+         * Impossible de créer une réservation
+         * au nom d'un autre utilisateur.
+         */
+        && request.resource.data.createdByUserId
+          == currentUserId()
+
+        /*
+         * Une nouvelle réservation commence
+         * obligatoirement en PENDING.
+         */
+        && request.resource.data.status
+          == "PENDING"
+
+        /*
+         * Le venueId est obligatoire.
+         */
+        && request.resource.data.venueId is string
+
+        /*
+         * L'établissement doit réellement exister.
+         */
+        && exists(
+          /databases/$(database)/documents/venues/$(request.resource.data.venueId)
+        )
+
+        /*
+         * Les champs de validation doivent être
+         * vierges lors de la création.
+         */
+        && request.resource.data.validatedByUserId == null
+        && request.resource.data.validatedAt == null
+
+        && request.resource.data.rejectedByUserId == null
+        && request.resource.data.rejectedAt == null
+
+        && request.resource.data.cancelledByUserId == null
+        && request.resource.data.cancelledAt == null;
+
+
+      /*
+       * ----------------------------------------------------------
+       * UPDATE
+       * ----------------------------------------------------------
+       */
+
+      allow update:
+        if isAdmin()
+
+        /*
+         * --------------------------------------------------------
+         * VALIDATION / REJET PAR LE GERANT
+         * --------------------------------------------------------
+         */
+        || (
+
+          /*
+           * Le gérant doit gérer l'établissement
+           * de la réservation.
+           */
+          canManageVenue(
+            resource.data.venueId
+          )
+
+          /*
+           * Impossible de déplacer la réservation
+           * vers un autre établissement.
+           */
+          && request.resource.data.venueId
+            == resource.data.venueId
+
+          /*
+           * Impossible de changer de match.
+           */
+          && request.resource.data.matchId
+            == resource.data.matchId
+
+          /*
+           * Impossible de changer l'auteur.
+           */
+          && request.resource.data.createdByUserId
+            == resource.data.createdByUserId
+
+          /*
+           * Seuls les champs de validation/rejet
+           * peuvent changer.
+           */
+          && request.resource.data
+            .diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              "status",
+              "validatedByUserId",
+              "validatedAt",
+              "rejectedByUserId",
+              "rejectedAt",
+              "validationComment"
+            ])
+
+          /*
+           * Le gérant ne traite qu'une réservation
+           * actuellement PENDING.
+           */
+          && resource.data.status
+            == "PENDING"
+
+          /*
+           * Deux destinations possibles :
+           *
+           * PENDING -> CONFIRMED
+           * PENDING -> REJECTED
+           */
+          && request.resource.data.status in [
+            "CONFIRMED",
+            "REJECTED"
+          ]
+
+          /*
+           * Si CONFIRMED :
+           * l'utilisateur ayant validé doit être
+           * exactement l'utilisateur connecté.
+           */
+          && (
+            request.resource.data.status != "CONFIRMED"
+            || request.resource.data.validatedByUserId
+              == currentUserId()
+          )
+
+          /*
+           * Si REJECTED :
+           * l'utilisateur ayant rejeté doit être
+           * exactement l'utilisateur connecté.
+           */
+          && (
+            request.resource.data.status != "REJECTED"
+            || request.resource.data.rejectedByUserId
+              == currentUserId()
+          )
+        )
+
+        /*
+         * --------------------------------------------------------
+         * ANNULATION PAR UN MEMBRE DU MATCH
+         * --------------------------------------------------------
+         */
+        || (
+
+          hasActiveProfile()
+
+          /*
+           * Capitaine ou joueur d'une des deux
+           * inscriptions du match.
+           */
+          && canPlanMatch(
+            resource.data.matchId
+          )
+
+          /*
+           * Passage obligatoire vers CANCELLED.
+           */
+          && request.resource.data.status
+            == "CANCELLED"
+
+          /*
+           * On trace le véritable utilisateur connecté.
+           */
+          && request.resource.data.cancelledByUserId
+            == currentUserId()
+
+          /*
+           * Seuls les champs d'annulation
+           * peuvent changer.
+           */
+          && request.resource.data
+            .diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              "status",
+              "cancelledByUserId",
+              "cancelledAt"
+            ])
+        );
+
+
+      /*
+       * Pas de suppression physique par un joueur
+       * ou un gérant.
+       */
+      allow delete:
+        if isAdmin();
+    }
+
+
+    /*
+ * ============================================================
+ * MATCHES
+ * ============================================================
+ */
+
+match /matches/{matchId} {
+
+  /*
+   * Les matchs sont nécessaires aux joueurs,
+   * gérants et administrateurs.
+   */
+  allow read:
+    if hasActiveProfile();
+
+  /*
+   * La création/suppression du calendrier
+   * reste une opération d'administration.
+   */
+  allow create, delete:
+    if isAdmin();
+
+  /*
+   * Modification :
+   *
+   * 1. administrateur
+   * 2. planification par capitaine/joueur
+   * 3. validation par le gérant du bar
+   */
+  allow update:
+    if isAdmin()
+
+    /*
+     * --------------------------------------------------------
+     * NOT_PLANNED -> PENDING
+     *
+     * Un membre du match vient de créer
+     * une réservation.
+     * --------------------------------------------------------
+     */
+    || (
+      canPlanMatch(matchId)
+
+      && resource.data.status
+        == "NOT_PLANNED"
+
+      && request.resource.data.status
+        == "PENDING"
+
+      && resource.data.plannedReservationId
+        == null
+
+      && request.resource.data.plannedReservationId
+        is string
+
+      /*
+       * Seuls status et plannedReservationId
+       * peuvent changer.
+       */
+      && request.resource.data
+        .diff(resource.data)
+        .affectedKeys()
+        .hasOnly([
+          "status",
+          "plannedReservationId"
+        ])
+
+      /*
+       * La réservation associée doit exister
+       * et correspondre à ce match.
+       */
+      && get(
+        /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
+      ).data.matchId == matchId
+    )
+
+    /*
+     * --------------------------------------------------------
+     * PENDING -> NOT_PLANNED
+     *
+     * Annulation / retrait de la réservation.
+     * --------------------------------------------------------
+     */
+    || (
+      canPlanMatch(matchId)
+
+      && resource.data.status
+        == "PENDING"
+
+      && request.resource.data.status
+        == "NOT_PLANNED"
+
+      && request.resource.data.plannedReservationId
+        == null
+
+      && request.resource.data
+        .diff(resource.data)
+        .affectedKeys()
+        .hasOnly([
+          "status",
+          "plannedReservationId"
+        ])
+    )
+
+    /*
+     * --------------------------------------------------------
+     * PENDING -> PLANNED
+     *
+     * Validation par le gérant du bar.
+     * --------------------------------------------------------
+     */
+    || (
+      resource.data.status
+        == "PENDING"
+
+      && request.resource.data.status
+        == "PLANNED"
+
+      /*
+       * La réservation reste la même.
+       */
+      && request.resource.data.plannedReservationId
+        == resource.data.plannedReservationId
+
+      /*
+       * Le gérant doit gérer le bar de
+       * cette réservation.
+       */
+      && canManageVenue(
+        get(
+          /databases/$(database)/documents/reservations/$(resource.data.plannedReservationId)
+        ).data.venueId
+      )
+
+      /*
+       * Seul le statut peut changer.
+       */
+      && request.resource.data
+        .diff(resource.data)
+        .affectedKeys()
+        .hasOnly([
+          "status"
+        ])
+    );
+}
+
+
+    /*
+     * ============================================================
+     * REGISTRATIONS
+     * ============================================================
+     */
+
+    match /registrations/{registrationId} {
+
+      allow read:
+        if hasActiveProfile();
+
+      allow create, update, delete:
+        if isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * MATCHDAYS
+     * ============================================================
+     */
+
+    match /matchdays/{matchDayId} {
+
+      allow read:
+        if hasActiveProfile();
+
+      allow create, update, delete:
+        if isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * SEASONS
+     * ============================================================
+     */
+
+    match /seasons/{seasonId} {
+
+      allow read:
+        if hasActiveProfile();
+
+      allow create, update, delete:
+        if isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * SYSTEM
+     * ============================================================
+     */
+
+    match /system/{documentId} {
+
+      allow read:
+        if hasActiveProfile();
+
+      allow create, update, delete:
+        if isAdmin();
+    }
+
+
+    /*
+     * ============================================================
+     * DENY BY DEFAULT
+     * ============================================================
+     */
+
+    match /{document=**} {
+
+      allow read, write:
+        if false;
+    }
+
+  }
+
+}       

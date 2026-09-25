@@ -1,6 +1,6 @@
 import {
     activateUser,
-    getUserByLicenseNumber,
+    getUserByActivationLicense,
     type UserProfile,
 } from "@/entities/user";
 
@@ -52,7 +52,7 @@ export async function activateAccount(
          * Firestore autorisent la lecture.
          */
         const player =
-            await getUserByLicenseNumber(
+            await getUserByActivationLicense(
                 licenseNumber,
             );
 

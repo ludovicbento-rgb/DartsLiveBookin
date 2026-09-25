@@ -34,6 +34,8 @@ function buildReservation(
 
         matchId: "MATCH",
 
+        venueId: "Venue-1",
+
         boardNumber: 1,
 
         plannedStartAt:

@@ -17,7 +17,7 @@ import { authService } from "../api/auth.service";
 import { AuthContext } from "../context/AuthContext";
 
 import {
-    getUserByFirebaseUid,
+    getUserByAuthUid,
 } from "@/entities/user";
 
 import type {
@@ -63,7 +63,7 @@ export function AuthProvider({
         }
 
         const profile =
-            await getUserByFirebaseUid(
+            await getUserByAuthUid(
                 currentUser.uid,
             );
 
@@ -85,7 +85,7 @@ export function AuthProvider({
                     if (currentUser) {
 
                         const profile =
-                            await getUserByFirebaseUid(
+                            await getUserByAuthUid(
                                 currentUser.uid,
                             );
 

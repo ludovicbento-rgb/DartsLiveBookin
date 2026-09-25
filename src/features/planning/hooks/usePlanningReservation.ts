@@ -177,6 +177,9 @@ export function usePlanningReservation(
                 matchId:
                     dialog.selection.matchId,
 
+                venueId:
+                    dialog.selection.venueId,
+
                 boardNumber:
                     dialog.selection.boardNumber,
 

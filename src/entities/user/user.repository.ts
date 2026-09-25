@@ -4,12 +4,25 @@ import {
     query,
     updateDoc,
     where,
+    writeBatch,
 } from "firebase/firestore";
+
+import {
+    db,
+} from "@/shared/firebase";
 
 import {
     userDocument,
     usersCollection,
 } from "./user.firestore";
+
+import {
+    userAuthDocument,
+} from "./user-auth.firestore";
+
+import {
+    activationLicenseDocument,
+} from "./activation-license.firestore";
 
 import type { UserProfile } from "./user.types";
 
@@ -31,6 +44,74 @@ export async function getUser(
         id: snapshot.id,
         ...(snapshot.data() as Omit<UserProfile, "id">),
     };
+}
+
+export async function getUserByAuthUid(
+    firebaseUid: string,
+): Promise<UserProfile | null> {
+
+    const authSnapshot =
+        await getDoc(
+            userAuthDocument(
+                firebaseUid,
+            ),
+        );
+
+    if (!authSnapshot.exists()) {
+
+        return null;
+
+    }
+
+    const data =
+        authSnapshot.data() as {
+            userId?: string;
+        };
+
+    if (!data.userId) {
+
+        return null;
+
+    }
+
+    return getUser(
+        data.userId,
+    );
+
+}
+
+export async function getUserByActivationLicense(
+    licenseNumber: string,
+): Promise<UserProfile | null> {
+
+    const activationSnapshot =
+        await getDoc(
+            activationLicenseDocument(
+                licenseNumber,
+            ),
+        );
+
+    if (!activationSnapshot.exists()) {
+
+        return null;
+
+    }
+
+    const data =
+        activationSnapshot.data() as {
+            userId?: string;
+        };
+
+    if (!data.userId) {
+
+        return null;
+
+    }
+
+    return getUser(
+        data.userId,
+    );
+
 }
 
 /**
@@ -106,25 +187,58 @@ export async function activateUser(
     email: string,
 ): Promise<void> {
 
-    await updateDoc(
+    const batch =
+        writeBatch(
+            db,
+        );
 
-        userDocument(userId),
+    /*
+     * Activation du profil métier.
+     */
+    batch.update(
+
+        userDocument(
+            userId,
+        ),
 
         {
-
             firebaseUid,
 
             email,
 
-            accountActivated: true,
+            accountActivated:
+                true,
 
-            lastLoginAt: new Date(),
+            lastLoginAt:
+                new Date(),
 
-            updatedAt: new Date(),
-
+            updatedAt:
+                new Date(),
         },
 
     );
+
+    /*
+     * Index permettant aux Security Rules
+     * de retrouver users/<userId>
+     * depuis request.auth.uid.
+     */
+    batch.set(
+
+        userAuthDocument(
+            firebaseUid,
+        ),
+
+        {
+            userId,
+        },
+
+    );
+
+    /*
+     * Les deux écritures sont atomiques.
+     */
+    await batch.commit();
 
 }
 

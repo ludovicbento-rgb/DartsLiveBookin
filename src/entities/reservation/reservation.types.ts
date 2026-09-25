@@ -12,6 +12,8 @@ export interface Reservation {
 
     matchId: string;
 
+    venueId: string;
+
     boardNumber: number;
 
     plannedStartAt: Timestamp;
