@@ -64,12 +64,29 @@ export function createPlanning(
         );
 
     const reservations =
+        data.reservations
 
-        data.reservations.map(
+            /*
+             * Seules les réservations actives
+             * bloquent physiquement une cible.
+             *
+             * REJECTED et CANCELLED restent
+             * conservées dans Firestore pour
+             * l'historique mais ne doivent plus
+             * apparaître comme RESERVED.
+             */
+            .filter(
 
-            mapCoreReservation,
+                reservation =>
+                    reservation.status === "PENDING"
+                    ||
+                    reservation.status === "CONFIRMED",
 
-        );
+            )
+
+            .map(
+                mapCoreReservation,
+            );
 
     const closures =
 
@@ -82,7 +99,8 @@ export function createPlanning(
 
         openingHours,
 
-        durationMinutes: 90,
+        durationMinutes:
+            data.configuration.reservationDuration,
 
         reservations,
 

@@ -3,6 +3,10 @@ import {
 } from "@/features/authentication/api/auth.service";
 
 import {
+    getUserByAuthUid,
+} from "@/entities/user";
+
+import {
     getReservation,
     rejectReservation,
 } from "@/entities/reservation";
@@ -30,6 +34,28 @@ export async function rejectReservationCommand(
 
     }
 
+    /*
+     * Résolution de l'utilisateur métier.
+     *
+     * Firebase UID
+     *      ↓
+     * user-auth/<uid>
+     *      ↓
+     * users/<userId>
+     */
+    const userProfile =
+        await getUserByAuthUid(
+            currentUser.uid,
+        );
+
+    if (!userProfile) {
+
+        throw new Error(
+            "USER_PROFILE_NOT_FOUND",
+        );
+
+    }
+
     const reservation =
         await getReservation(
             reservationId,
@@ -43,20 +69,30 @@ export async function rejectReservationCommand(
 
     }
 
+    /*
+     * Le rejectedByUserId doit contenir
+     * l'ID métier users/<id>.
+     */
     await rejectReservation(
 
         reservationId,
 
-        currentUser.uid,
+        userProfile.id,
 
         reason,
 
     );
 
+    /*
+     * La réservation étant refusée,
+     * le match redevient planifiable :
+     *
+     * PENDING
+     *   ↓
+     * NOT_PLANNED
+     */
     await detachReservation(
-
         reservation.matchId,
-
     );
 
 }

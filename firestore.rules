@@ -682,76 +682,141 @@ match /matches/{matchId} {
     if isAdmin()
 
     /*
-     * --------------------------------------------------------
-     * NOT_PLANNED -> PENDING
-     *
-     * Un membre du match vient de créer
-     * une réservation.
-     * --------------------------------------------------------
-     */
-    || (
-      canPlanMatch(matchId)
+ * --------------------------------------------------------
+ * NOT_PLANNED -> PENDING
+ *
+ * Un capitaine/joueur vient de créer une réservation.
+ * --------------------------------------------------------
+ */
+|| (
 
-      && resource.data.status
-        == "NOT_PLANNED"
+  /*
+   * L'utilisateur doit appartenir au match.
+   */
+  canPlanMatch(matchId)
 
-      && request.resource.data.status
-        == "PENDING"
+  /*
+   * Transition autorisée.
+   */
+  && resource.data.status
+    == "NOT_PLANNED"
 
-      && resource.data.plannedReservationId
-        == null
+  && request.resource.data.status
+    == "PENDING"
 
-      && request.resource.data.plannedReservationId
-        is string
+  /*
+   * Le match ne doit actuellement avoir
+   * aucune réservation associée.
+   */
+  && resource.data.plannedReservationId
+    == null
 
-      /*
-       * Seuls status et plannedReservationId
-       * peuvent changer.
-       */
-      && request.resource.data
-        .diff(resource.data)
-        .affectedKeys()
-        .hasOnly([
-          "status",
-          "plannedReservationId"
-        ])
+  /*
+   * Une réservation doit maintenant être associée.
+   */
+  && request.resource.data.plannedReservationId
+    is string
 
-      /*
-       * La réservation associée doit exister
-       * et correspondre à ce match.
-       */
-      && get(
-        /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
-      ).data.matchId == matchId
-    )
+  /*
+   * Seuls ces deux champs peuvent changer.
+   */
+  && request.resource.data
+    .diff(resource.data)
+    .affectedKeys()
+    .hasOnly([
+      "status",
+      "plannedReservationId"
+    ])
+
+  /*
+   * La réservation doit exister.
+   */
+  && exists(
+    /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
+  )
+
+  /*
+   * Elle doit correspondre exactement à ce match.
+   */
+  && get(
+    /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
+  ).data.matchId
+    == matchId
+
+  /*
+   * Elle doit être en attente.
+   */
+  && get(
+    /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
+  ).data.status
+    == "PENDING"
+
+  /*
+   * Et avoir été créée par l'utilisateur métier connecté.
+   */
+  && get(
+    /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
+  ).data.createdByUserId
+    == currentUserId()
+)
 
     /*
-     * --------------------------------------------------------
-     * PENDING -> NOT_PLANNED
-     *
-     * Annulation / retrait de la réservation.
-     * --------------------------------------------------------
-     */
-    || (
-      canPlanMatch(matchId)
+ * --------------------------------------------------------
+ * PENDING / PLANNED -> NOT_PLANNED
+ *
+ * Annulation ou retrait d'une réservation.
+ *
+ * - PENDING :
+ *   annulation avant validation
+ *
+ * - PLANNED :
+ *   annulation après validation par le gérant
+ * --------------------------------------------------------
+ */
+|| (
+  canPlanMatch(matchId)
 
-      && resource.data.status
-        == "PENDING"
+  && resource.data.status in [
+    "PENDING",
+    "PLANNED"
+  ]
 
-      && request.resource.data.status
-        == "NOT_PLANNED"
+  && request.resource.data.status
+    == "NOT_PLANNED"
 
-      && request.resource.data.plannedReservationId
-        == null
+  && request.resource.data.plannedReservationId
+    == null
 
-      && request.resource.data
-        .diff(resource.data)
-        .affectedKeys()
-        .hasOnly([
-          "status",
-          "plannedReservationId"
-        ])
-    )
+  /*
+   * Une réservation doit réellement être
+   * associée au match avant son retrait.
+   */
+  && resource.data.plannedReservationId
+    is string
+
+  /*
+   * La réservation associée doit maintenant
+   * être annulée ou refusée.
+   */
+  && get(
+    /databases/$(database)/documents/reservations/$(resource.data.plannedReservationId)
+  ).data.status in [
+    "CANCELLED",
+    "REJECTED"
+  ]
+
+  /*
+   * Seuls le statut et l'association
+   * à la réservation peuvent changer.
+   */
+  && request.resource.data
+    .diff(resource.data)
+    .affectedKeys()
+    .hasOnly([
+      "status",
+      "plannedReservationId"
+    ])
+)
 
     /*
      * --------------------------------------------------------

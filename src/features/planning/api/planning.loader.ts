@@ -38,12 +38,21 @@ import {
     getAvailabilityRulesByVenue,
 } from "@/entities/availability-rule";
 
+import {
+    getConfiguration,
+} from "@/entities/configuration";
+
+import type {
+    Configuration,
+} from "@/entities/configuration";
+
 export interface PlanningData {
     venue: Venue;
     schedules: VenueSchedule[];
     reservations: Reservation[];
     closures: VenueClosure[];
     rules: AvailabilityRule[];
+    configuration: Configuration;
 }
 
 export async function loadPlanningData(
@@ -65,6 +74,8 @@ export async function loadPlanningData(
 
         rules,
 
+        configuration,
+
     ] = await Promise.all([
 
         getVenueSchedules(
@@ -84,6 +95,8 @@ export async function loadPlanningData(
             venueId,
         ),
 
+        getConfiguration(),
+
     ]);
 
     return {
@@ -92,5 +105,6 @@ export async function loadPlanningData(
         reservations,
         closures,
         rules,
+        configuration,
     };
 }

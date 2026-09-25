@@ -65,6 +65,17 @@ export async function loadMyMatches(
 
                     );
 
+            const activeReservation =
+                reservation
+                    &&
+                    (
+                        reservation.status === "PENDING"
+                        ||
+                        reservation.status === "CONFIRMED"
+                    )
+                    ? reservation
+                    : null;
+
             result.push({
 
                 matchId:
@@ -77,7 +88,7 @@ export async function loadMyMatches(
                     context.venue.logo,
 
                 reservationId:
-                    reservation?.id ?? null,
+                    activeReservation?.id ?? null,
 
                 matchDayNumber:
                     context.matchDay.number,
@@ -95,20 +106,19 @@ export async function loadMyMatches(
                     context.venue.name,
 
                 boardNumber:
-                    reservation?.boardNumber ?? null,
+                    activeReservation?.boardNumber ?? null,
 
                 plannedStartAt:
-                    reservation?.plannedStartAt ?? null,
+                    activeReservation?.plannedStartAt ?? null,
 
                 plannedEndAt:
-                    reservation?.plannedEndAt ?? null,
+                    activeReservation?.plannedEndAt ?? null,
 
                 status:
                     match.status,
 
                 notes:
-                    reservation?.notes ?? "",
-
+                    activeReservation?.notes ?? "",
                 lastReservation:
 
                     reservation

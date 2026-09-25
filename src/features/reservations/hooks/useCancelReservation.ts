@@ -58,12 +58,18 @@ export function useCancelReservation() {
 
         catch (e) {
 
+            console.error(
+                "CANCEL_RESERVATION_FAILED",
+                e,
+            );
+
             if (e instanceof Error) {
 
-                setError(e.message);
+                setError(
+                    e.message,
+                );
 
             }
-
             else {
 
                 setError(

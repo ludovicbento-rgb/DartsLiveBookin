@@ -28,10 +28,6 @@ import {
 } from "firebase/firestore";
 
 import {
-    attachReservation,
-} from "@/entities/match";
-
-import {
     getReservationPermissions,
 } from "@/features/reservations/api/reservation-permissions.service";
 
@@ -75,79 +71,62 @@ export function usePlanningReservation(
 
         try {
 
-            const reservationResult =
-                await reservation.create({
+            await reservation.create({
 
-                    matchId:
-                        dialog.selection.matchId,
+                matchId:
+                    dialog.selection.matchId,
 
-                    venueId:
-                        dialog.selection.venueId,
+                venueId:
+                    dialog.selection.venueId,
 
-                    boardNumber:
-                        dialog.selection.boardNumber,
+                boardNumber:
+                    dialog.selection.boardNumber,
 
-                    plannedStartAt:
-                        dialog.selection.plannedStartAt,
+                plannedStartAt:
+                    dialog.selection.plannedStartAt,
 
-                    plannedEndAt:
-                        dialog.selection.plannedEndAt,
+                plannedEndAt:
+                    dialog.selection.plannedEndAt,
 
-                    notes:
-                        dialog.selection.notes,
+                notes:
+                    dialog.selection.notes,
 
-                });
-
-            await attachReservation(
-
-                dialog.selection.matchId,
-
-                reservationResult.reservationId,
-
-            );
+            });
 
             dialog.close();
 
             notifications.success(
-
                 "Votre demande a bien été envoyée.",
-
             );
 
             navigate(
-
                 MY_MATCHES_ROUTE,
-
             );
 
         }
-
         catch (e) {
 
+            console.error(
+                "CREATE_RESERVATION_FAILED",
+                e,
+            );
+
             if (
-
-                e instanceof Error &&
-
+                e instanceof Error
+                &&
                 e.message ===
-
                 "BOARD_ALREADY_RESERVED"
-
             ) {
 
                 notifications.error(
-
                     "Cette cible vient d'être réservée.",
-
                 );
 
             }
-
             else {
 
                 notifications.error(
-
                     "Une erreur est survenue.",
-
                 );
 
             }
@@ -307,14 +286,6 @@ export function usePlanningReservation(
                 ),
 
         });
-
-        if (matchId) {
-
-            dialog.updateMatch(
-                matchId,
-            );
-
-        }
 
         if (matchId) {
 

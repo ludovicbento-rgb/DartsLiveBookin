@@ -97,10 +97,12 @@ export function ReservationValidationPage() {
 
         }
 
-        catch {
+        catch (error) {
 
-            // PR suivante :
-            // Snackbar erreur
+            console.error(
+                "RESERVATION_ACCEPT_FAILED",
+                error,
+            );
 
         }
 
@@ -306,11 +308,12 @@ export function ReservationValidationPage() {
 
                         }
 
-                        catch {
+                        catch (error) {
 
-                            // TODO
-                            // Snackbar erreur
-
+                            console.error(
+                                "RESERVATION_REJECT_FAILED",
+                                error,
+                            );
                         }
 
                     }}

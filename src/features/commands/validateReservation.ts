@@ -3,6 +3,10 @@ import {
 } from "@/features/authentication/api/auth.service";
 
 import {
+    getUserByAuthUid,
+} from "@/entities/user";
+
+import {
     getReservation,
     validateReservation,
 } from "@/entities/reservation";
@@ -28,6 +32,22 @@ export async function validateReservationCommand(
 
     }
 
+    /*
+     * Résolution du profil métier.
+     */
+    const userProfile =
+        await getUserByAuthUid(
+            currentUser.uid,
+        );
+
+    if (!userProfile) {
+
+        throw new Error(
+            "USER_PROFILE_NOT_FOUND",
+        );
+
+    }
+
     const reservation =
         await getReservation(
             reservationId,
@@ -41,18 +61,27 @@ export async function validateReservationCommand(
 
     }
 
+    /*
+     * validatedByUserId contient
+     * l'ID métier users/<id>.
+     */
     await validateReservation(
 
         reservationId,
 
-        currentUser.uid,
+        userProfile.id,
 
     );
 
+    /*
+     * Match :
+     *
+     * PENDING
+     *   ↓
+     * PLANNED
+     */
     await validateMatch(
-
         reservation.matchId,
-
     );
 
 }
