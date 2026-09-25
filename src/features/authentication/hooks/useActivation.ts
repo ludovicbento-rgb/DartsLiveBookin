@@ -16,16 +16,22 @@ export function useActivation() {
 
     async function activate(
         values: ActivationFormValues,
-    ) {
+    ): Promise<boolean> {
 
         setLoading(true);
+
         setError(null);
 
         try {
 
-            await activateAccount(values);
+            await activateAccount(
+                values,
+            );
 
-        } catch (e) {
+            return true;
+
+        }
+        catch (e) {
 
             if (e instanceof Error) {
 
@@ -56,19 +62,37 @@ export function useActivation() {
                         break;
 
                     case "EMAIL_EXISTS":
+
                     case "auth/email-already-in-use":
-                        setError("Cette adresse e-mail est déjà utilisée.");
+
+                        setError(
+                            "Cette adresse e-mail est déjà utilisée.",
+                        );
+
                         break;
 
                     case "auth/invalid-email":
-                        setError("Adresse e-mail invalide.");
+
+                        setError(
+                            "Adresse e-mail invalide.",
+                        );
+
                         break;
 
                     case "auth/weak-password":
-                        setError("Mot de passe trop faible.");
+
+                        setError(
+                            "Mot de passe trop faible.",
+                        );
+
                         break;
 
                     default:
+
+                        console.error(
+                            "ACCOUNT_ACTIVATION_FAILED",
+                            e,
+                        );
 
                         setError(
                             "Une erreur est survenue.",
@@ -77,10 +101,23 @@ export function useActivation() {
                 }
 
             }
+            else {
 
-            throw e;
+                console.error(
+                    "ACCOUNT_ACTIVATION_FAILED",
+                    e,
+                );
 
-        } finally {
+                setError(
+                    "Une erreur est survenue.",
+                );
+
+            }
+
+            return false;
+
+        }
+        finally {
 
             setLoading(false);
 

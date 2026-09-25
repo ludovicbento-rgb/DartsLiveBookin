@@ -47,6 +47,32 @@ export function AuthProvider({
         setLoading,
     ] = useState(true);
 
+    async function refreshUserProfile(): Promise<void> {
+
+        const currentUser =
+            auth.currentUser;
+
+        if (!currentUser) {
+
+            setUserProfile(
+                null,
+            );
+
+            return;
+
+        }
+
+        const profile =
+            await getUserByFirebaseUid(
+                currentUser.uid,
+            );
+
+        setUserProfile(
+            profile,
+        );
+
+    }
+
     useEffect(() => {
 
         const unsubscribe =
@@ -124,6 +150,8 @@ export function AuthProvider({
             register,
 
             logout,
+
+            refreshUserProfile,
 
         }),
         [

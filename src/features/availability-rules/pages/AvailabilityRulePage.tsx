@@ -100,6 +100,14 @@ import {
     setVenueClosureActiveCommand,
 } from "@/features/commands/setVenueClosureActive";
 
+import {
+    BackButton,
+} from "@/shared/ui";
+
+import {
+    venueSettingsRoute,
+} from "@/shared/routing";
+
 export function AvailabilityRulesPage() {
 
     const {
@@ -675,6 +683,12 @@ export function AvailabilityRulesPage() {
                                 minWidth: 0,
                             }}
                         >
+                            <BackButton
+                                to={
+                                    venueSettingsRoute()
+                                }
+                                label="Retour aux paramètres"
+                            />
 
                             <PageTitle>
                                 Règles de disponibilité

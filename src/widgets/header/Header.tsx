@@ -6,6 +6,10 @@ import Typography from "@mui/material/Typography";
 import { Logo } from "../logo";
 import { appConfig } from "../../shared/config/app.config";
 
+import {
+  DASHBOARD_ROUTE,
+} from "@/shared/routing";
+
 export function Header() {
   return (
     <AppBar
@@ -18,6 +22,7 @@ export function Header() {
         <Logo
           width={160}
           clickable
+          to={DASHBOARD_ROUTE}
         />
 
         <Box sx={{ flexGrow: 1 }} />

@@ -15,6 +15,10 @@ import type {
     ActivationFormValues,
 } from "../validation/activation.schema";
 
+import {
+    useAuth,
+} from "../hooks/useAuth";
+
 export function ActivateAccountPage() {
 
     // Hooks
@@ -22,15 +26,38 @@ export function ActivateAccountPage() {
     const activation =
         useActivation();
 
+    const auth =
+        useAuth();
+
     // Callbacks
 
     async function handleSubmit(
         values: ActivationFormValues,
     ) {
 
-        await activation.activate(values);
+        const activated =
+            await activation.activate(
+                values,
+            );
 
-        navigate(DASHBOARD_ROUTE);
+        if (!activated) {
+
+            return;
+
+        }
+
+        /*
+         * activateUser() vient maintenant
+         * d'associer firebaseUid au profil.
+         *
+         * On recharge explicitement le profil
+         * avant d'aller au Dashboard.
+         */
+        await auth.refreshUserProfile();
+
+        navigate(
+            DASHBOARD_ROUTE,
+        );
 
     }
 

@@ -1,5 +1,6 @@
 import {
     createUserWithEmailAndPassword,
+    deleteUser,
     signInWithEmailAndPassword,
     signOut,
 } from "firebase/auth";
@@ -36,6 +37,21 @@ export class AuthService {
         return credential.user;
     }
 
+    async deleteCurrentUser(): Promise<void> {
+
+        const currentUser =
+            auth.currentUser;
+
+        if (!currentUser) {
+            return;
+        }
+
+        await deleteUser(
+            currentUser,
+        );
+
+    }
+
     async logout(): Promise<void> {
         await signOut(auth);
     }
@@ -43,6 +59,8 @@ export class AuthService {
     getCurrentUser(): User | null {
         return auth.currentUser;
     }
+
+
 }
 
 export const authService = new AuthService();

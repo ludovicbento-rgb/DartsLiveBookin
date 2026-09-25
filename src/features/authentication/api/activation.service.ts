@@ -16,46 +16,133 @@ export async function activateAccount(
     values: ActivationFormValues,
 ): Promise<UserProfile> {
 
-    const player =
-        await getUserByLicenseNumber(
-            values.licenseNumber,
-        );
+    const email =
+        values.email
+            .trim()
+            .toLowerCase();
 
-    validateActivation(player);
+    const licenseNumber =
+        values.licenseNumber.trim();
 
-    if (!player) {
-        throw new Error("LICENSE_NOT_FOUND");
-    }
-
+    /*
+     * Étape 1
+     *
+     * Création du compte Firebase.
+     *
+     * createUserWithEmailAndPassword()
+     * authentifie immédiatement l'utilisateur.
+     */
     const firebaseUser =
         await authService.register({
 
-            email: values.email,
+            email,
 
-            password: values.password,
+            password:
+                values.password,
 
         });
 
-    await activateUser(
+    try {
 
-        player.id,
+        /*
+         * Étape 2
+         *
+         * Maintenant que Firebase Auth possède
+         * un utilisateur connecté, nos règles
+         * Firestore autorisent la lecture.
+         */
+        const player =
+            await getUserByLicenseNumber(
+                licenseNumber,
+            );
 
-        firebaseUser.uid,
+        /*
+         * Étape 3
+         *
+         * Vérification :
+         * - licence existante
+         * - compte non activé
+         * - joueur ACTIVE
+         */
+        validateActivation(
+            player,
+        );
 
-        values.email,
+        /*
+         * TypeScript ne sait pas forcément que
+         * validateActivation() garantit player.
+         */
+        if (!player) {
 
-    );
+            throw new Error(
+                "LICENSE_NOT_FOUND",
+            );
 
-    return {
+        }
 
-        ...player,
+        /*
+         * Étape 4
+         *
+         * Association du compte Firebase au
+         * joueur préchargé.
+         */
+        await activateUser(
 
-        firebaseUid: firebaseUser.uid,
+            player.id,
 
-        email: values.email,
+            firebaseUser.uid,
 
-        accountActivated: true,
+            email,
 
-    };
+        );
+
+        /*
+         * Étape 5
+         *
+         * Retour du profil activé.
+         */
+        return {
+
+            ...player,
+
+            firebaseUid:
+                firebaseUser.uid,
+
+            email,
+
+            accountActivated:
+                true,
+
+        };
+
+    }
+    catch (error) {
+
+        /*
+         * Quelque chose a échoué APRÈS
+         * la création Firebase Auth.
+         *
+         * On supprime donc le compte créé afin
+         * de ne jamais laisser de compte
+         * Firebase orphelin.
+         */
+        try {
+
+            await authService
+                .deleteCurrentUser();
+
+        }
+        catch (rollbackError) {
+
+            console.error(
+                "ACTIVATION_ROLLBACK_FAILED",
+                rollbackError,
+            );
+
+        }
+
+        throw error;
+
+    }
 
 }
