@@ -1,58 +1,110 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState,
+} from "react";
 
-import { loadDashboard } from "../api/dashboard.service";
+import {
+    loadDashboard,
+} from "../api/dashboard.service";
 
-import type { DashboardData } from "../model/dashboard.types";
+import type {
+    DashboardData,
+} from "../model/dashboard.types";
 
-export function useDashboard() {
+export function useDashboard(
+    managerUserId?: string,
+) {
 
-    const [dashboard, setDashboard] =
-        useState<DashboardData | null>(null);
+    const [
+        dashboard,
+        setDashboard,
+    ] = useState<DashboardData | null>(
+        null,
+    );
 
-    const [loading, setLoading] =
-        useState(true);
+    const [
+        loading,
+        setLoading,
+    ] = useState(true);
 
-    const [error, setError] =
-        useState<string | null>(null);
+    const [
+        error,
+        setError,
+    ] = useState<string | null>(
+        null,
+    );
 
     useEffect(() => {
+
+        let cancelled =
+            false;
 
         async function load() {
 
             try {
 
+                setLoading(true);
+
+                setError(null);
+
                 const data =
-                    await loadDashboard();
+                    await loadDashboard(
+                        managerUserId,
+                    );
 
-                setDashboard(data);
+                if (!cancelled) {
 
-            }
-            catch (e) {
-
-                if (e instanceof Error) {
-
-                    setError(e.message);
-
-                } else {
-
-                    setError(
-                        "Une erreur est survenue.",
+                    setDashboard(
+                        data,
                     );
 
                 }
 
             }
+            catch (error) {
+
+                if (cancelled) {
+                    return;
+                }
+
+                console.error(
+                    "DASHBOARD_LOAD_FAILED",
+                    error,
+                );
+
+                setError(
+                    error instanceof Error
+                        ? error.message
+                        : "Impossible de charger le tableau de bord.",
+                );
+
+            }
             finally {
 
-                setLoading(false);
+                if (!cancelled) {
+
+                    setLoading(
+                        false,
+                    );
+
+                }
 
             }
 
         }
 
-        load();
+        void load();
 
-    }, []);
+        return () => {
+
+            cancelled =
+                true;
+
+        };
+
+    }, [
+        managerUserId,
+    ]);
 
     return {
 

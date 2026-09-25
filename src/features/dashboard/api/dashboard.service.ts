@@ -1,21 +1,40 @@
-import { getVenues } from "@/entities/venue";
-
-import type { DashboardData } from "../model/dashboard.types";
-
 import {
     getActiveSeason,
 } from "@/entities/season";
 
-export async function loadDashboard(): Promise<DashboardData> {
+import {
+    getVenuesManagedByUser,
+} from "@/entities/venue/venue.repository";
 
-    const venues = await getVenues();
+import type {
+    DashboardData,
+} from "../model/dashboard.types";
 
-    const activeSeason =
-        await getActiveSeason();
+export async function loadDashboard(
+    managerUserId?: string,
+): Promise<DashboardData> {
+
+    const [
+        activeSeason,
+        managedVenues,
+    ] = await Promise.all([
+
+        getActiveSeason(),
+
+        managerUserId
+            ? getVenuesManagedByUser(
+                managerUserId,
+            )
+            : Promise.resolve([]),
+
+    ]);
 
     return {
-        venues,
+
         activeSeason,
+
+        managedVenues,
+
     };
 
 }
