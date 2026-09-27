@@ -2,7 +2,10 @@ import {
     getDoc,
     getDocs,
     query,
-    where
+    where,
+    addDoc,
+    serverTimestamp,
+    updateDoc,
 } from "firebase/firestore";
 
 import {
@@ -109,6 +112,136 @@ export async function getManagedVenue(
     return mapVenue(
 
         snapshot.docs[0],
+
+    );
+
+}
+
+export interface CreateVenueRequest {
+
+    name: string;
+
+    city: string;
+
+    address: string;
+
+    boardCount: number;
+
+    logo: string | null;
+
+    active: boolean;
+
+    managerUserIds: string[];
+
+}
+
+export interface UpdateVenueRequest {
+
+    name: string;
+
+    city: string;
+
+    address: string;
+
+    boardCount: number;
+
+    logo: string | null;
+
+    active: boolean;
+
+    managerUserIds: string[];
+
+}
+
+export async function createVenue(
+
+    request: CreateVenueRequest,
+
+): Promise<string> {
+
+    const document =
+        await addDoc(
+
+            venuesCollection,
+
+            {
+
+                name:
+                    request.name,
+
+                city:
+                    request.city,
+
+                address:
+                    request.address,
+
+                boardCount:
+                    request.boardCount,
+
+                logo:
+                    request.logo,
+
+                active:
+                    request.active,
+
+                managerUserIds:
+                    request.managerUserIds,
+
+                createdAt:
+                    serverTimestamp(),
+
+                updatedAt:
+                    serverTimestamp(),
+
+            },
+
+        );
+
+    return document.id;
+
+}
+
+export async function updateVenue(
+
+    venueId: string,
+
+    request: UpdateVenueRequest,
+
+): Promise<void> {
+
+    await updateDoc(
+
+        venueDocument(
+            venueId,
+        ),
+
+        {
+
+            name:
+                request.name,
+
+            city:
+                request.city,
+
+            address:
+                request.address,
+
+            boardCount:
+                request.boardCount,
+
+            logo:
+                request.logo,
+
+            active:
+                request.active,
+
+            managerUserIds:
+                request.managerUserIds,
+
+            updatedAt:
+                serverTimestamp(),
+
+        },
 
     );
 

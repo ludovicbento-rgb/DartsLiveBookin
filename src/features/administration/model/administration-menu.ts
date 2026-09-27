@@ -55,7 +55,7 @@ export const ADMINISTRATION_MENU:
                 "Bars affiliés, cibles et gérants",
             route:
                 "/administration/venues",
-            enabled: false,
+            enabled: true,
         },
 
         /*

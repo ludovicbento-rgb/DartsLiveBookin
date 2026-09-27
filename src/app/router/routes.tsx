@@ -20,6 +20,9 @@ import UsersPage
 import VenueSettingsPage
   from "@/features/venue-settings/pages/VenueSettingsPage";
 
+import VenuesPage
+  from "@/features/administration/venues/pages/VenuesPage";
+
 import AvailabilityRulesPage
   from "@/features/availability-rules/pages/AvailabilityRulePage";
 
@@ -97,6 +100,14 @@ export const routes = [
     element: (
       <ProtectedRoute>
         <UsersPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/administration/venues",
+    element: (
+      <ProtectedRoute>
+        <VenuesPage />
       </ProtectedRoute>
     ),
   },
