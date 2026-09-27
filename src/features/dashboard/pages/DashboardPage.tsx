@@ -516,7 +516,7 @@ export function DashboardPage() {
 
                                 onClick={() =>
                                     navigate(
-                                        "/admin",
+                                        "/administration",
                                     )
                                 }
 

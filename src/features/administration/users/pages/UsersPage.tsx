@@ -32,17 +32,60 @@ import {
 
 import {
     useAdminUsers,
-} from "../users/hooks/useAdminUsers";
-
-import {
-    AdminUserCard,
-} from "../users/components/AdminUserCard";
+} from "../hooks/useAdminUsers";
 
 import type {
     AdminUserListItem,
-} from "../users/model/admin-user.types";
+    CreateAdminUserRequest,
+} from "../model/admin-user.types";
+
+import {
+    AdminUserCard,
+} from "../components/AdminUserCard";
+
+import {
+    EditAdminUserDrawer,
+} from "../components/EditAdminUserDrawer";
+
+import {
+    useUpdateAdminUser,
+} from "../hooks/useUpdateAdminUser";
+
+import type {
+    UpdateAdminUserRequest,
+} from "../model/admin-user.types";
+
+import {
+    getActiveSeason,
+} from "@/entities/season";
+
+import type {
+    Season,
+} from "@/entities/season";
+
+import {
+    useEffect,
+} from "react";
+
+import {
+    CreateAdminUserDrawer,
+} from "../components/CreateAdminUserDrawer";
+
+import {
+    useCreateAdminUser,
+} from "../hooks/useCreateAdminUser";
+
+import ArrowBackIcon
+    from "@mui/icons-material/ArrowBack";
+
+import {
+    useNavigate,
+} from "react-router-dom";
 
 export function UsersPage() {
+
+    const navigate =
+        useNavigate();
 
     const profile =
         useCurrentUser();
@@ -50,10 +93,9 @@ export function UsersPage() {
     const {
 
         users,
-
         loading,
-
         error,
+        reload,
 
     } = useAdminUsers();
 
@@ -61,6 +103,71 @@ export function UsersPage() {
         search,
         setSearch,
     ] = useState("");
+
+    const [
+        createDrawerOpen,
+        setCreateDrawerOpen,
+    ] = useState(false);
+
+    const [
+        activeSeason,
+        setActiveSeason,
+    ] = useState<Season | null>(
+        null,
+    );
+
+    const createUser =
+        useCreateAdminUser();
+
+    const [
+        selectedUser,
+        setSelectedUser,
+    ] = useState<AdminUserListItem | null>(
+        null,
+    );
+
+    const [
+        editDrawerOpen,
+        setEditDrawerOpen,
+    ] = useState(false);
+
+    const updateUser =
+        useUpdateAdminUser();
+
+    useEffect(() => {
+
+        let cancelled =
+            false;
+
+        void getActiveSeason()
+            .then(season => {
+
+                if (!cancelled) {
+
+                    setActiveSeason(
+                        season,
+                    );
+
+                }
+
+            })
+            .catch(error => {
+
+                console.error(
+                    "ACTIVE_SEASON_LOAD_FAILED",
+                    error,
+                );
+
+            });
+
+        return () => {
+
+            cancelled =
+                true;
+
+        };
+
+    }, []);
 
     /*
      * ------------------------------------------------------------
@@ -150,21 +257,75 @@ export function UsersPage() {
      * ------------------------------------------------------------
      */
 
+
+
+    async function handleEditSubmit(
+
+        userId: string,
+
+        request: UpdateAdminUserRequest,
+
+        status:
+            | "ACTIVE"
+            | "BLOCKED",
+
+    ) {
+
+        await updateUser.update(
+            userId,
+            request,
+            status,
+        );
+
+        setEditDrawerOpen(
+            false,
+        );
+
+        setSelectedUser(
+            null,
+        );
+
+        await reload();
+
+    }
+
     function handleCreate() {
 
-        console.log(
-            "ADMIN_USER_CREATE_REQUESTED",
+        createUser.resetError();
+
+        setCreateDrawerOpen(
+            true,
         );
 
     }
 
+    async function handleCreateSubmit(
+        request: CreateAdminUserRequest,
+    ) {
+
+        await createUser.create(
+            request,
+        );
+
+        setCreateDrawerOpen(
+            false,
+        );
+
+        await reload();
+
+    }
     function handleEdit(
         user: AdminUserListItem,
     ) {
 
-        console.log(
-            "ADMIN_USER_EDIT_REQUESTED",
-            user.id,
+        updateUser.resetError();
+
+        setSelectedUser(
+            user,
+        );
+
+        setEditDrawerOpen(
+            true,
         );
 
     }
@@ -174,82 +335,99 @@ export function UsersPage() {
         <AdministrationLayout>
 
             <Stack spacing={3}>
+                <Stack spacing={2}>
 
-                {/*
-                 * ------------------------------------------------
-                 * Header
-                 * ------------------------------------------------
-                 */}
-
-                <Stack
-                    direction={{
-                        xs: "column",
-                        sm: "row",
-                    }}
-                    spacing={2}
-                    sx={{
-                        justifyContent:
-                            "space-between",
-
-                        alignItems: {
-                            xs: "stretch",
-                            sm: "center",
-                        },
-                    }}
-                >
-
-                    <Stack
-                        direction="row"
-                        spacing={1.5}
+                    <Button
+                        variant="text"
+                        startIcon={
+                            <ArrowBackIcon />
+                        }
+                        onClick={() =>
+                            navigate(
+                                "/administration",
+                            )
+                        }
                         sx={{
-                            alignItems:
-                                "center",
+                            alignSelf:
+                                "flex-start",
                         }}
                     >
 
-                        <PeopleIcon
-                            color="primary"
-                        />
+                        Retour à l'administration
 
-                        <Stack>
+                    </Button>
 
-                            <Typography
-                                variant="h5"
-                                sx={{
-                                    fontWeight:
-                                        700,
-                                }}
-                            >
+                    <Stack
+                        direction={{
+                            xs: "column",
+                            sm: "row",
+                        }}
+                        spacing={2}
+                        sx={{
+                            justifyContent:
+                                "space-between",
 
-                                Utilisateurs
+                            alignItems: {
+                                xs: "stretch",
+                                sm: "center",
+                            },
+                        }}
+                    >
 
-                            </Typography>
+                        <Stack
+                            direction="row"
+                            spacing={1.5}
+                            sx={{
+                                alignItems:
+                                    "center",
+                            }}
+                        >
 
-                            <Typography
-                                color="text.secondary"
-                            >
+                            <PeopleIcon
+                                color="primary"
+                            />
 
-                                Comptes, rôles et activations
+                            <Stack>
 
-                            </Typography>
+                                <Typography
+                                    variant="h5"
+                                    sx={{
+                                        fontWeight:
+                                            700,
+                                    }}
+                                >
+
+                                    Utilisateurs
+
+                                </Typography>
+
+                                <Typography
+                                    color="text.secondary"
+                                >
+
+                                    Comptes, rôles et activations
+
+                                </Typography>
+
+                            </Stack>
 
                         </Stack>
 
+                        <Button
+                            variant="contained"
+                            startIcon={
+                                <AddIcon />
+                            }
+                            onClick={
+                                handleCreate
+                            }
+                        >
+
+                            Nouvel utilisateur
+
+                        </Button>
+
                     </Stack>
-
-                    <Button
-                        variant="contained"
-                        startIcon={
-                            <AddIcon />
-                        }
-                        onClick={
-                            handleCreate
-                        }
-                    >
-
-                        Nouvel utilisateur
-
-                    </Button>
 
                 </Stack>
 
@@ -436,6 +614,98 @@ export function UsersPage() {
                 }
 
             </Stack>
+
+            <CreateAdminUserDrawer
+
+                open={
+                    createDrawerOpen
+                }
+
+                loading={
+                    createUser.loading
+                }
+
+                error={
+                    createUser.error
+                }
+
+                activeSeason={
+                    activeSeason
+                }
+
+                onClose={() => {
+
+                    if (
+                        createUser.loading
+                    ) {
+
+                        return;
+
+                    }
+
+                    createUser.resetError();
+
+                    setCreateDrawerOpen(
+                        false,
+                    );
+
+                }}
+
+                onSubmit={
+                    handleCreateSubmit
+                }
+
+            />
+
+            <EditAdminUserDrawer
+
+                open={
+                    editDrawerOpen
+                }
+
+                user={
+                    selectedUser
+                }
+
+                currentUserId={
+                    profile.id
+                }
+
+                loading={
+                    updateUser.loading
+                }
+
+                error={
+                    updateUser.error
+                }
+
+                onClose={() => {
+
+                    if (
+                        updateUser.loading
+                    ) {
+
+                        return;
+
+                    }
+
+                    updateUser.resetError();
+
+                    setEditDrawerOpen(
+                        false,
+                    );
+
+                    setSelectedUser(
+                        null,
+                    );
+
+                }}
+
+                onSubmit={
+                    handleEditSubmit
+                }
+
+            />
 
         </AdministrationLayout>
 

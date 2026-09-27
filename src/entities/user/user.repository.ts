@@ -1,7 +1,9 @@
 import {
+    doc,
     getDoc,
     getDocs,
     query,
+    serverTimestamp,
     updateDoc,
     where,
     writeBatch,
@@ -25,6 +27,163 @@ import {
 } from "./activation-license.firestore";
 
 import type { UserProfile } from "./user.types";
+
+export interface CreateUserRequest {
+
+    licenseNumber: string;
+
+    firstname: string;
+
+    lastname: string;
+
+    email: string;
+
+    seasonId: string;
+
+    roles: {
+        administrator: boolean;
+        manager: boolean;
+        player: boolean;
+    };
+
+}
+
+export async function createUser(
+
+    request: CreateUserRequest,
+
+): Promise<string> {
+
+    /*
+     * ------------------------------------------------------------
+     * Vérification de la licence
+     * ------------------------------------------------------------
+     */
+
+    const existingLicense =
+        await getDoc(
+
+            activationLicenseDocument(
+                request.licenseNumber,
+            ),
+
+        );
+
+    if (
+        existingLicense.exists()
+    ) {
+
+        throw new Error(
+            "LICENSE_ALREADY_EXISTS",
+        );
+
+    }
+
+    /*
+     * ------------------------------------------------------------
+     * Nouvel ID métier
+     * ------------------------------------------------------------
+     */
+
+    const userRef =
+        doc(
+            usersCollection,
+        );
+
+    const batch =
+        writeBatch(
+            db,
+        );
+
+    /*
+     * ------------------------------------------------------------
+     * Profil utilisateur
+     * ------------------------------------------------------------
+     */
+
+    batch.set(
+
+        userRef,
+
+        {
+
+            firebaseUid:
+                null,
+
+            licenseNumber:
+                request.licenseNumber,
+
+            firstname:
+                request.firstname.trim(),
+
+            lastname:
+                request.lastname.trim(),
+
+            email:
+                request.email.trim(),
+
+            seasonId:
+                request.seasonId,
+
+            accountActivated:
+                false,
+
+            roles:
+                request.roles,
+
+            status:
+                "ACTIVE",
+
+            createdAt:
+                serverTimestamp(),
+
+            updatedAt:
+                serverTimestamp(),
+
+            lastLoginAt:
+                null,
+
+        },
+
+    );
+
+    /*
+     * ------------------------------------------------------------
+     * Index d'activation
+     *
+     * activation-licenses/<licenseNumber>
+     * {
+     *     userId: "..."
+     * }
+     * ------------------------------------------------------------
+     */
+
+    batch.set(
+
+        activationLicenseDocument(
+            request.licenseNumber,
+        ),
+
+        {
+
+            userId:
+                userRef.id,
+
+        },
+
+    );
+
+    /*
+     * ------------------------------------------------------------
+     * Commit atomique
+     * ------------------------------------------------------------
+     */
+
+    await batch.commit();
+
+    return userRef.id;
+
+}
 
 /**
  * Lecture par Document Firestore ID
@@ -76,6 +235,30 @@ export async function getUserByAuthUid(
 
     return getUser(
         data.userId,
+    );
+
+}
+
+export async function getUsers():
+    Promise<UserProfile[]> {
+
+    const snapshot =
+        await getDocs(
+            usersCollection,
+        );
+
+    return snapshot.docs.map(
+        document => ({
+
+            id:
+                document.id,
+
+            ...(document.data() as Omit<
+                UserProfile,
+                "id"
+            >),
+
+        }),
     );
 
 }

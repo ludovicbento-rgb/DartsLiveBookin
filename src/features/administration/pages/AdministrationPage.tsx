@@ -1,22 +1,30 @@
-import Stack from "@mui/material/Stack";
-
-import CalendarMonthIcon
-    from "@mui/icons-material/CalendarMonth";
-
-import StoreIcon
-    from "@mui/icons-material/Store";
+import {
+    Alert,
+    Divider,
+    Stack,
+    Typography,
+} from "@mui/material";
 
 import PeopleIcon
     from "@mui/icons-material/People";
 
+import StorefrontIcon
+    from "@mui/icons-material/Storefront";
+
 import EmojiEventsIcon
     from "@mui/icons-material/EmojiEvents";
+
+import SportsEsportsIcon
+    from "@mui/icons-material/SportsEsports";
 
 import GroupsIcon
     from "@mui/icons-material/Groups";
 
-import SportsIcon
-    from "@mui/icons-material/Sports";
+import HowToRegIcon
+    from "@mui/icons-material/HowToReg";
+
+import CalendarMonthIcon
+    from "@mui/icons-material/CalendarMonth";
 
 import UploadFileIcon
     from "@mui/icons-material/UploadFile";
@@ -24,187 +32,297 @@ import UploadFileIcon
 import DownloadIcon
     from "@mui/icons-material/Download";
 
-import { useNavigate } from "react-router-dom";
+import SettingsIcon
+    from "@mui/icons-material/Settings";
 
-import { AppLayout } from "@/app/layouts/AppLayout";
+import ConstructionIcon
+    from "@mui/icons-material/Construction";
+
+import HistoryIcon
+    from "@mui/icons-material/History";
 
 import {
-    AppCard,
-    PageTitle,
-} from "@/shared/ui";
+    useNavigate,
+} from "react-router-dom";
 
 import {
-    DashboardActionCard,
-} from "@/widgets/dashboard/DashboardActionCard";
+    useCurrentUser,
+} from "@/features/authentication/hooks/useCurrentUser";
+
+import {
+    AdministrationLayout,
+} from "../layout/AdministrationLayout";
+
+import {
+    AdministrationCard,
+} from "../components/AdministrationCard/AdministrationCard";
+
+import {
+    ADMINISTRATION_MENU,
+} from "../model/administration-menu";
+
+import type {
+    AdministrationMenuItem,
+    AdministrationSection,
+} from "../model/administration-menu";
+
+const SECTION_LABELS:
+    Record<
+        AdministrationSection,
+        string
+    > = {
+
+    USERS:
+        "Utilisateurs",
+
+    VENUES:
+        "Établissements",
+
+    CHAMPIONSHIPS:
+        "Championnats",
+
+    DATA:
+        "Données",
+
+    SYSTEM:
+        "Système",
+
+};
+
+const SECTION_ORDER:
+    AdministrationSection[] = [
+
+        "USERS",
+
+        "VENUES",
+
+        "CHAMPIONSHIPS",
+
+        "DATA",
+
+        "SYSTEM",
+
+    ];
+
+function getIcon(
+    item: AdministrationMenuItem,
+) {
+
+    switch (item.id) {
+
+        case "users":
+            return <PeopleIcon />;
+
+        case "venues":
+            return <StorefrontIcon />;
+
+        case "seasons":
+            return <EmojiEventsIcon />;
+
+        case "competitions":
+            return <SportsEsportsIcon />;
+
+        case "pools":
+            return <GroupsIcon />;
+
+        case "registrations":
+            return <HowToRegIcon />;
+
+        case "match-days":
+            return <CalendarMonthIcon />;
+
+        case "matches":
+            return <SportsEsportsIcon />;
+
+        case "import":
+            return <UploadFileIcon />;
+
+        case "export":
+            return <DownloadIcon />;
+
+        case "settings":
+            return <SettingsIcon />;
+
+        case "maintenance":
+            return <ConstructionIcon />;
+
+        case "audit":
+            return <HistoryIcon />;
+
+        default:
+            return <SettingsIcon />;
+
+    }
+
+}
 
 export function AdministrationPage() {
 
     const navigate =
         useNavigate();
 
+    const profile =
+        useCurrentUser();
+
+    /*
+     * ------------------------------------------------------------
+     * Protection UI
+     * ------------------------------------------------------------
+     *
+     * Les Security Rules Firestore resteront
+     * la véritable protection des données.
+     */
+
+    if (
+        !profile
+        ||
+        !profile.roles.administrator
+    ) {
+
+        return (
+
+            <AdministrationLayout>
+
+                <Alert severity="error">
+
+                    Vous n'êtes pas autorisé à accéder à l'administration.
+
+                </Alert>
+
+            </AdministrationLayout>
+
+        );
+
+    }
+
     return (
 
-        <AppLayout>
+        <AdministrationLayout>
+
+            <Alert severity="info">
+
+                Le nouveau module d'administration est en cours de construction.
+                Les fonctions seront activées progressivement.
+
+            </Alert>
+
+            {
+                SECTION_ORDER.map(
+                    section => {
 
-            <AppCard>
+                        const items =
+                            ADMINISTRATION_MENU.filter(
+                                item =>
+                                    item.section ===
+                                    section,
+                            );
 
-                <Stack spacing={2}>
+                        return (
 
-                    <PageTitle>
+                            <Stack
+                                key={
+                                    section
+                                }
+                                spacing={2}
+                            >
 
-                        Administration
+                                <Stack
+                                    direction="row"
+                                    spacing={2}
+                                    sx={{
+                                        alignItems:
+                                            "center",
+                                    }}
+                                >
 
-                    </PageTitle>
+                                    <Typography
+                                        variant="h5"
+                                        sx={{
+                                            fontWeight:
+                                                700,
+                                        }}
+                                    >
 
-                    <DashboardActionCard
+                                        {
+                                            SECTION_LABELS[
+                                            section
+                                            ]
+                                        }
 
-                        title="Saisons"
+                                    </Typography>
 
-                        description="Gestion des saisons"
+                                    <Divider
+                                        sx={{
+                                            flexGrow:
+                                                1,
+                                        }}
+                                    />
 
-                        icon={<CalendarMonthIcon />}
+                                </Stack>
 
-                        color="primary"
+                                <Stack spacing={1.5}>
 
-                        onClick={() =>
-                            navigate("/admin/seasons")
-                        }
+                                    {
+                                        items.map(
+                                            item => (
 
-                    />
+                                                <AdministrationCard
 
-                    <DashboardActionCard
+                                                    key={
+                                                        item.id
+                                                    }
 
-                        title="Établissements"
+                                                    title={
+                                                        item.title
+                                                    }
 
-                        description="Gestion des bars"
+                                                    description={
+                                                        item.description
+                                                    }
 
-                        icon={<StoreIcon />}
+                                                    icon={
+                                                        getIcon(
+                                                            item,
+                                                        )
+                                                    }
 
-                        color="success"
+                                                    enabled={
+                                                        item.enabled
+                                                    }
 
-                        onClick={() =>
-                            navigate("/admin/venues")
-                        }
+                                                    onClick={() => {
 
-                    />
+                                                        if (
+                                                            item.enabled
+                                                            &&
+                                                            item.route
+                                                        ) {
 
-                    <DashboardActionCard
+                                                            navigate(
+                                                                item.route,
+                                                            );
 
-                        title="Utilisateurs"
+                                                        }
 
-                        description="Gestion des joueurs"
+                                                    }}
 
-                        icon={<PeopleIcon />}
+                                                />
 
-                        color="warning"
+                                            ),
+                                        )
+                                    }
 
-                        onClick={() =>
-                            navigate("/admin/users")
-                        }
+                                </Stack>
 
-                    />
+                            </Stack>
 
-                    <DashboardActionCard
+                        );
 
-                        title="Compétitions"
+                    },
+                )
+            }
 
-                        description="Gestion des compétitions"
-
-                        icon={<EmojiEventsIcon />}
-
-                        color="primary"
-
-                        onClick={() =>
-                            navigate("/admin/competitions")
-                        }
-
-                    />
-
-                    <DashboardActionCard
-
-                        title="Poules"
-
-                        description="Gestion des poules"
-
-                        icon={<GroupsIcon />}
-
-                        color="success"
-
-                        onClick={() =>
-                            navigate("/admin/pools")
-                        }
-
-                    />
-
-                    <DashboardActionCard
-
-                        title="Doublettes"
-
-                        description="Gestion des équipes"
-
-                        icon={<SportsIcon />}
-
-                        color="warning"
-
-                        onClick={() =>
-                            navigate("/admin/registrations")
-                        }
-
-                    />
-
-                    <DashboardActionCard
-
-                        title="Import Excel"
-
-                        description="Importer une saison"
-
-                        icon={<UploadFileIcon />}
-
-                        color="success"
-
-                        onClick={() =>
-                            navigate("/admin/import")
-                        }
-
-                    />
-
-                    <DashboardActionCard
-
-                        title="Export Excel"
-
-                        description="Exporter une saison"
-
-                        icon={<DownloadIcon />}
-
-                        color="primary"
-
-                        onClick={() =>
-                            navigate("/admin/export")
-                        }
-
-                    />
-
-                    <DashboardActionCard
-
-                        title="Paramètres"
-
-                        description="Gestion des paramètres de l'application"
-
-                        icon={<StoreIcon />}
-
-                        color="success"
-
-                        onClick={() =>
-                            navigate("/admin/settings")
-                        }
-
-                    />
-
-                </Stack>
-
-            </AppCard>
-
-        </AppLayout>
+        </AdministrationLayout>
 
     );
 

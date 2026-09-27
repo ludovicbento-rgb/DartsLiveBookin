@@ -173,54 +173,156 @@ service cloud.firestore {
 
     match /activation-licenses/{licenseNumber} {
 
-      allow get:
-        if signedIn();
+  /*
+   * ------------------------------------------------------------
+   * Lecture pendant l'activation
+   * ------------------------------------------------------------
+   *
+   * Un utilisateur Firebase vient d'être créé,
+   * mais user-auth n'existe pas encore.
+   */
 
-      allow list:
-        if isAdmin();
+  allow get:
+    if signedIn();
 
-      allow create, update, delete:
-        if isAdmin();
-    }
 
+  /*
+   * L'énumération complète des licences
+   * est réservée aux administrateurs.
+   */
+  allow list:
+    if isAdmin();
+
+
+  /*
+   * ------------------------------------------------------------
+   * Création par l'administrateur
+   * ------------------------------------------------------------
+   */
+
+  allow create:
+    if isAdmin()
+
+    && request.resource.data.keys().hasOnly([
+      "userId"
+    ])
+
+    && request.resource.data.userId is string
 
     /*
-     * ============================================================
-     * USER-AUTH
-     * ============================================================
+     * Le users/<userId> créé dans le même batch
+     * doit réellement correspondre à cette licence.
      */
+    && getAfter(
+      /databases/$(database)/documents/users/$(request.resource.data.userId)
+    ).data.licenseNumber
+      == licenseNumber;
+
+
+  /*
+   * Pas encore de modification de licence dans PR-142.
+   *
+   * On pourra introduire une opération métier atomique
+   * dédiée si on décide de permettre le changement
+   * d'un numéro de licence.
+   */
+  allow update:
+    if false;
+
+
+  /*
+   * Pas de suppression physique depuis l'application
+   * pour le moment.
+   */
+  allow delete:
+    if false;
+
+}
+
 
     match /user-auth/{firebaseUid} {
 
-      allow get:
-        if signedIn()
-        && (
-          request.auth.uid == firebaseUid
-          || isAdmin()
-        );
+  /*
+   * ------------------------------------------------------------
+   * Lecture
+   * ------------------------------------------------------------
+   *
+   * - utilisateur connecté : son propre mapping
+   * - administrateur : tous les mappings
+   */
 
-      allow list:
-        if isAdmin();
+  allow get:
+    if signedIn()
+    && (
+      request.auth.uid == firebaseUid
+      || isAdmin()
+    );
 
-      allow create:
-        if signedIn()
-        && request.auth.uid == firebaseUid
-        && request.resource.data.keys().hasOnly([
-          "userId"
-        ])
-        && request.resource.data.userId is string
+  allow list:
+    if isAdmin();
 
-        && getAfter(
-          /databases/$(database)/documents/users/$(request.resource.data.userId)
-        ).data.firebaseUid == request.auth.uid
 
-        && getAfter(
-          /databases/$(database)/documents/users/$(request.resource.data.userId)
-        ).data.accountActivated == true;
+  /*
+   * ------------------------------------------------------------
+   * Création pendant l'activation
+   * ------------------------------------------------------------
+   *
+   * Un utilisateur peut uniquement créer :
+   *
+   * user-auth/<son Firebase UID>
+   *
+   * avec uniquement :
+   *
+   * {
+   *   userId: "..."
+   * }
+   */
 
-      allow update, delete:
-        if isAdmin();
-    }
+  allow create:
+    if signedIn()
+
+    && request.auth.uid == firebaseUid
+
+    && request.resource.data.keys().hasOnly([
+      "userId"
+    ])
+
+    && request.resource.data.userId is string
+
+    /*
+     * Le profil métier ciblé doit exister.
+     */
+    && exists(
+      /databases/$(database)/documents/users/$(request.resource.data.userId)
+    )
+
+    /*
+     * Le profil doit maintenant être lié
+     * au Firebase UID connecté.
+     *
+     * Comme activateUser() effectue les deux
+     * opérations dans un batch, getAfter()
+     * permet de voir l'état final du profil.
+     */
+    && getAfter(
+      /databases/$(database)/documents/users/$(request.resource.data.userId)
+    ).data.firebaseUid
+      == request.auth.uid
+
+    && getAfter(
+      /databases/$(database)/documents/users/$(request.resource.data.userId)
+    ).data.accountActivated
+      == true;
+
+
+  /*
+   * Le mapping devient immuable pour
+   * l'utilisateur lui-même.
+   */
+  allow update, delete:
+    if isAdmin();
+
+}
 
 
     /*
@@ -231,66 +333,326 @@ service cloud.firestore {
 
     match /users/{userId} {
 
-      allow get:
-        if (
-          hasAuthLink()
-          && currentUserId() == userId
-        )
-        || isActivationProfile(userId)
-        || isAdmin();
+  /*
+   * ============================================================
+   * GET
+   * ============================================================
+   *
+   * Autorisé pour :
+   *
+   * - son propre profil après activation
+   * - le profil ciblé pendant le bootstrap d'activation
+   * - un administrateur
+   */
 
-      allow list:
-        if isAdmin();
+  allow get:
+    if (
+      hasAuthLink()
+      && currentUserId() == userId
+    )
+    || isActivationProfile(userId)
+    || isAdmin();
 
-      allow create, delete:
-        if isAdmin();
 
-      allow update:
-        if isAdmin()
-        || (
-          isActivationProfile(userId)
+  /*
+   * ============================================================
+   * LIST
+   * ============================================================
+   *
+   * Nécessaire pour l'écran Administration > Utilisateurs.
+   */
 
-          && request.resource.data.firebaseUid
-            == request.auth.uid
+  allow list:
+    if isAdmin();
 
-          && request.resource.data.accountActivated
-            == true
 
-          && getAfter(
-            /databases/$(database)/documents/user-auth/$(request.auth.uid)
-          ).data.userId == userId
+  /*
+   * ============================================================
+   * CREATE
+   * ============================================================
+   *
+   * Création métier réservée à l'administrateur.
+   */
 
-          && request.resource.data
-            .diff(resource.data)
-            .affectedKeys()
-            .hasOnly([
-              "firebaseUid",
-              "email",
-              "accountActivated",
-              "lastLoginAt",
-              "updatedAt"
-            ])
+  allow create:
+    if isAdmin()
 
-          && request.resource.data.licenseNumber
-            == resource.data.licenseNumber
+    /*
+     * Structure obligatoire.
+     */
+    && request.resource.data.keys().hasOnly([
+      "firebaseUid",
+      "licenseNumber",
+      "firstname",
+      "lastname",
+      "email",
+      "seasonId",
+      "accountActivated",
+      "roles",
+      "status",
+      "createdAt",
+      "updatedAt",
+      "lastLoginAt"
+    ])
 
-          && request.resource.data.roles
-            == resource.data.roles
+    && request.resource.data.licenseNumber
+      is string
 
-          && request.resource.data.status
-            == resource.data.status
+    && request.resource.data.firstname
+      is string
 
-          && request.resource.data.firstname
-            == resource.data.firstname
+    && request.resource.data.lastname
+      is string
 
-          && request.resource.data.lastname
-            == resource.data.lastname
+    && request.resource.data.email
+      is string
 
-          && request.resource.data.seasonId
-            == resource.data.seasonId
-        );
-    }
+    && request.resource.data.seasonId
+      is string
 
+    /*
+     * Un compte créé par l'administration
+     * n'est pas encore lié à Firebase Auth.
+     */
+    && request.resource.data.firebaseUid
+      == null
+
+    && request.resource.data.accountActivated
+      == false
+
+    && request.resource.data.lastLoginAt
+      == null
+
+    && request.resource.data.status
+      == "ACTIVE"
+
+    /*
+     * Les trois rôles doivent être présents.
+     */
+    && request.resource.data.roles.keys().hasOnly([
+      "administrator",
+      "manager",
+      "player"
+    ])
+
+    && request.resource.data.roles.administrator
+      is bool
+
+    && request.resource.data.roles.manager
+      is bool
+
+    && request.resource.data.roles.player
+      is bool
+
+    /*
+     * Au moins un rôle.
+     */
+    && (
+      request.resource.data.roles.administrator
+        == true
+      ||
+      request.resource.data.roles.manager
+        == true
+      ||
+      request.resource.data.roles.player
+        == true
+    )
+
+    /*
+     * Le batch doit également créer l'index
+     * activation-licenses correspondant.
+     */
+    && getAfter(
+      /databases/$(database)/documents/activation-licenses/$(request.resource.data.licenseNumber)
+    ).data.userId
+      == userId;
+
+
+  /*
+   * ============================================================
+   * UPDATE
+   * ============================================================
+   */
+
+  allow update:
+ if
+    /*
+     * ----------------------------------------------------------
+     * Cas 1 : administration
+     * ----------------------------------------------------------
+     */
+
+    (
+      isAdmin()
+
+      /*
+       * Le numéro de licence reste immuable
+       * dans cette première version.
+       */
+      && request.resource.data.licenseNumber
+        == resource.data.licenseNumber
+
+      /*
+       * Le lien Firebase ne doit pas être manipulé
+       * depuis l'écran d'administration.
+       */
+      && request.resource.data.firebaseUid
+        == resource.data.firebaseUid
+
+      && request.resource.data.accountActivated
+        == resource.data.accountActivated
+
+      && request.resource.data.createdAt
+        == resource.data.createdAt
+
+      && request.resource.data.lastLoginAt
+        == resource.data.lastLoginAt
+
+      /*
+       * Statuts métier autorisés.
+       */
+      && request.resource.data.status in [
+        "ACTIVE",
+        "BLOCKED"
+      
+      ]
+
+      /*
+       * Structure des rôles.
+       */
+      && request.resource.data.roles.keys().hasOnly([
+  "administrator",
+  "manager",
+  "player"
+])
+
+/*
+ * Un administrateur ne peut pas se retirer
+ * lui-même le rôle administrateur ni se bloquer.
+ */
+&& (
+  userId != currentUserId()
+  ||
+  (
+    request.resource.data.roles.administrator == true
+    &&
+    request.resource.data.status == "ACTIVE"
+  )
+)
+
+      && request.resource.data.roles.administrator
+        is bool
+
+      && request.resource.data.roles.manager
+        is bool
+
+      && request.resource.data.roles.player
+        is bool
+
+      && (
+        request.resource.data.roles.administrator
+          == true
+        ||
+        request.resource.data.roles.manager
+          == true
+        ||
+        request.resource.data.roles.player
+          == true
+      )
+
+      /*
+       * Seuls ces champs peuvent être modifiés
+       * par l'administration.
+       */
+      && request.resource.data
+        .diff(resource.data)
+        .affectedKeys()
+        .hasOnly([
+          "firstname",
+          "lastname",
+          "email",
+          "seasonId",
+          "roles",
+          "status",
+          "updatedAt"
+        ])
+    )
+
+
+    /*
+     * ----------------------------------------------------------
+     * Cas 2 : activation initiale
+     * ----------------------------------------------------------
+     */
+
+    || (
+
+      isActivationProfile(userId)
+
+      /*
+       * Association au compte Firebase connecté.
+       */
+      && request.resource.data.firebaseUid
+        == request.auth.uid
+
+      && request.resource.data.accountActivated
+        == true
+
+      /*
+       * Seuls les champs techniques d'activation
+       * peuvent changer.
+       */
+      && request.resource.data
+        .diff(resource.data)
+        .affectedKeys()
+        .hasOnly([
+          "firebaseUid",
+          "email",
+          "accountActivated",
+          "lastLoginAt",
+          "updatedAt"
+        ])
+
+      /*
+       * Protection des données métier.
+       */
+      && request.resource.data.licenseNumber
+        == resource.data.licenseNumber
+
+      && request.resource.data.roles
+        == resource.data.roles
+
+      && request.resource.data.status
+        == resource.data.status
+
+      && request.resource.data.firstname
+        == resource.data.firstname
+
+      && request.resource.data.lastname
+        == resource.data.lastname
+
+      && request.resource.data.seasonId
+        == resource.data.seasonId
+
+    );
+
+
+  /*
+   * ============================================================
+   * DELETE
+   * ============================================================
+   *
+   * On bloque volontairement la suppression physique.
+   *
+   * Un utilisateur est désactivé avec :
+   *
+   * status = BLOCKED
+   */
+
+  allow delete:
+    if false;
+
+}
 
     /*
      * ============================================================
