@@ -23,6 +23,9 @@ import VenueSettingsPage
 import SeasonsPage
   from "@/features/administration/championships/seasons/pages/SeasonsPage";
 
+import CompetitionsPage
+  from "@/features/administration/championships/competitions/pages/CompetitionsPage";
+
 import VenuesPage
   from "@/features/administration/venues/pages/VenuesPage";
 
@@ -120,6 +123,15 @@ export const routes = [
     element: (
       <ProtectedRoute>
         <SeasonsPage />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/administration/competitions",
+    element: (
+      <ProtectedRoute>
+        <CompetitionsPage />
       </ProtectedRoute>
     ),
   },

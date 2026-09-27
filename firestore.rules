@@ -1286,6 +1286,73 @@ match /matches/{matchId} {
         if isAdmin();
     }
 
+    /*
+ * ============================================================
+ * COMPETITIONS
+ * ============================================================
+ */
+
+match /competitions/{competitionId} {
+
+  /*
+   * Les compétitions sont nécessaires aux utilisateurs
+   * actifs pour le fonctionnement du championnat.
+   */
+  allow read:
+    if hasActiveProfile();
+
+  /*
+   * L'administration du référentiel reste réservée
+   * aux administrateurs.
+   */
+  allow create:
+    if isAdmin()
+    && request.resource.data.seasonId is string
+    && request.resource.data.name is string
+    && request.resource.data.mode in [
+      "INDIVIDUAL",
+      "DOUBLES",
+      "TEAM"
+    ]
+    && request.resource.data.active is bool;
+
+  allow update:
+    if isAdmin()
+
+    /*
+     * Une compétition ne change pas de saison.
+     */
+    && request.resource.data.seasonId
+      == resource.data.seasonId
+
+    && request.resource.data.name is string
+
+    && request.resource.data.mode in [
+      "INDIVIDUAL",
+      "DOUBLES",
+      "TEAM"
+    ]
+
+    && request.resource.data.active is bool
+
+    && request.resource.data
+      .diff(resource.data)
+      .affectedKeys()
+      .hasOnly([
+        "name",
+        "mode",
+        "active",
+        "updatedAt"
+      ]);
+
+  /*
+   * Pas de suppression physique.
+   */
+  allow delete:
+    if false;
+
+}
+
 
     /*
      * ============================================================

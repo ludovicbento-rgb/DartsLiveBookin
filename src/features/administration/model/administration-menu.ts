@@ -83,7 +83,7 @@ export const ADMINISTRATION_MENU:
                 "Individuel, doublettes et équipes",
             route:
                 "/administration/competitions",
-            enabled: false,
+            enabled: true,
         },
 
         {
