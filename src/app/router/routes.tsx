@@ -20,6 +20,9 @@ import UsersPage
 import VenueSettingsPage
   from "@/features/venue-settings/pages/VenueSettingsPage";
 
+import SeasonsPage
+  from "@/features/administration/championships/seasons/pages/SeasonsPage";
+
 import VenuesPage
   from "@/features/administration/venues/pages/VenuesPage";
 
@@ -108,6 +111,15 @@ export const routes = [
     element: (
       <ProtectedRoute>
         <VenuesPage />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/administration/seasons",
+    element: (
+      <ProtectedRoute>
+        <SeasonsPage />
       </ProtectedRoute>
     ),
   },

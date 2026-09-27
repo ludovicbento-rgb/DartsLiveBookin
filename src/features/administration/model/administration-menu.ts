@@ -72,7 +72,7 @@ export const ADMINISTRATION_MENU:
                 "Saisons des championnats",
             route:
                 "/administration/seasons",
-            enabled: false,
+            enabled: true,
         },
 
         {
