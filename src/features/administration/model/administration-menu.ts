@@ -116,7 +116,7 @@ export const ADMINISTRATION_MENU:
                 "Journées de championnat",
             route:
                 "/administration/match-days",
-            enabled: false,
+            enabled: true,
         },
 
         {
@@ -127,7 +127,7 @@ export const ADMINISTRATION_MENU:
                 "Rencontres des championnats",
             route:
                 "/administration/matches",
-            enabled: false,
+            enabled: true,
         },
 
         /*

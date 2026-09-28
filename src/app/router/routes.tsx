@@ -32,6 +32,12 @@ import PoolsPage
 import RegistrationsPage
   from "@/features/administration/championships/registrations/pages/RegistrationsPage";
 
+import MatchDaysPage
+  from "@/features/administration/championships/match-days/pages/MatchDaysPage";
+
+import MatchesPage
+  from "@/features/administration/championships/matches/pages/MatchesPage";
+
 import VenuesPage
   from "@/features/administration/venues/pages/VenuesPage";
 
@@ -156,6 +162,22 @@ export const routes = [
     element: (
       <ProtectedRoute>
         <RegistrationsPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/administration/match-days",
+    element: (
+      <ProtectedRoute>
+        <MatchDaysPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/administration/matches",
+    element: (
+      <ProtectedRoute>
+        <MatchesPage />
       </ProtectedRoute>
     ),
   },

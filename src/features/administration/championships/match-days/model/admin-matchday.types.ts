@@ -1,8 +1,8 @@
-import type { Timestamp } from "firebase/firestore";
+import type {
+    Timestamp,
+} from "firebase/firestore";
 
-export interface MatchDay {
-
-    id: string;
+export interface AdminMatchDayRequest {
 
     seasonId: string;
 
@@ -17,9 +17,5 @@ export interface MatchDay {
     officialDate: Timestamp;
 
     active: boolean;
-
-    createdAt?: Timestamp;
-
-    updatedAt?: Timestamp;
 
 }

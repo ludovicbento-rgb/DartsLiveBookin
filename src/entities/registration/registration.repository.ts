@@ -190,6 +190,44 @@ export async function getRegistrationsByPlayer(
 
 }
 
+export async function getAllRegistrationsByCompetition(
+
+    competitionId: string,
+
+    poolId: string,
+
+): Promise<Registration[]> {
+
+    const q =
+        query(
+
+            registrationsCollection,
+
+            where(
+                "competitionId",
+                "==",
+                competitionId,
+            ),
+
+            where(
+                "poolId",
+                "==",
+                poolId,
+            ),
+
+        );
+
+    const snapshot =
+        await getDocs(
+            q,
+        );
+
+    return snapshot.docs.map(
+        mapRegistration,
+    );
+
+}
+
 export async function getRegistrationsByCompetition(
     competitionId: string,
     poolId: string,

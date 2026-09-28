@@ -1,3 +1,7 @@
+import type {
+    Timestamp,
+} from "firebase/firestore";
+
 export type MatchStatus =
     | "NOT_PLANNED"
     | "PENDING"
@@ -16,5 +20,9 @@ export interface Match {
     status: MatchStatus;
 
     plannedReservationId: string | null;
+
+    createdAt?: Timestamp;
+
+    updatedAt?: Timestamp;
 
 }

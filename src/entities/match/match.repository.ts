@@ -1,4 +1,6 @@
 import {
+    addDoc,
+    serverTimestamp,
     getDoc,
     getDocs,
     query,
@@ -23,6 +25,99 @@ import type {
 import {
     onSnapshot,
 } from "firebase/firestore";
+
+export interface CreateMatchRequest {
+
+    matchDayId: string;
+
+    homeRegistrationId: string;
+
+    awayRegistrationId: string;
+
+}
+
+export interface UpdateMatchParticipantsRequest {
+
+    homeRegistrationId: string;
+
+    awayRegistrationId: string;
+
+}
+
+export async function createMatch(
+
+    request: CreateMatchRequest,
+
+): Promise<string> {
+
+    const document =
+        await addDoc(
+
+            matchesCollection,
+
+            {
+
+                matchDayId:
+                    request.matchDayId,
+
+                homeRegistrationId:
+                    request.homeRegistrationId,
+
+                awayRegistrationId:
+                    request.awayRegistrationId,
+
+                status:
+                    "NOT_PLANNED",
+
+                plannedReservationId:
+                    null,
+
+                createdAt:
+                    serverTimestamp(),
+
+                updatedAt:
+                    serverTimestamp(),
+
+            },
+
+        );
+
+    return document.id;
+
+}
+
+export async function updateMatchParticipants(
+
+    matchId: string,
+
+    request: UpdateMatchParticipantsRequest,
+
+): Promise<void> {
+
+    await updateDoc(
+
+        matchDocument(
+            matchId,
+        ),
+
+        {
+
+            homeRegistrationId:
+                request.homeRegistrationId,
+
+            awayRegistrationId:
+                request.awayRegistrationId,
+
+            updatedAt:
+                serverTimestamp(),
+
+        },
+
+    );
+
+}
+
+
 
 export async function getMatch(
     matchId: string,
