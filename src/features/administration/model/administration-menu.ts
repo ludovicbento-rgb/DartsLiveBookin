@@ -94,7 +94,7 @@ export const ADMINISTRATION_MENU:
                 "Organisation des poules",
             route:
                 "/administration/pools",
-            enabled: false,
+            enabled: true,
         },
 
         {

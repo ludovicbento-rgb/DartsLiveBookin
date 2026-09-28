@@ -1353,6 +1353,69 @@ match /competitions/{competitionId} {
 
 }
 
+/*
+ * ============================================================
+ * POOLS
+ * ============================================================
+ */
+
+match /pools/{poolId} {
+
+  allow read:
+    if hasActiveProfile();
+
+  allow create:
+    if isAdmin()
+
+    && request.resource.data.competitionId is string
+
+    && exists(
+      /databases/$(database)/documents/competitions/$(request.resource.data.competitionId)
+    )
+
+    && request.resource.data.name is string
+
+    && request.resource.data.order is int
+
+    && request.resource.data.order >= 0
+
+    && request.resource.data.active is bool;
+
+  allow update:
+    if isAdmin()
+
+    /*
+     * Une poule reste rattachée à sa compétition.
+     */
+    && request.resource.data.competitionId
+      == resource.data.competitionId
+
+    && request.resource.data.name is string
+
+    && request.resource.data.order is int
+
+    && request.resource.data.order >= 0
+
+    && request.resource.data.active is bool
+
+    && request.resource.data
+      .diff(resource.data)
+      .affectedKeys()
+      .hasOnly([
+        "name",
+        "order",
+        "active",
+        "updatedAt"
+      ]);
+
+  /*
+   * Pas de suppression physique.
+   */
+  allow delete:
+    if false;
+
+}
+
 
     /*
      * ============================================================
