@@ -19,7 +19,7 @@ import {
 
 import type {
     Competition,
-    CompetitionMode,
+    CompetitionType,
 } from "./competition.types";
 
 export interface CreateCompetitionRequest {
@@ -28,7 +28,7 @@ export interface CreateCompetitionRequest {
 
     name: string;
 
-    mode: CompetitionMode;
+    mode: CompetitionType;
 
     active: boolean;
 
@@ -38,7 +38,7 @@ export interface UpdateCompetitionRequest {
 
     name: string;
 
-    mode: CompetitionMode;
+    mode: CompetitionType;
 
     active: boolean;
 

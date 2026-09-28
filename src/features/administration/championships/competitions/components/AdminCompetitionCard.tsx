@@ -15,7 +15,7 @@ import EmojiEventsIcon
 
 import type {
     Competition,
-    CompetitionMode,
+    CompetitionType,
 } from "@/entities/competition";
 
 interface Props {
@@ -29,7 +29,7 @@ interface Props {
 }
 
 function getModeLabel(
-    mode: CompetitionMode,
+    mode: CompetitionType,
 ): string {
 
     switch (mode) {
@@ -117,7 +117,7 @@ export function AdminCompetitionCard({
                                 >
 
                                     {getModeLabel(
-                                        competition.mode,
+                                        competition.type,
                                     )}
 
                                 </Typography>
@@ -135,7 +135,7 @@ export function AdminCompetitionCard({
                                 size="small"
                                 label={
                                     getModeLabel(
-                                        competition.mode,
+                                        competition.type,
                                     )
                                 }
                                 variant="outlined"

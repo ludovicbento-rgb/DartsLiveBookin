@@ -21,7 +21,7 @@ import {
 
 import type {
     Competition,
-    CompetitionMode,
+    CompetitionType,
 } from "@/entities/competition";
 
 import type {
@@ -102,7 +102,7 @@ export function CompetitionFormDrawer({
     const [
         mode,
         setMode,
-    ] = useState<CompetitionMode>(
+    ] = useState<CompetitionType>(
         "DOUBLES",
     );
 
@@ -124,7 +124,7 @@ export function CompetitionFormDrawer({
             );
 
             setMode(
-                competition.mode,
+                competition.type,
             );
 
             setActive(
@@ -273,7 +273,7 @@ export function CompetitionFormDrawer({
                         onChange={
                             event =>
                                 setMode(
-                                    event.target.value as CompetitionMode,
+                                    event.target.value as CompetitionType,
                                 )
                         }
                     >

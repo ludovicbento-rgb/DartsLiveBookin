@@ -105,7 +105,7 @@ export const ADMINISTRATION_MENU:
                 "Joueurs, capitaines et équipes",
             route:
                 "/administration/registrations",
-            enabled: false,
+            enabled: true,
         },
 
         {

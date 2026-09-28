@@ -1,5 +1,5 @@
 import type {
-    CompetitionMode,
+    CompetitionType,
 } from "@/entities/competition";
 
 export interface AdminCompetitionRequest {
@@ -8,7 +8,7 @@ export interface AdminCompetitionRequest {
 
     name: string;
 
-    mode: CompetitionMode;
+    mode: CompetitionType;
 
     active: boolean;
 

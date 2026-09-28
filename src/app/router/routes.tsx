@@ -29,6 +29,9 @@ import CompetitionsPage
 import PoolsPage
   from "@/features/administration/championships/pools/pages/PoolsPage";
 
+import RegistrationsPage
+  from "@/features/administration/championships/registrations/pages/RegistrationsPage";
+
 import VenuesPage
   from "@/features/administration/venues/pages/VenuesPage";
 
@@ -144,6 +147,15 @@ export const routes = [
     element: (
       <ProtectedRoute>
         <PoolsPage />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/administration/registrations",
+    element: (
+      <ProtectedRoute>
+        <RegistrationsPage />
       </ProtectedRoute>
     ),
   },

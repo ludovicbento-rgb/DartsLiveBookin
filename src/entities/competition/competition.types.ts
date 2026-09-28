@@ -2,7 +2,7 @@ import type {
     Timestamp,
 } from "firebase/firestore";
 
-export type CompetitionMode =
+export type CompetitionType =
     | "INDIVIDUAL"
     | "DOUBLES"
     | "TEAM";
@@ -15,12 +15,14 @@ export interface Competition {
 
     name: string;
 
-    mode: CompetitionMode;
+    type: CompetitionType;
 
     active: boolean;
 
-    createdAt: Timestamp;
+    matchDurationMinutes?: number | string;
 
-    updatedAt: Timestamp;
+    createdAt?: Timestamp;
+
+    updatedAt?: Timestamp;
 
 }

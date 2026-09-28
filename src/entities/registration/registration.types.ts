@@ -1,7 +1,6 @@
-export type CompetitionType =
-    | "DOUBLES"
-    | "INDIVIDUAL"
-    | "TEAM";
+import type {
+    Timestamp,
+} from "firebase/firestore";
 
 export interface Registration {
 
@@ -27,4 +26,8 @@ export interface Registration {
 
     active: boolean;
 
-}
+    createdAt?: Timestamp;
+
+    updatedAt?: Timestamp;
+
+}   

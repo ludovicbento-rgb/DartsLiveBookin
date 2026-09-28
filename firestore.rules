@@ -1224,19 +1224,139 @@ match /matches/{matchId} {
 
 
     /*
-     * ============================================================
-     * REGISTRATIONS
-     * ============================================================
+ * ============================================================
+ * REGISTRATIONS
+ * ============================================================
+ */
+
+match /registrations/{registrationId} {
+
+  allow read:
+    if hasActiveProfile();
+
+
+  /*
+   * ----------------------------------------------------------
+   * CREATE
+   * ----------------------------------------------------------
+   */
+
+  allow create:
+    if isAdmin()
+
+    && request.resource.data.seasonId is string
+    && request.resource.data.competitionId is string
+    && request.resource.data.poolId is string
+
+    && request.resource.data.registrationName is string
+
+    && request.resource.data.captainId is string
+    && request.resource.data.playerIds is list
+
+    /*
+     * Le capitaine joue obligatoirement.
      */
+    && request.resource.data.captainId
+      in request.resource.data.playerIds
 
-    match /registrations/{registrationId} {
+    && request.resource.data.homeVenueId is string
 
-      allow read:
-        if hasActiveProfile();
+    && request.resource.data.active is bool
 
-      allow create, update, delete:
-        if isAdmin();
-    }
+    /*
+     * Références existantes.
+     */
+    && exists(
+      /databases/$(database)/documents/seasons/$(request.resource.data.seasonId)
+    )
+
+    && exists(
+      /databases/$(database)/documents/competitions/$(request.resource.data.competitionId)
+    )
+
+    && exists(
+      /databases/$(database)/documents/pools/$(request.resource.data.poolId)
+    )
+
+    && exists(
+      /databases/$(database)/documents/venues/$(request.resource.data.homeVenueId)
+    )
+
+    /*
+     * Cohérence saison -> compétition.
+     */
+    && get(
+      /databases/$(database)/documents/competitions/$(request.resource.data.competitionId)
+    ).data.seasonId
+      == request.resource.data.seasonId
+
+    /*
+     * Cohérence compétition -> poule.
+     */
+    && get(
+      /databases/$(database)/documents/pools/$(request.resource.data.poolId)
+    ).data.competitionId
+      == request.resource.data.competitionId;
+
+
+  /*
+   * ----------------------------------------------------------
+   * UPDATE
+   * ----------------------------------------------------------
+   */
+
+  allow update:
+    if isAdmin()
+
+    /*
+     * Les relations structurelles sont immuables.
+     */
+    && request.resource.data.seasonId
+      == resource.data.seasonId
+
+    && request.resource.data.competitionId
+      == resource.data.competitionId
+
+    && request.resource.data.poolId
+      == resource.data.poolId
+
+    && request.resource.data.captainId is string
+    && request.resource.data.playerIds is list
+
+    /*
+     * Le capitaine reste joueur.
+     */
+    && request.resource.data.captainId
+      in request.resource.data.playerIds
+
+    && request.resource.data.homeVenueId is string
+
+    && exists(
+      /databases/$(database)/documents/venues/$(request.resource.data.homeVenueId)
+    )
+
+    && request.resource.data.active is bool
+
+    && request.resource.data
+      .diff(resource.data)
+      .affectedKeys()
+      .hasOnly([
+        "registrationName",
+        "captainId",
+        "playerIds",
+        "homeVenueId",
+        "active",
+        "updatedAt"
+      ]);
+
+
+  /*
+   * Pas de suppression physique.
+   */
+  allow delete:
+    if false;
+
+}
 
 
     /*
@@ -1309,7 +1429,7 @@ match /competitions/{competitionId} {
     if isAdmin()
     && request.resource.data.seasonId is string
     && request.resource.data.name is string
-    && request.resource.data.mode in [
+    && request.resource.data.type in [
       "INDIVIDUAL",
       "DOUBLES",
       "TEAM"
@@ -1327,7 +1447,7 @@ match /competitions/{competitionId} {
 
     && request.resource.data.name is string
 
-    && request.resource.data.mode in [
+    && request.resource.data.type in [
       "INDIVIDUAL",
       "DOUBLES",
       "TEAM"
@@ -1340,7 +1460,7 @@ match /competitions/{competitionId} {
       .affectedKeys()
       .hasOnly([
         "name",
-        "mode",
+        "type",
         "active",
         "updatedAt"
       ]);
