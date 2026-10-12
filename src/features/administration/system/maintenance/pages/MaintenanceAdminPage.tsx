@@ -121,7 +121,13 @@ export function MaintenanceAdminPage() {
 
             await maintenance.enable(
                 message,
-                profile.id,
+                {
+                    id:
+                        profile.id,
+
+                    displayName:
+                        `${profile.firstname} ${profile.lastname}`.trim(),
+                },
             );
 
         }
@@ -137,7 +143,19 @@ export function MaintenanceAdminPage() {
 
         try {
 
-            await maintenance.disable();
+            if (!profile) {
+                return;
+            }
+
+            await maintenance.disable(
+                {
+                    id:
+                        profile.id,
+
+                    displayName:
+                        `${profile.firstname} ${profile.lastname}`.trim(),
+                },
+            );
 
         }
         catch {

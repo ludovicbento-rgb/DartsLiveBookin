@@ -249,10 +249,23 @@ export function ImportSeasonV2Page({
             false,
         );
 
+        if (!profile) {
+
+            return;
+
+        }
+
         try {
 
             await execution.execute(
                 analysis.data,
+                {
+                    id:
+                        profile.id,
+
+                    displayName:
+                        `${profile.firstname} ${profile.lastname}`.trim(),
+                },
             );
 
             /*

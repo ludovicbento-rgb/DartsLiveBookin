@@ -7,6 +7,10 @@ import {
     deactivateMaintenance,
 } from "../api/admin-maintenance.service";
 
+import type {
+    MaintenanceAuditUser,
+} from "../api/admin-maintenance.service";
+
 export function useAdminMaintenance() {
 
     const [
@@ -33,7 +37,7 @@ export function useAdminMaintenance() {
 
     async function enable(
         message: string,
-        userId: string,
+        user: MaintenanceAuditUser,
     ): Promise<void> {
 
         try {
@@ -44,7 +48,7 @@ export function useAdminMaintenance() {
 
             await activateMaintenance(
                 message,
-                userId,
+                user,
             );
 
             setSuccess(
@@ -71,8 +75,9 @@ export function useAdminMaintenance() {
 
     }
 
-    async function disable():
-        Promise<void> {
+    async function disable(
+        user: MaintenanceAuditUser,
+    ): Promise<void> {
 
         try {
 
@@ -80,7 +85,9 @@ export function useAdminMaintenance() {
             setError(null);
             setSuccess(null);
 
-            await deactivateMaintenance();
+            await deactivateMaintenance(
+                user,
+            );
 
             setSuccess(
                 "MAINTENANCE_DISABLED",

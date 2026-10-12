@@ -11,6 +11,14 @@ import {
     executeSeasonImportV2,
 } from "../api/execute-season-import-v2";
 
+import {
+    safeCreateAuditLog,
+} from "@/entities/audit-log";
+
+import type {
+    AuditUser,
+} from "@/entities/audit-log";
+
 export function useExecuteSeasonImportV2() {
 
     const [
@@ -38,24 +46,110 @@ export function useExecuteSeasonImportV2() {
     async function execute(
         data:
             SeasonImportV2File,
+        user:
+            AuditUser,
     ): Promise<SeasonImportV2ExecutionResult> {
 
         try {
 
-            setLoading(true);
-            setError(null);
-            setResult(null);
+            setLoading(
+                true,
+            );
 
-            const result =
+            setError(
+                null,
+            );
+
+            setResult(
+                null,
+            );
+
+            /*
+             * ====================================================
+             * IMPORT
+             * ====================================================
+             */
+
+            const importResult =
                 await executeSeasonImportV2(
                     data,
                 );
 
+            /*
+             * ====================================================
+             * AUDIT
+             * ====================================================
+             *
+             * On ne journalise que si l'import
+             * a réellement créé des documents.
+             */
+
+            if (
+                importResult
+                    .statistics
+                    .created >
+                0
+            ) {
+
+                await safeCreateAuditLog({
+
+                    action:
+                        "IMPORT_V2_EXECUTED",
+
+                    entityType:
+                        "IMPORT",
+
+                    entityId:
+                        importResult.poolId
+                        ??
+                        importResult.competitionId,
+
+                    userId:
+                        user.id,
+
+                    userDisplayName:
+                        user.displayName,
+
+                    metadata: {
+
+                        scope:
+                            importResult.scope,
+
+                        seasonId:
+                            importResult.seasonId,
+
+                        competitionId:
+                            importResult.competitionId,
+
+                        poolId:
+                            importResult.poolId,
+
+                        created:
+                            importResult
+                                .statistics
+                                .created,
+
+                        skipped:
+                            importResult
+                                .statistics
+                                .skipped,
+
+                        dependencies:
+                            importResult
+                                .statistics
+                                .dependencies,
+
+                    },
+
+                });
+
+            }
+
             setResult(
-                result,
+                importResult,
             );
 
-            return result;
+            return importResult;
 
         }
         catch (error) {
@@ -79,7 +173,9 @@ export function useExecuteSeasonImportV2() {
         }
         finally {
 
-            setLoading(false);
+            setLoading(
+                false,
+            );
 
         }
 
@@ -87,8 +183,13 @@ export function useExecuteSeasonImportV2() {
 
     function reset() {
 
-        setResult(null);
-        setError(null);
+        setResult(
+            null,
+        );
+
+        setError(
+            null,
+        );
 
     }
 

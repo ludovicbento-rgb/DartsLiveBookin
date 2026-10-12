@@ -11,6 +11,14 @@ import {
     executeSeasonImport,
 } from "../api/execute-season-import";
 
+import {
+    safeCreateAuditLog,
+} from "@/entities/audit-log";
+
+import type {
+    AuditUser,
+} from "@/entities/audit-log";
+
 export function useExecuteSeasonImport() {
 
     const [
@@ -34,6 +42,7 @@ export function useExecuteSeasonImport() {
 
     async function execute(
         data: SeasonImportFile,
+        user: AuditUser,
     ): Promise<SeasonImportExecutionResult> {
 
         try {
@@ -46,6 +55,35 @@ export function useExecuteSeasonImport() {
                 await executeSeasonImport(
                     data,
                 );
+
+            await safeCreateAuditLog({
+
+                action:
+                    "IMPORT_V1_EXECUTED",
+
+                entityType:
+                    "IMPORT",
+
+                entityId:
+                    data.season.id,
+
+                userId:
+                    user.id,
+
+                userDisplayName:
+                    user.displayName,
+
+                metadata: {
+
+                    scope:
+                        "SEASON",
+
+                    seasonId:
+                        data.season.id,
+
+                },
+
+            });
 
             setResult(
                 importResult,

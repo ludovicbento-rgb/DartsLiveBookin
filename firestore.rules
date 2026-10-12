@@ -1933,6 +1933,51 @@ match /pools/{poolId} {
 
     /*
      * ============================================================
+     * AUDIT LOGS
+     * ============================================================
+     */
+
+    match /auditLogs/{auditLogId} {
+
+      /*
+       * Seuls les administrateurs peuvent consulter
+       * le journal d'audit.
+       */
+      allow read:
+        if isAdmin();
+
+      /*
+       * Un administrateur peut uniquement AJOUTER
+       * une entrée d'audit.
+       */
+      allow create:
+        if isAdmin()
+
+        && request.resource.data.userId
+          == currentUserId()
+
+        && request.resource.data.action
+          is string
+
+        && request.resource.data.entityType
+          is string
+
+        && request.resource.data.userDisplayName
+          is string
+
+        && request.resource.data.metadata
+          is map;
+
+      /*
+       * Un audit est immuable.
+       */
+      allow update, delete:
+        if false;
+    }
+
+
+    /*
+     * ============================================================
      * DENY BY DEFAULT
      * ============================================================
      */

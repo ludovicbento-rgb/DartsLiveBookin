@@ -10,6 +10,14 @@ import type {
     CreateAdminUserRequest,
 } from "../model/admin-user.types";
 
+import {
+    safeCreateAuditLog,
+} from "@/entities/audit-log";
+
+import type {
+    AuditUser,
+} from "@/entities/audit-log";
+
 export function useCreateAdminUser() {
 
     const [
@@ -26,6 +34,7 @@ export function useCreateAdminUser() {
 
     async function create(
         request: CreateAdminUserRequest,
+        auditUser: AuditUser,
     ): Promise<string> {
 
         try {
@@ -33,9 +42,57 @@ export function useCreateAdminUser() {
             setLoading(true);
             setError(null);
 
-            return await createAdminUser(
-                request,
-            );
+            const createdUserId =
+                await createAdminUser(
+                    request,
+                );
+
+            await safeCreateAuditLog({
+
+                action:
+                    "USER_CREATED",
+
+                entityType:
+                    "USER",
+
+                entityId:
+                    createdUserId,
+
+                userId:
+                    auditUser.id,
+
+                userDisplayName:
+                    auditUser.displayName,
+
+                metadata: {
+
+                    firstname:
+                        request.firstname.trim(),
+
+                    lastname:
+                        request.lastname.trim(),
+
+                    licenseNumber:
+                        request.licenseNumber.trim(),
+
+                    roles: {
+
+                        player:
+                            request.roles.player,
+
+                        manager:
+                            request.roles.manager,
+
+                        administrator:
+                            request.roles.administrator,
+
+                    },
+
+                },
+
+            });
+
+            return createdUserId;
 
         }
         catch (error) {

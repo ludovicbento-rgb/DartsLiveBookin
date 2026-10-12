@@ -17,10 +17,18 @@ import SearchIcon
 import PeopleIcon
     from "@mui/icons-material/People";
 
+import ArrowBackIcon
+    from "@mui/icons-material/ArrowBack";
+
 import {
+    useEffect,
     useMemo,
     useState,
 } from "react";
+
+import {
+    useNavigate,
+} from "react-router-dom";
 
 import {
     AdministrationLayout,
@@ -31,31 +39,6 @@ import {
 } from "@/features/authentication/hooks/useCurrentUser";
 
 import {
-    useAdminUsers,
-} from "../hooks/useAdminUsers";
-
-import type {
-    AdminUserListItem,
-    CreateAdminUserRequest,
-} from "../model/admin-user.types";
-
-import {
-    AdminUserCard,
-} from "../components/AdminUserCard";
-
-import {
-    EditAdminUserDrawer,
-} from "../components/EditAdminUserDrawer";
-
-import {
-    useUpdateAdminUser,
-} from "../hooks/useUpdateAdminUser";
-
-import type {
-    UpdateAdminUserRequest,
-} from "../model/admin-user.types";
-
-import {
     getActiveSeason,
 } from "@/entities/season";
 
@@ -64,23 +47,34 @@ import type {
 } from "@/entities/season";
 
 import {
-    useEffect,
-} from "react";
+    useAdminUsers,
+} from "../hooks/useAdminUsers";
+
+import {
+    useCreateAdminUser,
+} from "../hooks/useCreateAdminUser";
+
+import {
+    useUpdateAdminUser,
+} from "../hooks/useUpdateAdminUser";
+
+import {
+    AdminUserCard,
+} from "../components/AdminUserCard";
 
 import {
     CreateAdminUserDrawer,
 } from "../components/CreateAdminUserDrawer";
 
 import {
-    useCreateAdminUser,
-} from "../hooks/useCreateAdminUser";
+    EditAdminUserDrawer,
+} from "../components/EditAdminUserDrawer";
 
-import ArrowBackIcon
-    from "@mui/icons-material/ArrowBack";
-
-import {
-    useNavigate,
-} from "react-router-dom";
+import type {
+    AdminUserListItem,
+    CreateAdminUserRequest,
+    UpdateAdminUserRequest,
+} from "../model/admin-user.types";
 
 export function UsersPage() {
 
@@ -90,49 +84,89 @@ export function UsersPage() {
     const profile =
         useCurrentUser();
 
-    const {
+    /*
+     * ============================================================
+     * UTILISATEURS
+     * ============================================================
+     */
 
+    const {
         users,
         loading,
         error,
         reload,
+    } =
+        useAdminUsers();
 
-    } = useAdminUsers();
+    /*
+     * ============================================================
+     * RECHERCHE
+     * ============================================================
+     */
 
     const [
         search,
         setSearch,
-    ] = useState("");
+    ] =
+        useState("");
+
+    /*
+     * ============================================================
+     * CREATION
+     * ============================================================
+     */
 
     const [
         createDrawerOpen,
         setCreateDrawerOpen,
-    ] = useState(false);
-
-    const [
-        activeSeason,
-        setActiveSeason,
-    ] = useState<Season | null>(
-        null,
-    );
+    ] =
+        useState(false);
 
     const createUser =
         useCreateAdminUser();
 
+    /*
+     * ============================================================
+     * SAISON ACTIVE
+     * ============================================================
+     */
+
+    const [
+        activeSeason,
+        setActiveSeason,
+    ] =
+        useState<Season | null>(
+            null,
+        );
+
+    /*
+     * ============================================================
+     * EDITION
+     * ============================================================
+     */
+
     const [
         selectedUser,
         setSelectedUser,
-    ] = useState<AdminUserListItem | null>(
-        null,
-    );
+    ] =
+        useState<AdminUserListItem | null>(
+            null,
+        );
 
     const [
         editDrawerOpen,
         setEditDrawerOpen,
-    ] = useState(false);
+    ] =
+        useState(false);
 
     const updateUser =
         useUpdateAdminUser();
+
+    /*
+     * ============================================================
+     * CHARGEMENT SAISON ACTIVE
+     * ============================================================
+     */
 
     useEffect(() => {
 
@@ -140,25 +174,33 @@ export function UsersPage() {
             false;
 
         void getActiveSeason()
-            .then(season => {
 
-                if (!cancelled) {
+            .then(
+                season => {
 
-                    setActiveSeason(
-                        season,
+                    if (
+                        !cancelled
+                    ) {
+
+                        setActiveSeason(
+                            season,
+                        );
+
+                    }
+
+                },
+            )
+
+            .catch(
+                error => {
+
+                    console.error(
+                        "ACTIVE_SEASON_LOAD_FAILED",
+                        error,
                     );
 
-                }
-
-            })
-            .catch(error => {
-
-                console.error(
-                    "ACTIVE_SEASON_LOAD_FAILED",
-                    error,
-                );
-
-            });
+                },
+            );
 
         return () => {
 
@@ -170,9 +212,9 @@ export function UsersPage() {
     }, []);
 
     /*
-     * ------------------------------------------------------------
-     * Recherche locale
-     * ------------------------------------------------------------
+     * ============================================================
+     * RECHERCHE LOCALE
+     * ============================================================
      */
 
     const filteredUsers =
@@ -186,7 +228,9 @@ export function UsersPage() {
                             "fr",
                         );
 
-                if (value === "") {
+                if (
+                    value === ""
+                ) {
 
                     return users;
 
@@ -222,9 +266,9 @@ export function UsersPage() {
         );
 
     /*
-     * ------------------------------------------------------------
-     * Sécurité UI
-     * ------------------------------------------------------------
+     * ============================================================
+     * SECURITE UI
+     * ============================================================
      */
 
     if (
@@ -250,20 +294,17 @@ export function UsersPage() {
     }
 
     /*
-     * ------------------------------------------------------------
-     * Actions
-     *
-     * Les formulaires seront ajoutés à l'étape suivante.
-     * ------------------------------------------------------------
+     * ============================================================
+     * MODIFICATION UTILISATEUR
+     * ============================================================
      */
-
-
 
     async function handleEditSubmit(
 
         userId: string,
 
-        request: UpdateAdminUserRequest,
+        request:
+            UpdateAdminUserRequest,
 
         status:
             | "ACTIVE"
@@ -271,10 +312,57 @@ export function UsersPage() {
 
     ) {
 
+        if (
+            !profile
+            ||
+            !selectedUser
+        ) {
+
+            return;
+
+        }
+
+        /*
+         * Le Drawer doit modifier l'utilisateur
+         * actuellement sélectionné.
+         */
+
+        if (
+            selectedUser.id !==
+            userId
+        ) {
+
+            console.error(
+                "ADMIN_USER_SELECTION_MISMATCH",
+                {
+                    selectedUserId:
+                        selectedUser.id,
+
+                    submittedUserId:
+                        userId,
+                },
+            );
+
+            return;
+
+        }
+
         await updateUser.update(
-            userId,
+
+            selectedUser,
+
             request,
+
             status,
+
+            {
+                id:
+                    profile.id,
+
+                displayName:
+                    `${profile.firstname} ${profile.lastname}`.trim(),
+            },
+
         );
 
         setEditDrawerOpen(
@@ -289,6 +377,12 @@ export function UsersPage() {
 
     }
 
+    /*
+     * ============================================================
+     * OUVERTURE CREATION
+     * ============================================================
+     */
+
     function handleCreate() {
 
         createUser.resetError();
@@ -299,12 +393,35 @@ export function UsersPage() {
 
     }
 
+    /*
+     * ============================================================
+     * CREATION UTILISATEUR
+     * ============================================================
+     */
+
     async function handleCreateSubmit(
-        request: CreateAdminUserRequest,
+        request:
+            CreateAdminUserRequest,
     ) {
 
+        if (!profile) {
+
+            return;
+
+        }
+
         await createUser.create(
+
             request,
+
+            {
+                id:
+                    profile.id,
+
+                displayName:
+                    `${profile.firstname} ${profile.lastname}`.trim(),
+            },
+
         );
 
         setCreateDrawerOpen(
@@ -314,6 +431,13 @@ export function UsersPage() {
         await reload();
 
     }
+
+    /*
+     * ============================================================
+     * OUVERTURE EDITION
+     * ============================================================
+     */
+
     function handleEdit(
         user: AdminUserListItem,
     ) {
@@ -330,11 +454,18 @@ export function UsersPage() {
 
     }
 
+    /*
+     * ============================================================
+     * RENDER
+     * ============================================================
+     */
+
     return (
 
         <AdministrationLayout>
 
             <Stack spacing={3}>
+
                 <Stack spacing={2}>
 
                     <Button
@@ -359,8 +490,11 @@ export function UsersPage() {
 
                     <Stack
                         direction={{
-                            xs: "column",
-                            sm: "row",
+                            xs:
+                                "column",
+
+                            sm:
+                                "row",
                         }}
                         spacing={2}
                         sx={{
@@ -368,8 +502,11 @@ export function UsersPage() {
                                 "space-between",
 
                             alignItems: {
-                                xs: "stretch",
-                                sm: "center",
+                                xs:
+                                    "stretch",
+
+                                sm:
+                                    "center",
                             },
                         }}
                     >
@@ -432,38 +569,48 @@ export function UsersPage() {
                 </Stack>
 
                 {/*
-                 * ------------------------------------------------
-                 * Recherche
-                 * ------------------------------------------------
+                 * ====================================================
+                 * RECHERCHE
+                 * ====================================================
                  */}
 
                 <TextField
                     fullWidth
-                    value={search}
+                    value={
+                        search
+                    }
                     placeholder="Rechercher par nom, prénom, licence ou email"
                     onChange={
                         event =>
                             setSearch(
-                                event.target.value,
+                                event
+                                    .target
+                                    .value,
                             )
                     }
                     slotProps={{
                         input: {
+
                             startAdornment: (
-                                <InputAdornment position="start">
+
+                                <InputAdornment
+                                    position="start"
+                                >
 
                                     <SearchIcon />
 
                                 </InputAdornment>
+
                             ),
+
                         },
                     }}
                 />
 
                 {/*
-                 * ------------------------------------------------
-                 * Erreur
-                 * ------------------------------------------------
+                 * ====================================================
+                 * ERREUR
+                 * ====================================================
                  */}
 
                 {
@@ -479,9 +626,9 @@ export function UsersPage() {
                 }
 
                 {/*
-                 * ------------------------------------------------
-                 * Chargement
-                 * ------------------------------------------------
+                 * ====================================================
+                 * CHARGEMENT
+                 * ====================================================
                  */}
 
                 {
@@ -514,9 +661,9 @@ export function UsersPage() {
                 }
 
                 {/*
-                 * ------------------------------------------------
-                 * Compteur
-                 * ------------------------------------------------
+                 * ====================================================
+                 * COMPTEUR
+                 * ====================================================
                  */}
 
                 {
@@ -531,10 +678,16 @@ export function UsersPage() {
                         >
 
                             {
-                                filteredUsers.length === 0
+                                filteredUsers.length ===
+                                    0
+
                                     ? "Aucun utilisateur"
-                                    : filteredUsers.length === 1
+
+                                    : filteredUsers.length ===
+                                        1
+
                                         ? "1 utilisateur"
+
                                         : `${filteredUsers.length} utilisateurs`
                             }
 
@@ -544,9 +697,9 @@ export function UsersPage() {
                 }
 
                 {/*
-                 * ------------------------------------------------
-                 * Liste
-                 * ------------------------------------------------
+                 * ====================================================
+                 * LISTE
+                 * ====================================================
                  */}
 
                 {
@@ -554,7 +707,8 @@ export function UsersPage() {
                     &&
                     !error
                     &&
-                    filteredUsers.length > 0
+                    filteredUsers.length >
+                    0
                     && (
 
                         <Stack spacing={2}>
@@ -589,9 +743,9 @@ export function UsersPage() {
                 }
 
                 {/*
-                 * ------------------------------------------------
-                 * Recherche sans résultat
-                 * ------------------------------------------------
+                 * ====================================================
+                 * AUCUN RESULTAT
+                 * ====================================================
                  */}
 
                 {
@@ -599,9 +753,11 @@ export function UsersPage() {
                     &&
                     !error
                     &&
-                    users.length > 0
+                    users.length >
+                    0
                     &&
-                    filteredUsers.length === 0
+                    filteredUsers.length ===
+                    0
                     && (
 
                         <Alert severity="info">
@@ -614,6 +770,12 @@ export function UsersPage() {
                 }
 
             </Stack>
+
+            {/*
+             * ========================================================
+             * CREATION
+             * ========================================================
+             */}
 
             <CreateAdminUserDrawer
 
@@ -656,6 +818,12 @@ export function UsersPage() {
                 }
 
             />
+
+            {/*
+             * ========================================================
+             * EDITION
+             * ========================================================
+             */}
 
             <EditAdminUserDrawer
 

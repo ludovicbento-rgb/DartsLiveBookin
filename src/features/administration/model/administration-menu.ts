@@ -196,7 +196,7 @@ export const ADMINISTRATION_MENU:
                 "Historique des actions administratives",
             route:
                 "/administration/audit",
-            enabled: false,
+            enabled: true,
         },
 
     ];

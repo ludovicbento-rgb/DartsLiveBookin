@@ -247,8 +247,21 @@ export function ImportSeasonPage({
 
         try {
 
+            if (!profile) {
+
+                return;
+
+            }
+
             await execution.execute(
                 analysis.data,
+                {
+                    id:
+                        profile.id,
+
+                    displayName:
+                        `${profile.firstname} ${profile.lastname}`.trim(),
+                },
             );
 
         }

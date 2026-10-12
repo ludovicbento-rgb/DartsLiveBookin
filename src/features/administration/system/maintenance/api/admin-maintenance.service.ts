@@ -3,9 +3,21 @@ import {
     enableMaintenance,
 } from "@/entities/configuration";
 
+import {
+    safeCreateAuditLog,
+} from "@/entities/audit-log";
+
+export interface MaintenanceAuditUser {
+
+    id: string;
+
+    displayName: string;
+
+}
+
 export async function activateMaintenance(
     message: string,
-    userId: string,
+    user: MaintenanceAuditUser,
 ): Promise<void> {
 
     const normalizedMessage =
@@ -21,16 +33,89 @@ export async function activateMaintenance(
 
     }
 
+    /*
+     * ============================================================
+     * ACTION METIER
+     * ============================================================
+     */
+
     await enableMaintenance(
         normalizedMessage,
-        userId,
+        user.id,
     );
+
+    /*
+     * ============================================================
+     * AUDIT
+     * ============================================================
+     */
+
+    await safeCreateAuditLog({
+
+        action:
+            "MAINTENANCE_ENABLED",
+
+        entityType:
+            "SYSTEM",
+
+        entityId:
+            "configuration",
+
+        userId:
+            user.id,
+
+        userDisplayName:
+            user.displayName,
+
+        metadata: {
+
+            message:
+                normalizedMessage,
+
+        },
+
+    });
 
 }
 
-export async function deactivateMaintenance():
-    Promise<void> {
+export async function deactivateMaintenance(
+    user: MaintenanceAuditUser,
+): Promise<void> {
+
+    /*
+     * ============================================================
+     * ACTION METIER
+     * ============================================================
+     */
 
     await disableMaintenance();
+
+    /*
+     * ============================================================
+     * AUDIT
+     * ============================================================
+     */
+
+    await safeCreateAuditLog({
+
+        action:
+            "MAINTENANCE_DISABLED",
+
+        entityType:
+            "SYSTEM",
+
+        entityId:
+            "configuration",
+
+        userId:
+            user.id,
+
+        userDisplayName:
+            user.displayName,
+
+        metadata:
+            {},
+
+    });
 
 }

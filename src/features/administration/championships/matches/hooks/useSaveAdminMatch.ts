@@ -11,6 +11,10 @@ import type {
     AdminMatchRequest,
 } from "../model/admin-match.types";
 
+import type {
+    AuditUser,
+} from "@/entities/audit-log";
+
 export function useSaveAdminMatch() {
 
     const [
@@ -66,12 +70,14 @@ export function useSaveAdminMatch() {
 
     function create(
         request: AdminMatchRequest,
-    ): Promise<string> {
+        auditUser: AuditUser,
+    ) {
 
         return execute(
             () =>
                 createAdminMatch(
                     request,
+                    auditUser,
                 ),
         );
 
@@ -80,16 +86,17 @@ export function useSaveAdminMatch() {
     function update(
         matchId: string,
         request: AdminMatchRequest,
-    ): Promise<void> {
+        auditUser: AuditUser,
+    ) {
 
         return execute(
             () =>
                 updateAdminMatch(
                     matchId,
                     request,
+                    auditUser,
                 ),
         );
-
     }
 
     function resetError() {

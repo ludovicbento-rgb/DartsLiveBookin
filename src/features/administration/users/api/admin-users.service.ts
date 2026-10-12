@@ -231,7 +231,7 @@ export async function setAdminUserStatus(
             status,
 
             updatedAt:
-                new Date() as never,
+                Timestamp.now(),
 
         },
 

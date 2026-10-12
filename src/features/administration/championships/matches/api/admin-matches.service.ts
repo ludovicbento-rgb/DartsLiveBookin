@@ -23,6 +23,14 @@ import {
     validateAdminMatch,
 } from "./admin-match-validator";
 
+import {
+    safeCreateAuditLog,
+} from "@/entities/audit-log";
+
+import type {
+    AuditUser,
+} from "@/entities/audit-log";
+
 /*
  * ============================================================
  * LECTURE
@@ -53,6 +61,7 @@ export async function loadAdminMatches(
 
 export async function createAdminMatch(
     request: AdminMatchRequest,
+    auditUser: AuditUser,
 ): Promise<string> {
 
     await validateAdminMatch(
@@ -109,30 +118,68 @@ export async function createAdminMatch(
 
         );
 
-    return createMatch({
+    const createdMatchId =
+        await createMatch({
 
-        id:
-            matchId,
+            id:
+                matchId,
 
-        matchDayId:
-            request.matchDayId,
+            matchDayId:
+                request.matchDayId,
 
-        homeRegistrationId:
-            request.homeRegistrationId,
+            homeRegistrationId:
+                request.homeRegistrationId,
 
-        awayRegistrationId:
-            request.awayRegistrationId,
+            awayRegistrationId:
+                request.awayRegistrationId,
 
-        /*
-         * TO_PLAY ou PLAYED.
-         *
-         * status reste systématiquement
-         * NOT_PLANNED à la création.
-         */
-        playStatus:
-            request.playStatus,
+            playStatus:
+                request.playStatus,
+
+        });
+
+    await safeCreateAuditLog({
+
+        action:
+            "MATCH_CREATED",
+
+        entityType:
+            "MATCH",
+
+        entityId:
+            createdMatchId,
+
+        userId:
+            auditUser.id,
+
+        userDisplayName:
+            auditUser.displayName,
+
+        metadata: {
+
+            matchDayId:
+                request.matchDayId,
+
+            homeRegistrationId:
+                request.homeRegistrationId,
+
+            homeRegistrationName:
+                homeRegistration.registrationName,
+
+            awayRegistrationId:
+                request.awayRegistrationId,
+
+            awayRegistrationName:
+                awayRegistration.registrationName,
+
+            playStatus:
+                request.playStatus,
+
+        },
 
     });
+
+    return createdMatchId;
 
 }
 
@@ -145,6 +192,7 @@ export async function createAdminMatch(
 export async function updateAdminMatch(
     matchId: string,
     request: AdminMatchRequest,
+    auditUser: AuditUser,
 ): Promise<void> {
 
     const match =
@@ -245,6 +293,118 @@ export async function updateAdminMatch(
 
         );
 
+        const participantChanges:
+            Record<
+                string,
+                {
+                    before: string;
+                    after: string;
+                }
+            > = {};
+
+        /*
+         * ============================================================
+         * NOMS DES EQUIPES POUR L'AUDIT
+         * ============================================================
+         */
+
+        const [
+            previousHomeRegistration,
+            previousAwayRegistration,
+            newHomeRegistration,
+            newAwayRegistration,
+        ] =
+            await Promise.all([
+
+                getRegistration(
+                    match.homeRegistrationId,
+                ),
+
+                getRegistration(
+                    match.awayRegistrationId,
+                ),
+
+                getRegistration(
+                    request.homeRegistrationId,
+                ),
+
+                getRegistration(
+                    request.awayRegistrationId,
+                ),
+
+            ]);
+
+        if (
+            match.homeRegistrationId !==
+            request.homeRegistrationId
+        ) {
+
+            participantChanges.homeRegistrationName = {
+
+                before:
+                    previousHomeRegistration
+                        ?.registrationName
+                    ??
+                    match.homeRegistrationId,
+
+                after:
+                    newHomeRegistration
+                        ?.registrationName
+                    ??
+                    request.homeRegistrationId,
+
+            };
+
+        }
+
+        if (
+            match.awayRegistrationId !==
+            request.awayRegistrationId
+        ) {
+
+            participantChanges.awayRegistrationName = {
+
+                before:
+                    previousAwayRegistration
+                        ?.registrationName
+                    ??
+                    match.awayRegistrationId,
+
+                after:
+                    newAwayRegistration
+                        ?.registrationName
+                    ??
+                    request.awayRegistrationId,
+
+            };
+
+        }
+
+        await safeCreateAuditLog({
+
+            action:
+                "MATCH_UPDATED",
+
+            entityType:
+                "MATCH",
+
+            entityId:
+                matchId,
+
+            userId:
+                auditUser.id,
+
+            userDisplayName:
+                auditUser.displayName,
+
+            metadata: {
+
+                changes:
+                    participantChanges,
+
+            },
+
+        });
     }
 
     /*
@@ -315,6 +475,43 @@ export async function updateAdminMatch(
             request.playStatus,
         );
 
+        await safeCreateAuditLog({
+
+            action:
+                "MATCH_PLAY_STATUS_CHANGED",
+
+            entityType:
+                "MATCH",
+
+            entityId:
+                matchId,
+
+            userId:
+                auditUser.id,
+
+            userDisplayName:
+                auditUser.displayName,
+
+            metadata: {
+
+                changes: {
+
+                    playStatus: {
+
+                        before:
+                            currentPlayStatus,
+
+                        after:
+                            request.playStatus,
+
+                    },
+
+                },
+
+            },
+
+        });
+
     }
 
-}
+}   

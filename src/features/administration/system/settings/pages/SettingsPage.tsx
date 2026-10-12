@@ -124,6 +124,12 @@ export function SettingsPage() {
     const profile =
         useCurrentUser();
 
+    if (!profile) {
+
+        return;
+
+    }
+
     const settings =
         useAdminSettings();
 
@@ -211,6 +217,12 @@ export function SettingsPage() {
 
     async function handleSave() {
 
+        if (!profile) {
+
+            return;
+
+        }
+
         const request:
             UpdateConfigurationRequest = {
 
@@ -229,6 +241,13 @@ export function SettingsPage() {
 
             await settings.save(
                 request,
+                {
+                    id:
+                        profile.id,
+
+                    displayName:
+                        `${profile.firstname} ${profile.lastname}`.trim(),
+                },
             );
 
         }

@@ -808,11 +808,28 @@ export function MatchesPage() {
         request: AdminMatchRequest,
     ) {
 
+        if (!profile) {
+
+            return;
+
+        }
+
+        const auditUser = {
+
+            id:
+                profile.id,
+
+            displayName:
+                `${profile.firstname} ${profile.lastname}`.trim(),
+
+        };
+
         if (selectedMatch) {
 
             await saveMatch.update(
                 selectedMatch.id,
                 request,
+                auditUser,
             );
 
         }
@@ -820,6 +837,7 @@ export function MatchesPage() {
 
             await saveMatch.create(
                 request,
+                auditUser,
             );
 
         }

@@ -55,6 +55,9 @@ import ImportDataPage
 import MaintenanceAdminPage
   from "@/features/administration/system/maintenance/pages/MaintenanceAdminPage";
 
+import AuditPage
+  from "@/features/administration/system/audit/pages/AuditPage";
+
 export const routes = [
   {
     path: "/",
@@ -232,6 +235,18 @@ export const routes = [
       <ProtectedRoute>
 
         <MaintenanceAdminPage />
+
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path:
+      "/administration/audit",
+
+    element: (
+      <ProtectedRoute>
+
+        <AuditPage />
 
       </ProtectedRoute>
     ),

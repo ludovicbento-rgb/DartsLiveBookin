@@ -17,6 +17,10 @@ import {
     saveAdminSettings,
 } from "../api/admin-settings.service";
 
+import type {
+    SettingsAuditUser,
+} from "../api/admin-settings.service";
+
 export function useAdminSettings() {
 
     const [
@@ -112,6 +116,9 @@ export function useAdminSettings() {
     async function save(
         request:
             UpdateConfigurationRequest,
+
+        user:
+            SettingsAuditUser,
     ): Promise<void> {
 
         try {
@@ -128,8 +135,20 @@ export function useAdminSettings() {
                 null,
             );
 
+            if (
+                !context
+            ) {
+
+                throw new Error(
+                    "CONFIGURATION_NOT_FOUND",
+                );
+
+            }
+
             await saveAdminSettings(
+                context.configuration,
                 request,
+                user,
             );
 
             /*
