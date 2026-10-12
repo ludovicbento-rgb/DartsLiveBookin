@@ -164,6 +164,20 @@ export async function validateAdminMatch(
 
     }
 
+    if (
+        request.playStatus !==
+        "TO_PLAY"
+        &&
+        request.playStatus !==
+        "PLAYED"
+    ) {
+
+        throw new Error(
+            "MATCH_PLAY_STATUS_INVALID",
+        );
+
+    }
+
     /*
      * ------------------------------------------------------------
      * Une inscription ne joue qu'une fois

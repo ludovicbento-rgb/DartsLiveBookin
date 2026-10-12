@@ -19,6 +19,7 @@ import {
 
 import type {
     Match,
+    MatchPlayStatus,
 } from "@/entities/match";
 
 import type {
@@ -41,13 +42,16 @@ interface Props {
 
     matchDay: MatchDay | null;
 
-    registrations: Registration[];
+    registrations:
+    Registration[];
 
-    matches: Match[];
+    matches:
+    Match[];
 
     loading: boolean;
 
-    error: string | null;
+    error:
+    string | null;
 
     onClose(): void;
 
@@ -64,33 +68,55 @@ function getErrorMessage(
     switch (error) {
 
         case "MATCH_REQUIRED_DATA":
+
             return "Les deux inscriptions doivent être sélectionnées.";
 
         case "MATCH_SAME_REGISTRATION":
+
             return "Une inscription ne peut pas jouer contre elle-même.";
 
         case "MATCH_REGISTRATION_NOT_FOUND":
+
             return "Une des inscriptions sélectionnées est introuvable.";
 
         case "MATCH_REGISTRATION_INACTIVE":
+
             return "Une des inscriptions sélectionnées est inactive.";
 
         case "MATCH_COMPETITION_MISMATCH":
+
             return "Une inscription n'appartient pas à la compétition de cette journée.";
 
         case "MATCH_POOL_MISMATCH":
+
             return "Une inscription n'appartient pas à la poule de cette journée.";
 
         case "MATCH_REGISTRATION_ALREADY_PLAYING":
+
             return "Une des inscriptions joue déjà un match pendant cette journée.";
 
         case "MATCH_ALREADY_RESERVED":
-            return "Ce match possède déjà une réservation et ne peut plus être modifié.";
+
+            return "Ce match possède une réservation et cette modification n'est pas autorisée.";
+
+        case "MATCH_ALREADY_PLAYED":
+
+            return "Les adversaires d'un match déjà joué ne peuvent pas être modifiés.";
 
         case "MATCHDAY_IMMUTABLE":
+
             return "La journée d'un match existant ne peut pas être modifiée.";
 
+        case "MATCH_ALREADY_EXISTS":
+
+            return "Ce match existe déjà.";
+
+        case "MATCH_PLAY_STATUS_INVALID":
+
+            return "L'état sportif du match est invalide.";
+
         default:
+
             return error
                 ? "Impossible d'enregistrer le match."
                 : null;
@@ -131,6 +157,20 @@ export function MatchFormDrawer({
         setAwayRegistrationId,
     ] = useState("");
 
+    const [
+        playStatus,
+        setPlayStatus,
+    ] =
+        useState<MatchPlayStatus>(
+            "TO_PLAY",
+        );
+
+    /*
+     * ============================================================
+     * INITIALISATION
+     * ============================================================
+     */
+
     useEffect(() => {
 
         if (!open) {
@@ -147,6 +187,12 @@ export function MatchFormDrawer({
                 match.awayRegistrationId,
             );
 
+            setPlayStatus(
+                match.playStatus
+                ??
+                "TO_PLAY",
+            );
+
             return;
 
         }
@@ -154,18 +200,19 @@ export function MatchFormDrawer({
         setHomeRegistrationId("");
         setAwayRegistrationId("");
 
+        setPlayStatus(
+            "TO_PLAY",
+        );
+
     }, [
         open,
         match,
     ]);
 
     /*
-     * ------------------------------------------------------------
-     * Inscriptions déjà utilisées dans cette journée
-     * ------------------------------------------------------------
-     *
-     * En modification, le match courant est exclu :
-     * ses deux inscriptions restent donc disponibles.
+     * ============================================================
+     * INSCRIPTIONS DEJA UTILISEES
+     * ============================================================
      */
 
     const usedRegistrationIds =
@@ -180,6 +227,10 @@ export function MatchFormDrawer({
                     of matches
                 ) {
 
+                    /*
+                     * En modification,
+                     * on ignore le match courant.
+                     */
                     if (
                         match
                         &&
@@ -192,11 +243,13 @@ export function MatchFormDrawer({
                     }
 
                     result.add(
-                        existingMatch.homeRegistrationId,
+                        existingMatch
+                            .homeRegistrationId,
                     );
 
                     result.add(
-                        existingMatch.awayRegistrationId,
+                        existingMatch
+                            .awayRegistrationId,
                     );
 
                 }
@@ -211,9 +264,9 @@ export function MatchFormDrawer({
         );
 
     /*
-     * ------------------------------------------------------------
-     * Inscriptions disponibles
-     * ------------------------------------------------------------
+     * ============================================================
+     * INSCRIPTIONS DISPONIBLES
+     * ============================================================
      */
 
     const availableRegistrations =
@@ -227,10 +280,11 @@ export function MatchFormDrawer({
                     )
                     .sort(
                         (a, b) =>
-                            a.registrationName.localeCompare(
-                                b.registrationName,
-                                "fr",
-                            ),
+                            a.registrationName
+                                .localeCompare(
+                                    b.registrationName,
+                                    "fr",
+                                ),
                     ),
             [
                 registrations,
@@ -246,22 +300,74 @@ export function MatchFormDrawer({
     const currentMatchDay =
         matchDay;
 
+    /*
+     * ============================================================
+     * VERROUILLAGE DES ADVERSAIRES
+     * ============================================================
+     */
+
+    const participantsLocked =
+        match !== null
+        &&
+        (
+            match.playStatus ===
+            "PLAYED"
+
+            ||
+
+            match.status !==
+            "NOT_PLANNED"
+
+            ||
+
+            match.plannedReservationId !==
+            null
+        );
+
+    /*
+     * Le statut sportif reste modifiable
+     * uniquement sans réservation active.
+     */
+    const playStatusLocked =
+        match !== null
+        &&
+        (
+            match.status !==
+            "NOT_PLANNED"
+
+            ||
+
+            match.plannedReservationId !==
+            null
+        );
+
     const canSubmit =
+
         homeRegistrationId !== ""
+
         &&
+
         awayRegistrationId !== ""
+
         &&
+
         homeRegistrationId !==
         awayRegistrationId
+
         &&
+
         !usedRegistrationIds.has(
             homeRegistrationId,
         )
+
         &&
+
         !usedRegistrationIds.has(
             awayRegistrationId,
         )
+
         &&
+
         !loading;
 
     const errorMessage =
@@ -283,6 +389,8 @@ export function MatchFormDrawer({
             homeRegistrationId,
 
             awayRegistrationId,
+
+            playStatus,
 
         });
 
@@ -336,7 +444,10 @@ export function MatchFormDrawer({
                         color="text.secondary"
                     >
 
-                        {currentMatchDay.displayName}
+                        {
+                            currentMatchDay
+                                .displayName
+                        }
 
                     </Typography>
 
@@ -357,13 +468,25 @@ export function MatchFormDrawer({
                 }
 
                 {
-                    availableRegistrations.length < 2
+                    participantsLocked && (
+
+                        <Alert severity="info">
+
+                            Les adversaires de ce match sont verrouillés.
+
+                        </Alert>
+
+                    )
+                }
+
+                {
+                    availableRegistrations.length <
+                    2
                     && (
 
                         <Alert severity="warning">
 
-                            Au moins deux inscriptions actives sont nécessaires
-                            pour créer une rencontre.
+                            Au moins deux inscriptions actives sont nécessaires.
 
                         </Alert>
 
@@ -371,9 +494,9 @@ export function MatchFormDrawer({
                 }
 
                 {/*
-                 * ------------------------------------------------
+                 * =================================================
                  * DOMICILE
-                 * ------------------------------------------------
+                 * =================================================
                  */}
 
                 <FormControl
@@ -395,7 +518,11 @@ export function MatchFormDrawer({
                         value={
                             homeRegistrationId
                         }
-                        disabled={loading}
+                        disabled={
+                            loading
+                            ||
+                            participantsLocked
+                        }
                         onChange={
                             event =>
                                 setHomeRegistrationId(
@@ -457,9 +584,9 @@ export function MatchFormDrawer({
                 </FormControl>
 
                 {/*
-                 * ------------------------------------------------
+                 * =================================================
                  * EXTERIEUR
-                 * ------------------------------------------------
+                 * =================================================
                  */}
 
                 <FormControl
@@ -481,7 +608,11 @@ export function MatchFormDrawer({
                         value={
                             awayRegistrationId
                         }
-                        disabled={loading}
+                        disabled={
+                            loading
+                            ||
+                            participantsLocked
+                        }
                         onChange={
                             event =>
                                 setAwayRegistrationId(
@@ -542,16 +673,77 @@ export function MatchFormDrawer({
 
                 </FormControl>
 
+                <Divider />
+
+                {/*
+                 * =================================================
+                 * ETAT SPORTIF
+                 * =================================================
+                 */}
+
+                <FormControl
+                    fullWidth
+                    required
+                >
+
+                    <InputLabel
+                        id="match-play-status-label"
+                    >
+
+                        État du match
+
+                    </InputLabel>
+
+                    <Select
+                        labelId="match-play-status-label"
+                        label="État du match"
+                        value={
+                            playStatus
+                        }
+                        disabled={
+                            loading
+                            ||
+                            playStatusLocked
+                        }
+                        onChange={
+                            event =>
+                                setPlayStatus(
+                                    event.target
+                                        .value as
+                                    MatchPlayStatus,
+                                )
+                        }
+                    >
+
+                        <MenuItem
+                            value="TO_PLAY"
+                        >
+
+                            Non joué
+
+                        </MenuItem>
+
+                        <MenuItem
+                            value="PLAYED"
+                        >
+
+                            Joué
+
+                        </MenuItem>
+
+                    </Select>
+
+                </FormControl>
+
                 {
-                    homeRegistrationId !== ""
-                    &&
-                    awayRegistrationId !== ""
+                    playStatus ===
+                    "PLAYED"
                     && (
 
-                        <Alert severity="info">
+                        <Alert severity="warning">
 
-                            Le premier participant est l'inscription à domicile.
-                            Le second est l'inscription extérieure.
+                            Un match marqué comme joué ne pourra plus
+                            être réservé et ses adversaires seront verrouillés.
 
                         </Alert>
 
@@ -614,4 +806,4 @@ export function MatchFormDrawer({
 
 }
 
-export default MatchFormDrawer; 
+export default MatchFormDrawer;

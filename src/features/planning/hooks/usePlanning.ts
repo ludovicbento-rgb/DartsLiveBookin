@@ -21,15 +21,19 @@ import type {
 
 interface UsePlanningResult {
 
-    planning: VenuePlanning | null;
+    planning:
+    VenuePlanning | null;
 
-    suggestion: ReturnType<
+    suggestion:
+    ReturnType<
         typeof findBestSlot
     > | null;
 
-    loading: boolean;
+    loading:
+    boolean;
 
-    error: string | null;
+    error:
+    string | null;
 
 }
 
@@ -39,139 +43,213 @@ export function usePlanning(
 
     reservationDate: Date,
 
+    durationMinutes: number,
+
 ): UsePlanningResult {
 
     const [
-
         planning,
-
         setPlanning,
-
-    ] = useState<VenuePlanning | null>(
-
-        null,
-
-    );
+    ] =
+        useState<VenuePlanning | null>(
+            null,
+        );
 
     const [
-
         suggestion,
-
         setSuggestion,
-
-    ] = useState<
-        ReturnType<
-            typeof findBestSlot
-        > | null
-    >(null);
+    ] =
+        useState<
+            ReturnType<
+                typeof findBestSlot
+            > | null
+        >(
+            null,
+        );
 
     const [
-
         loading,
-
         setLoading,
-
-    ] = useState(true);
+    ] =
+        useState(false);
 
     const [
-
         error,
-
         setError,
-
-    ] = useState<string | null>(
-
-        null,
-
-    );
+    ] =
+        useState<string | null>(
+            null,
+        );
 
     useEffect(() => {
 
-        let cancelled = false;
+        let cancelled =
+            false;
+
+        /*
+         * ========================================================
+         * CONTEXTE INCOMPLET
+         * ========================================================
+         *
+         * Le contexte du match est chargé séparément.
+         *
+         * Au premier rendu :
+         *
+         * selectedMatch = null
+         * durationMinutes = 0
+         *
+         * Il ne faut donc surtout pas lancer le moteur
+         * tant que la durée de la compétition n'est
+         * pas disponible.
+         */
+
+        if (
+            !venueId
+            ||
+            !Number.isFinite(
+                durationMinutes,
+            )
+            ||
+            durationMinutes <= 0
+        ) {
+
+            setPlanning(
+                null,
+            );
+
+            setSuggestion(
+                null,
+            );
+
+            setError(
+                null,
+            );
+
+            setLoading(
+                false,
+            );
+
+            return () => {
+
+                cancelled =
+                    true;
+
+            };
+
+        }
 
         async function load() {
 
             try {
 
-                setLoading(true);
-
-                setError(null);
-
-                const data = await loadPlanningData(
-
-                    venueId,
-
-                    reservationDate,
-
+                setLoading(
+                    true,
                 );
 
-                const result = createPlanning(
-
-                    data,
-
-                    reservationDate,
-
+                setError(
+                    null,
                 );
 
-                if (!cancelled) {
+                /*
+                 * On efface l'ancien planning.
+                 *
+                 * Important notamment si la durée
+                 * change avec la compétition.
+                 */
+                setPlanning(
+                    null,
+                );
 
-                    setPlanning(
+                setSuggestion(
+                    null,
+                );
 
-                        result.planning,
+                const data =
+                    await loadPlanningData(
+
+                        venueId,
+
+                        reservationDate,
 
                     );
 
-                    setSuggestion(
+                const result =
+                    createPlanning(
 
-                        result.suggestion,
+                        data,
+
+                        reservationDate,
+
+                        durationMinutes,
 
                     );
+
+                if (cancelled) {
+
+                    return;
 
                 }
 
-            }
+                setPlanning(
+                    result.planning,
+                );
 
-            catch (e) {
+                setSuggestion(
+                    result.suggestion,
+                );
+
+            }
+            catch (error) {
 
                 if (
-
-                    !cancelled &&
-
-                    e instanceof Error
-
+                    cancelled
                 ) {
 
-                    setError(
+                    return;
 
-                        e.message,
+                }
 
+                setPlanning(
+                    null,
+                );
+
+                setSuggestion(
+                    null,
+                );
+
+                setError(
+
+                    error instanceof Error
+
+                        ? error.message
+
+                        : "PLANNING_LOAD_FAILED",
+
+                );
+
+            }
+            finally {
+
+                if (
+                    !cancelled
+                ) {
+
+                    setLoading(
+                        false,
                     );
 
                 }
 
             }
 
-            finally {
-
-                if (!cancelled) {
-
-                    setLoading(false);
-
-                }
-
-            }
-
         }
 
-        if (venueId) {
-
-            load();
-
-        }
+        void load();
 
         return () => {
 
-            cancelled = true;
+            cancelled =
+                true;
 
         };
 
@@ -181,8 +259,16 @@ export function usePlanning(
 
         reservationDate,
 
-    ]);
+        /*
+         * CRITIQUE :
+         *
+         * Le planning doit être recalculé lorsque
+         * la durée de la compétition devient disponible
+         * ou change.
+         */
+        durationMinutes,
 
+    ]);
     return {
 
         planning,
@@ -195,4 +281,4 @@ export function usePlanning(
 
     };
 
-}
+}       

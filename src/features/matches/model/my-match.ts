@@ -6,6 +6,10 @@ import type {
     ReservationStatus,
 } from "@/entities/reservation";
 
+import type {
+    MatchPlayStatus,
+} from "@/entities/match";
+
 export interface MyMatch {
 
     matchId: string;
@@ -32,14 +36,27 @@ export interface MyMatch {
 
     plannedEndAt: Timestamp | null;
 
+    /*
+     * Statut de réservation.
+     */
     status:
     | "NOT_PLANNED"
     | "PENDING"
     | "PLANNED";
 
+    /*
+     * Statut sportif.
+     *
+     * TO_PLAY = non joué
+     * PLAYED  = joué
+     */
+    playStatus:
+    MatchPlayStatus;
+
     notes: string;
 
-    lastReservation: LastReservationInfo | null;
+    lastReservation:
+    LastReservationInfo | null;
 
 }
 
@@ -47,8 +64,10 @@ export interface LastReservationInfo {
 
     id: string | null;
 
-    status: ReservationStatus | null;
+    status:
+    ReservationStatus | null;
 
-    validationComment: string | null;
+    validationComment:
+    string | null;
 
 }

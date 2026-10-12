@@ -2,8 +2,6 @@ import {
     Button,
     Card,
     CardContent,
-    Chip,
-    Collapse,
     Divider,
     Stack,
     Typography,
@@ -14,20 +12,6 @@ import AddIcon
 
 import CalendarMonthIcon
     from "@mui/icons-material/CalendarMonth";
-
-import ExpandMoreIcon
-    from "@mui/icons-material/ExpandMore";
-
-import ExpandLessIcon
-    from "@mui/icons-material/ExpandLess";
-
-import {
-    useState,
-} from "react";
-
-import {
-    buildReservationSlots,
-} from "@/core/reservation-engine";
 
 import type {
     VenueSchedule,
@@ -46,8 +30,6 @@ interface Props {
     dayOfWeek: number;
 
     schedules: VenueSchedule[];
-
-    durationMinutes: number;
 
     onAdd(
         dayOfWeek: number,
@@ -69,8 +51,6 @@ export function VenueScheduleCard({
 
     schedules,
 
-    durationMinutes,
-
     onAdd,
 
     onEdit,
@@ -78,13 +58,6 @@ export function VenueScheduleCard({
     onDelete,
 
 }: Props) {
-
-    const [
-        expandedScheduleId,
-        setExpandedScheduleId,
-    ] = useState<string | null>(
-        null,
-    );
 
     return (
 
@@ -215,27 +188,6 @@ export function VenueScheduleCard({
                                  *
                                  * ReservationSlot[]
                                  */
-                                const generatedSlots =
-                                    buildReservationSlots(
-
-                                        {
-                                            openTime:
-                                                schedule.openTime,
-
-                                            closeTime:
-                                                schedule.closeTime,
-
-                                            boardNumbers:
-                                                schedule.boardNumbers,
-                                        },
-
-                                        durationMinutes,
-
-                                    );
-
-                                const expanded =
-                                    expandedScheduleId ===
-                                    schedule.id;
 
                                 return (
 
@@ -269,194 +221,6 @@ export function VenueScheduleCard({
                                             }
 
                                         />
-
-
-                                        {/*
-                                         * Bouton permettant
-                                         * d'afficher les créneaux
-                                         * générés pour cette plage.
-                                         */}
-
-                                        <Button
-                                            variant="text"
-                                            endIcon={
-                                                expanded
-                                                    ? <ExpandLessIcon />
-                                                    : <ExpandMoreIcon />
-                                            }
-                                            onClick={() => {
-
-                                                setExpandedScheduleId(
-
-                                                    expanded
-                                                        ? null
-                                                        : schedule.id,
-
-                                                );
-
-                                            }}
-                                        >
-
-                                            {
-                                                expanded
-                                                    ? "Masquer les créneaux joueurs"
-                                                    : "Afficher les créneaux joueurs"
-                                            }
-
-                                        </Button>
-
-
-                                        {/*
-                                         * ------------------------------------------------
-                                         * Créneaux joueurs
-                                         * ------------------------------------------------
-                                         */}
-
-                                        <Collapse
-                                            in={
-                                                expanded
-                                            }
-                                            unmountOnExit
-                                        >
-
-                                            <Stack spacing={2}>
-
-                                                {
-                                                    generatedSlots.length === 0
-                                                        ? (
-
-                                                            <Typography
-                                                                variant="body2"
-                                                                color="text.secondary"
-                                                            >
-
-                                                                Aucun créneau joueur généré pour cette plage.
-
-                                                            </Typography>
-
-                                                        )
-                                                        : (
-
-                                                            /*
-                                                             * On regroupe les créneaux
-                                                             * par numéro de cible.
-                                                             */
-                                                            schedule.boardNumbers.map(
-                                                                boardNumber => {
-
-                                                                    const boardSlots =
-                                                                        generatedSlots.filter(
-
-                                                                            slot =>
-                                                                                slot.boardNumber ===
-                                                                                boardNumber,
-
-                                                                        );
-
-                                                                    return (
-
-                                                                        <Stack
-                                                                            key={
-                                                                                boardNumber
-                                                                            }
-                                                                            spacing={1}
-                                                                        >
-
-                                                                            <Typography
-                                                                                variant="body2"
-                                                                                sx={{
-                                                                                    fontWeight:
-                                                                                        700,
-                                                                                }}
-                                                                            >
-
-                                                                                🎯 Cible {boardNumber}
-
-                                                                            </Typography>
-
-
-                                                                            {
-                                                                                boardSlots.length === 0
-                                                                                    ? (
-
-                                                                                        <Typography
-                                                                                            variant="body2"
-                                                                                            color="text.secondary"
-                                                                                        >
-
-                                                                                            Aucun créneau disponible.
-
-                                                                                        </Typography>
-
-                                                                                    )
-                                                                                    : (
-
-                                                                                        <Stack
-                                                                                            direction="row"
-                                                                                            spacing={1}
-                                                                                            sx={{
-                                                                                                flexWrap:
-                                                                                                    "wrap",
-
-                                                                                                gap:
-                                                                                                    1,
-                                                                                            }}
-                                                                                        >
-
-                                                                                            {
-                                                                                                boardSlots.map(
-                                                                                                    slot => (
-
-                                                                                                        <Chip
-                                                                                                            key={
-                                                                                                                `${schedule.id}-${slot.boardNumber}-${slot.startTime}`
-                                                                                                            }
-                                                                                                            size="small"
-                                                                                                            color={
-                                                                                                                slot.status === "AVAILABLE"
-                                                                                                                    ? "success"
-                                                                                                                    : slot.status === "RESERVED"
-                                                                                                                        ? "error"
-                                                                                                                        : "warning"
-                                                                                                            }
-                                                                                                            variant={
-                                                                                                                slot.status === "AVAILABLE"
-                                                                                                                    ? "outlined"
-                                                                                                                    : "filled"
-                                                                                                            }
-                                                                                                            label={
-                                                                                                                slot.status === "BLOCKED"
-                                                                                                                    ? (
-                                                                                                                        slot.blockTitle
-                                                                                                                        ??
-                                                                                                                        "Indisponible"
-                                                                                                                    )
-                                                                                                                    : `${slot.startTime} → ${slot.endTime}`
-                                                                                                            }
-                                                                                                        />
-
-                                                                                                    ),
-                                                                                                )
-                                                                                            }
-
-                                                                                        </Stack>
-
-                                                                                    )
-                                                                            }
-
-                                                                        </Stack>
-
-                                                                    );
-
-                                                                },
-                                                            )
-
-                                                        )
-                                                }
-
-                                            </Stack>
-
-                                        </Collapse>
 
                                     </Stack>
 

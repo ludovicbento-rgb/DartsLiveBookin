@@ -78,21 +78,33 @@ export function PlanningPage() {
     );
 
     const {
-        planning,
-        loading,
-        error,
-    } = usePlanning(
-        venueId ?? "",
-        reservationDate,
-    );
-
-    const {
         selectedMatch,
         loading: matchLoading,
         error: matchError,
     } = useMatchPlanningContext(
         matchId,
     );
+
+    const matchDurationMinutes =
+        selectedMatch
+            ? Number(
+                selectedMatch
+                    .competition
+                    .matchDurationMinutes,
+            )
+            : 0;
+
+    const {
+        planning,
+        loading,
+        error,
+    } = usePlanning(
+        venueId ?? "",
+        reservationDate,
+        matchDurationMinutes,
+    );
+
+
 
     const currentPlanning = planning ?? null;
 

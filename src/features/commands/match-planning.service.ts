@@ -18,11 +18,18 @@ import {
     type Venue,
 } from "@/entities/venue";
 
+import {
+    getCompetition,
+    type Competition,
+} from "@/entities/competition";
+
 export interface MatchPlanningContext {
 
     match: Match;
 
     matchDay: MatchDay;
+
+    competition: Competition;
 
     homeRegistration: Registration;
 
@@ -56,6 +63,19 @@ export async function getMatchPlanningContext(
 
         throw new Error(
             "MATCHDAY_NOT_FOUND",
+        );
+
+    }
+
+    const competition =
+        await getCompetition(
+            matchDay.competitionId,
+        );
+
+    if (!competition) {
+
+        throw new Error(
+            "COMPETITION_NOT_FOUND",
         );
 
     }
@@ -104,6 +124,8 @@ export async function getMatchPlanningContext(
         match,
 
         matchDay,
+
+        competition,
 
         homeRegistration,
 

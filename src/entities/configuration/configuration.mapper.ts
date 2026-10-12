@@ -21,18 +21,27 @@ export function mapConfiguration(
         currentSeasonId:
             data.currentSeasonId,
 
-        reservationDuration:
-            data.reservationDuration,
-
-        reservationSlots:
-            data.reservationSlots,
-
         maintenanceMode:
             data.maintenanceMode,
 
         version:
             data.version,
 
+        maintenanceMessage:
+            typeof data.maintenanceMessage === "string"
+                ? data.maintenanceMessage
+                : null,
+
+        maintenanceStartedAt:
+            data.maintenanceStartedAt
+            ??
+            null,
+
+        maintenanceStartedBy:
+            typeof data.maintenanceStartedBy === "string"
+                ? data.maintenanceStartedBy
+                : null,
+
     };
 
-}
+}       

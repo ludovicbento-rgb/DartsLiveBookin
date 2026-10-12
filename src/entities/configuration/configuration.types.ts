@@ -1,10 +1,6 @@
-export interface ReservationSlot {
-
-    startTime: string;
-
-    endTime: string;
-
-}
+import type {
+    Timestamp,
+} from "firebase/firestore";
 
 export interface Configuration {
 
@@ -12,11 +8,16 @@ export interface Configuration {
 
     currentSeasonId: string;
 
-    reservationDuration: number;
-
-    reservationSlots: ReservationSlot[];
-
     maintenanceMode: boolean;
+
+    maintenanceMessage:
+    string | null;
+
+    maintenanceStartedAt:
+    Timestamp | null;
+
+    maintenanceStartedBy:
+    string | null;
 
     version: string;
 

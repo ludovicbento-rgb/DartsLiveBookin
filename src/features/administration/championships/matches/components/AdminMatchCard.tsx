@@ -160,6 +160,21 @@ export function AdminMatchCard({
                             }
                         />
 
+                        {
+                            match.playStatus ===
+                            "PLAYED"
+                            && (
+
+                                <Chip
+                                    size="small"
+                                    color="success"
+                                    variant="outlined"
+                                    label="Match joué"
+                                />
+
+                            )
+                        }
+
                     </Stack>
 
                     <Stack
@@ -259,6 +274,14 @@ export function AdminMatchCard({
                         }
 
                     </Button>
+
+                    {
+                        match.playStatus === "PLAYED"
+                            ? "Match joué"
+                            : editable
+                                ? "Modifier"
+                                : "Modification verrouillée"
+                    }
 
                 </Stack>
 

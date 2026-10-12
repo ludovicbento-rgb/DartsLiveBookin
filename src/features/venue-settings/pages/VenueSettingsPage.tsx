@@ -59,10 +59,6 @@ import {
     VenueScheduleDrawer,
 } from "../components/VenueScheduleDrawer";
 
-import {
-    useConfiguration,
-} from "@/features/configuration/hooks/useConfiguration";
-
 export function VenueSettingsPage() {
 
     const profile =
@@ -84,12 +80,6 @@ export function VenueSettingsPage() {
     } = useVenueSchedules(
         venue?.id ?? "",
     );
-
-    const {
-        configuration,
-        loading: loadingConfiguration,
-        error: configurationError,
-    } = useConfiguration();
 
     const [
         drawerOpen,
@@ -273,8 +263,6 @@ export function VenueSettingsPage() {
 
     if (
         loading
-        ||
-        loadingConfiguration
     ) {
 
         return (
@@ -284,34 +272,6 @@ export function VenueSettingsPage() {
                 <AppCard>
 
                     <CircularProgress />
-
-                </AppCard>
-
-            </AppLayout>
-
-        );
-
-    }
-
-    if (
-        configurationError
-        ||
-        !configuration
-    ) {
-
-        return (
-
-            <AppLayout>
-
-                <AppCard>
-
-                    <Typography
-                        color="error"
-                    >
-
-                        Impossible de charger la configuration de l'application.
-
-                    </Typography>
 
                 </AppCard>
 
@@ -459,10 +419,6 @@ export function VenueSettingsPage() {
 
                                         schedules={
                                             day.schedules
-                                        }
-
-                                        durationMinutes={
-                                            configuration.reservationDuration
                                         }
 
                                         onAdd={

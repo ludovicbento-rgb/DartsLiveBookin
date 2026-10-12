@@ -1,3 +1,7 @@
+import type {
+    MatchPlayStatus,
+} from "@/entities/match";
+
 export interface AdminMatchRequest {
 
     matchDayId: string;
@@ -5,5 +9,14 @@ export interface AdminMatchRequest {
     homeRegistrationId: string;
 
     awayRegistrationId: string;
+
+    /*
+     * Etat sportif uniquement.
+     *
+     * TO_PLAY = non joué
+     * PLAYED  = joué
+     */
+    playStatus:
+    MatchPlayStatus;
 
 }

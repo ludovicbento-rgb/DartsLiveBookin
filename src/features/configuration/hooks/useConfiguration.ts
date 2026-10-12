@@ -4,7 +4,7 @@ import {
 } from "react";
 
 import {
-    getConfiguration,
+    subscribeConfiguration,
 } from "@/entities/configuration";
 
 import type {
@@ -16,88 +16,69 @@ export function useConfiguration() {
     const [
         configuration,
         setConfiguration,
-    ] = useState<Configuration | null>(
-        null,
-    );
+    ] =
+        useState<Configuration | null>(
+            null,
+        );
 
     const [
         loading,
         setLoading,
-    ] = useState(true);
+    ] =
+        useState(true);
 
     const [
         error,
         setError,
-    ] = useState<Error | null>(
-        null,
-    );
+    ] =
+        useState<Error | null>(
+            null,
+        );
 
     useEffect(() => {
 
-        let cancelled =
-            false;
+        setLoading(
+            true,
+        );
 
-        async function load() {
+        setError(
+            null,
+        );
 
-            try {
+        const unsubscribe =
+            subscribeConfiguration(
 
-                setLoading(
-                    true,
-                );
-
-                setError(
-                    null,
-                );
-
-                const result =
-                    await getConfiguration();
-
-                if (!cancelled) {
+                configuration => {
 
                     setConfiguration(
-                        result,
+                        configuration,
                     );
-
-                }
-
-            }
-            catch (error) {
-
-                if (!cancelled) {
 
                     setError(
-                        error instanceof Error
-                            ? error
-                            : new Error(
-                                "CONFIGURATION_LOAD_FAILED",
-                            ),
+                        null,
                     );
-
-                }
-
-            }
-            finally {
-
-                if (!cancelled) {
 
                     setLoading(
                         false,
                     );
 
-                }
+                },
 
-            }
+                error => {
 
-        }
+                    setError(
+                        error,
+                    );
 
-        void load();
+                    setLoading(
+                        false,
+                    );
 
-        return () => {
+                },
 
-            cancelled =
-                true;
+            );
 
-        };
+        return unsubscribe;
 
     }, []);
 

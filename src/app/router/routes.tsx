@@ -37,12 +37,23 @@ import MatchDaysPage
 
 import MatchesPage
   from "@/features/administration/championships/matches/pages/MatchesPage";
-
+import ExportSeasonPage
+  from "@/features/administration/data/export/pages/ExportSeasonPage";
 import VenuesPage
   from "@/features/administration/venues/pages/VenuesPage";
 
+import SettingsPage
+  from "@/features/administration/system/settings/pages/SettingsPage";
+
+
 import AvailabilityRulesPage
   from "@/features/availability-rules/pages/AvailabilityRulePage";
+
+import ImportDataPage
+  from "@/features/administration/data/import/pages/ImportDataPage";
+
+import MaintenanceAdminPage
+  from "@/features/administration/system/maintenance/pages/MaintenanceAdminPage";
 
 export const routes = [
   {
@@ -178,6 +189,50 @@ export const routes = [
     element: (
       <ProtectedRoute>
         <MatchesPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/administration/export",
+    element: (
+      <ProtectedRoute>
+        <ExportSeasonPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path:
+      "/administration/import",
+
+    element: (
+      <ProtectedRoute>
+
+        <ImportDataPage />
+
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path:
+      "/administration/settings",
+
+    element: (
+      <ProtectedRoute>
+
+        <SettingsPage />
+
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path:
+      "/administration/maintenance",
+
+    element: (
+      <ProtectedRoute>
+
+        <MaintenanceAdminPage />
+
       </ProtectedRoute>
     ),
   },

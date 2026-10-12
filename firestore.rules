@@ -115,7 +115,7 @@ service cloud.firestore {
      * OU
      * - un joueur présent dans playerIds.
      *
-     * Le capitaine peut donc jouer ou ne pas jouer.
+     * Règle métier : le capitaine est toujours joueur et doit être présent dans playerIds.
      */
     function isRegistrationMember(registrationId) {
 
@@ -1011,468 +1011,449 @@ service cloud.firestore {
     }
 
 
-   /*
- * ============================================================
- * MATCHES
- * ============================================================
+    /*
+     * ============================================================
+     * MATCHES
+     * ============================================================
+     */
+
+    match /matches/{matchId} {
+
+      /*
+       * ==========================================================
+       * READ
+       * ==========================================================
+       */
+
+      allow read:
+        if hasActiveProfile();
+
+
+      /*
+       * ==========================================================
+       * CREATE
+       *
+       * Création d'un match depuis l'administration standard.
+       * Un nouveau match est toujours à jouer et sans réservation.
+       * ==========================================================
+       */
+
+      allow create:
+        if isAdmin()
+
+        && request.resource.data.matchDayId is string
+        && request.resource.data.homeRegistrationId is string
+        && request.resource.data.awayRegistrationId is string
+
+        && request.resource.data.homeRegistrationId
+          != request.resource.data.awayRegistrationId
+
+        /* Workflow de réservation initial. */
+        && request.resource.data.status
+          == "NOT_PLANNED"
+
+        && request.resource.data.plannedReservationId
+          == null
+
+        /* Statut sportif initial. */
+        && request.resource.data.playStatus in [
+        "TO_PLAY",
+        "PLAYED"
+        ]
+
+        /* Références existantes. */
+        && exists(
+          /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
+        )
+
+        && exists(
+          /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+        )
+
+        && exists(
+          /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+        )
+
+        /* Les deux inscriptions doivent être actives. */
+        && get(
+          /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+        ).data.active
+          == true
+
+        && get(
+          /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+        ).data.active
+          == true
+
+        /* Même compétition que la journée. */
+        && get(
+          /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+        ).data.competitionId
+          ==
+          get(
+            /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
+          ).data.competitionId
+
+        && get(
+          /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+        ).data.competitionId
+          ==
+          get(
+            /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
+          ).data.competitionId
+
+        /* Même poule que la journée. */
+        && get(
+          /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+        ).data.poolId
+          ==
+          get(
+            /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
+          ).data.poolId
+
+        && get(
+          /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+        ).data.poolId
+          ==
+          get(
+            /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
+          ).data.poolId;
+
+
+      /*
+       * ==========================================================
+       * UPDATE
+       * ==========================================================
+       */
+
+      allow update:
+
+        /*
+         * --------------------------------------------------------
+         * CAS 1 - ADMIN
+         *
+         * Modification des adversaires uniquement pour un match :
+         * - encore à jouer ;
+         * - NOT_PLANNED ;
+         * - sans réservation.
+         *
+         * Compatibilité historique : l'absence de playStatus est
+         * considérée comme TO_PLAY.
+         * --------------------------------------------------------
+         */
+        if (
+          isAdmin()
+
+          && (
+            !("playStatus" in resource.data)
+            || resource.data.playStatus == "TO_PLAY"
+          )
+
+          && resource.data.status
+            == "NOT_PLANNED"
+
+          && resource.data.plannedReservationId
+            == null
+
+          /* La journée reste immuable. */
+          && request.resource.data.matchDayId
+            == resource.data.matchDayId
+
+          /* L'Admin ne modifie pas le workflow de réservation. */
+          && request.resource.data.status
+            == resource.data.status
+
+          && request.resource.data.plannedReservationId
+            == resource.data.plannedReservationId
+
+          /* Le statut sportif ne peut pas être changé ici. */
+          && (
+            !("playStatus" in resource.data)
+            || request.resource.data.playStatus
+              == resource.data.playStatus
+          )
+
+          && request.resource.data.homeRegistrationId
+            != request.resource.data.awayRegistrationId
+
+          && exists(
+            /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+          )
+
+          && exists(
+            /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+          )
+
+          && get(
+            /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+          ).data.active
+            == true
+
+          && get(
+            /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+          ).data.active
+            == true
+
+          /* Même compétition que la journée. */
+          && get(
+            /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+          ).data.competitionId
+            ==
+            get(
+              /databases/$(database)/documents/matchdays/$(resource.data.matchDayId)
+            ).data.competitionId
+
+          && get(
+            /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+          ).data.competitionId
+            ==
+            get(
+              /databases/$(database)/documents/matchdays/$(resource.data.matchDayId)
+            ).data.competitionId
+
+          /* Même poule que la journée. */
+          && get(
+            /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+          ).data.poolId
+            ==
+            get(
+              /databases/$(database)/documents/matchdays/$(resource.data.matchDayId)
+            ).data.poolId
+
+          && get(
+            /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+          ).data.poolId
+            ==
+            get(
+              /databases/$(database)/documents/matchdays/$(resource.data.matchDayId)
+            ).data.poolId
+
+          /* Seuls les adversaires et updatedAt peuvent changer. */
+          && request.resource.data
+            .diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              "homeRegistrationId",
+              "awayRegistrationId",
+              "updatedAt"
+            ])
+        )
+
+        /*
+ * --------------------------------------------------------
+ * CAS ADMIN - STATUT SPORTIF
+ *
+ * TO_PLAY <-> PLAYED
+ *
+ * Aucun impact sur le workflow de réservation.
+ * --------------------------------------------------------
  */
+|| (
 
-match /matches/{matchId} {
-
-  /*
-   * ==========================================================
-   * READ
-   * ==========================================================
-   */
-
-  allow read:
-    if hasActiveProfile();
-
+  isAdmin()
 
   /*
-   * ==========================================================
-   * CREATE
-   *
-   * Création du calendrier par un administrateur.
-   * ==========================================================
+   * Pas de réservation associée.
    */
+  && resource.data.status
+    == "NOT_PLANNED"
 
-  allow create:
-    if isAdmin()
-
-    /*
-     * Structure métier obligatoire.
-     */
-    && request.resource.data.matchDayId is string
-
-    && request.resource.data.homeRegistrationId is string
-
-    && request.resource.data.awayRegistrationId is string
-
-    /*
-     * Une inscription ne joue pas contre elle-même.
-     */
-    && request.resource.data.homeRegistrationId
-      != request.resource.data.awayRegistrationId
-
-    /*
-     * Un nouveau match est toujours non planifié.
-     */
-    && request.resource.data.status
-      == "NOT_PLANNED"
-
-    && request.resource.data.plannedReservationId
-      == null
-
-    /*
-     * Références existantes.
-     */
-    && exists(
-      /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
-    )
-
-    && exists(
-      /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
-    )
-
-    && exists(
-      /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
-    )
-
-    /*
-     * Les deux inscriptions doivent être actives.
-     */
-    && get(
-      /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
-    ).data.active
-      == true
-
-    && get(
-      /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
-    ).data.active
-      == true
-
-    /*
-     * Inscription domicile :
-     * même compétition que la journée.
-     */
-    && get(
-      /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
-    ).data.competitionId
-      ==
-      get(
-        /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
-      ).data.competitionId
-
-    /*
-     * Inscription extérieure :
-     * même compétition que la journée.
-     */
-    && get(
-      /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
-    ).data.competitionId
-      ==
-      get(
-        /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
-      ).data.competitionId
-
-    /*
-     * Inscription domicile :
-     * même poule que la journée.
-     */
-    && get(
-      /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
-    ).data.poolId
-      ==
-      get(
-        /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
-      ).data.poolId
-
-    /*
-     * Inscription extérieure :
-     * même poule que la journée.
-     */
-    && get(
-      /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
-    ).data.poolId
-      ==
-      get(
-        /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
-      ).data.poolId;
-
+  && resource.data.plannedReservationId
+    == null
 
   /*
-   * ==========================================================
-   * UPDATE
-   * ==========================================================
+   * Le workflow réservation reste intact.
    */
+  && request.resource.data.status
+    == resource.data.status
 
-  allow update:
-
-    /*
-     * --------------------------------------------------------
-     * CAS 1
-     *
-     * ADMIN :
-     * modification des adversaires.
-     *
-     * Autorisée uniquement tant que le match
-     * n'est associé à aucune réservation.
-     * --------------------------------------------------------
-     */
-
-    if (
-
-      isAdmin()
-
-      && resource.data.status
-        == "NOT_PLANNED"
-
-      && resource.data.plannedReservationId
-        == null
-
-      /*
-       * La journée ne peut pas être changée.
-       */
-      && request.resource.data.matchDayId
-        == resource.data.matchDayId
-
-      /*
-       * L'Admin ne touche pas au workflow réservation.
-       */
-      && request.resource.data.status
-        == resource.data.status
-
-      && request.resource.data.plannedReservationId
-        == resource.data.plannedReservationId
-
-      /*
-       * Deux adversaires différents.
-       */
-      && request.resource.data.homeRegistrationId
-        != request.resource.data.awayRegistrationId
-
-      /*
-       * Références existantes.
-       */
-      && exists(
-        /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
-      )
-
-      && exists(
-        /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
-      )
-
-      /*
-       * Les deux inscriptions doivent être actives.
-       */
-      && get(
-        /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
-      ).data.active
-        == true
-
-      && get(
-        /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
-      ).data.active
-        == true
-
-      /*
-       * Même compétition que la journée.
-       */
-      && get(
-        /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
-      ).data.competitionId
-        ==
-        get(
-          /databases/$(database)/documents/matchdays/$(resource.data.matchDayId)
-        ).data.competitionId
-
-      && get(
-        /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
-      ).data.competitionId
-        ==
-        get(
-          /databases/$(database)/documents/matchdays/$(resource.data.matchDayId)
-        ).data.competitionId
-
-      /*
-       * Même poule que la journée.
-       */
-      && get(
-        /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
-      ).data.poolId
-        ==
-        get(
-          /databases/$(database)/documents/matchdays/$(resource.data.matchDayId)
-        ).data.poolId
-
-      && get(
-        /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
-      ).data.poolId
-        ==
-        get(
-          /databases/$(database)/documents/matchdays/$(resource.data.matchDayId)
-        ).data.poolId
-
-      /*
-       * Seuls les adversaires et updatedAt
-       * peuvent changer.
-       */
-      && request.resource.data
-        .diff(resource.data)
-        .affectedKeys()
-        .hasOnly([
-          "homeRegistrationId",
-          "awayRegistrationId",
-          "updatedAt"
-        ])
-
-    )
-
-
-    /*
-     * --------------------------------------------------------
-     * CAS 2
-     *
-     * NOT_PLANNED -> PENDING
-     *
-     * Un joueur/capitaine vient de créer
-     * une réservation.
-     * --------------------------------------------------------
-     */
-
-    || (
-
-      canPlanMatch(matchId)
-
-      && resource.data.status
-        == "NOT_PLANNED"
-
-      && request.resource.data.status
-        == "PENDING"
-
-      && resource.data.plannedReservationId
-        == null
-
-      && request.resource.data.plannedReservationId
-        is string
-
-      /*
-       * Seuls ces deux champs peuvent changer.
-       */
-      && request.resource.data
-        .diff(resource.data)
-        .affectedKeys()
-        .hasOnly([
-          "status",
-          "plannedReservationId"
-        ])
-
-      /*
-       * La réservation doit exister.
-       */
-      && exists(
-        /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
-      )
-
-      /*
-       * Elle correspond à ce match.
-       */
-      && get(
-        /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
-      ).data.matchId
-        == matchId
-
-      /*
-       * Elle est en attente.
-       */
-      && get(
-        /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
-      ).data.status
-        == "PENDING"
-
-      /*
-       * Elle a été créée par l'utilisateur métier connecté.
-       */
-      && get(
-        /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
-      ).data.createdByUserId
-        == currentUserId()
-
-    )
-
-
-    /*
-     * --------------------------------------------------------
-     * CAS 3
-     *
-     * PENDING / PLANNED -> NOT_PLANNED
-     *
-     * Annulation ou refus d'une réservation.
-     * --------------------------------------------------------
-     */
-
-    || (
-
-      canPlanMatch(matchId)
-
-      && resource.data.status in [
-        "PENDING",
-        "PLANNED"
-      ]
-
-      && request.resource.data.status
-        == "NOT_PLANNED"
-
-      && request.resource.data.plannedReservationId
-        == null
-
-      /*
-       * Une réservation doit être actuellement liée.
-       */
-      && resource.data.plannedReservationId
-        is string
-
-      /*
-       * La réservation associée doit avoir été
-       * annulée ou refusée.
-       */
-      && get(
-        /databases/$(database)/documents/reservations/$(resource.data.plannedReservationId)
-      ).data.status in [
-        "CANCELLED",
-        "REJECTED"
-      ]
-
-      /*
-       * Seuls ces champs changent.
-       */
-      && request.resource.data
-        .diff(resource.data)
-        .affectedKeys()
-        .hasOnly([
-          "status",
-          "plannedReservationId"
-        ])
-
-    )
-
-
-    /*
-     * --------------------------------------------------------
-     * CAS 4
-     *
-     * PENDING -> PLANNED
-     *
-     * Validation par le gérant du bar.
-     * --------------------------------------------------------
-     */
-
-    || (
-
-      resource.data.status
-        == "PENDING"
-
-      && request.resource.data.status
-        == "PLANNED"
-
-      /*
-       * La réservation reste identique.
-       */
-      && request.resource.data.plannedReservationId
-        == resource.data.plannedReservationId
-
-      /*
-       * Une réservation doit réellement exister.
-       */
-      && resource.data.plannedReservationId
-        is string
-
-      && exists(
-        /databases/$(database)/documents/reservations/$(resource.data.plannedReservationId)
-      )
-
-      /*
-       * Le gérant doit gérer le bar
-       * associé à cette réservation.
-       */
-      && canManageVenue(
-        get(
-          /databases/$(database)/documents/reservations/$(resource.data.plannedReservationId)
-        ).data.venueId
-      )
-
-      /*
-       * Seul le statut du match change.
-       */
-      && request.resource.data
-        .diff(resource.data)
-        .affectedKeys()
-        .hasOnly([
-          "status"
-        ])
-
-    );
-
+  && request.resource.data.plannedReservationId
+    == resource.data.plannedReservationId
 
   /*
-   * ==========================================================
-   * DELETE
-   * ==========================================================
-   *
-   * Pas de suppression physique.
-   *
-   * Un match peut être référencé par :
-   * - une réservation,
-   * - le parcours joueur,
-   * - l'agenda gérant.
-   * ==========================================================
+   * La structure du match reste intacte.
    */
+  && request.resource.data.matchDayId
+    == resource.data.matchDayId
 
-  allow delete:
-    if false;
+  && request.resource.data.homeRegistrationId
+    == resource.data.homeRegistrationId
 
-}
+  && request.resource.data.awayRegistrationId
+    == resource.data.awayRegistrationId
+
+  /*
+   * Nouvelle valeur autorisée.
+   */
+  && request.resource.data.playStatus in [
+    "TO_PLAY",
+    "PLAYED"
+  ]
+
+  /*
+   * Seuls playStatus et updatedAt changent.
+   */
+  && request.resource.data
+    .diff(resource.data)
+    .affectedKeys()
+    .hasOnly([
+      "playStatus",
+      "updatedAt"
+    ])
+
+)
+
+
+        /*
+         * --------------------------------------------------------
+         * CAS 2 - JOUEUR/CAPITAINE
+         * NOT_PLANNED -> PENDING
+         *
+         * Création d'une réservation.
+         * Un match PLAYED ne peut jamais être réservé.
+         * --------------------------------------------------------
+         */
+        || (
+          canPlanMatch(matchId)
+
+          && (
+            !("playStatus" in resource.data)
+            || resource.data.playStatus == "TO_PLAY"
+          )
+
+          && resource.data.status
+            == "NOT_PLANNED"
+
+          && request.resource.data.status
+            == "PENDING"
+
+          && resource.data.plannedReservationId
+            == null
+
+          && request.resource.data.plannedReservationId
+            is string
+
+          && request.resource.data
+            .diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              "status",
+              "plannedReservationId"
+            ])
+
+          && exists(
+            /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
+          )
+
+          && get(
+            /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
+          ).data.matchId
+            == matchId
+
+          && get(
+            /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
+          ).data.status
+            == "PENDING"
+
+          && get(
+            /databases/$(database)/documents/reservations/$(request.resource.data.plannedReservationId)
+          ).data.createdByUserId
+            == currentUserId()
+        )
+
+
+        /*
+         * --------------------------------------------------------
+         * CAS 3 - ANNULATION / REFUS
+         * PENDING ou PLANNED -> NOT_PLANNED
+         * --------------------------------------------------------
+         */
+        || (
+          canPlanMatch(matchId)
+
+          && resource.data.status in [
+            "PENDING",
+            "PLANNED"
+          ]
+
+          && request.resource.data.status
+            == "NOT_PLANNED"
+
+          && request.resource.data.plannedReservationId
+            == null
+
+          && resource.data.plannedReservationId
+            is string
+
+          && exists(
+            /databases/$(database)/documents/reservations/$(resource.data.plannedReservationId)
+          )
+
+          && get(
+            /databases/$(database)/documents/reservations/$(resource.data.plannedReservationId)
+          ).data.status in [
+            "CANCELLED",
+            "REJECTED"
+          ]
+
+          && request.resource.data
+            .diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              "status",
+              "plannedReservationId"
+            ])
+        )
+
+
+        /*
+         * --------------------------------------------------------
+         * CAS 4 - GERANT
+         * PENDING -> PLANNED
+         * --------------------------------------------------------
+         */
+        || (
+          resource.data.status
+            == "PENDING"
+
+          && request.resource.data.status
+            == "PLANNED"
+
+          && request.resource.data.plannedReservationId
+            == resource.data.plannedReservationId
+
+          && resource.data.plannedReservationId
+            is string
+
+          && exists(
+            /databases/$(database)/documents/reservations/$(resource.data.plannedReservationId)
+          )
+
+          && canManageVenue(
+            get(
+              /databases/$(database)/documents/reservations/$(resource.data.plannedReservationId)
+            ).data.venueId
+          )
+
+          && request.resource.data
+            .diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              "status"
+            ])
+        );
+
+
+      /*
+       * ==========================================================
+       * DELETE
+       * ==========================================================
+       */
+
+      allow delete:
+        if false;
+    }
+
 
     /*
  * ============================================================
@@ -1493,61 +1474,155 @@ match /registrations/{registrationId} {
    */
 
   allow create:
-    if isAdmin()
+  if isAdmin()
 
-    && request.resource.data.seasonId is string
-    && request.resource.data.competitionId is string
-    && request.resource.data.poolId is string
+  /*
+   * ========================================================
+   * STRUCTURE DU DOCUMENT
+   * ========================================================
+   */
 
-    && request.resource.data.registrationName is string
+  && request.resource.data.keys().hasOnly([
+    "matchDayId",
+    "homeRegistrationId",
+    "awayRegistrationId",
+    "status",
+    "plannedReservationId",
+    "playStatus",
+    "createdAt",
+    "updatedAt"
+  ])
 
-    && request.resource.data.captainId is string
-    && request.resource.data.playerIds is list
+  && request.resource.data.keys().hasAll([
+    "matchDayId",
+    "homeRegistrationId",
+    "awayRegistrationId",
+    "status",
+    "plannedReservationId",
+    "playStatus"
+  ])
 
-    /*
-     * Le capitaine joue obligatoirement.
-     */
-    && request.resource.data.captainId
-      in request.resource.data.playerIds
+  && request.resource.data.matchDayId
+    is string
 
-    && request.resource.data.homeVenueId is string
+  && request.resource.data.homeRegistrationId
+    is string
 
-    && request.resource.data.active is bool
+  && request.resource.data.awayRegistrationId
+    is string
 
-    /*
-     * Références existantes.
-     */
-    && exists(
-      /databases/$(database)/documents/seasons/$(request.resource.data.seasonId)
-    )
+  /*
+   * Deux adversaires différents.
+   */
+  && request.resource.data.homeRegistrationId
+    != request.resource.data.awayRegistrationId
 
-    && exists(
-      /databases/$(database)/documents/competitions/$(request.resource.data.competitionId)
-    )
+  /*
+   * ========================================================
+   * WORKFLOW RESERVATION
+   * ========================================================
+   *
+   * L'administration ne choisit jamais PENDING/PLANNED.
+   */
 
-    && exists(
-      /databases/$(database)/documents/pools/$(request.resource.data.poolId)
-    )
+  && request.resource.data.status
+    == "NOT_PLANNED"
 
-    && exists(
-      /databases/$(database)/documents/venues/$(request.resource.data.homeVenueId)
-    )
+  && request.resource.data.plannedReservationId
+    == null
 
-    /*
-     * Cohérence saison -> compétition.
-     */
-    && get(
-      /databases/$(database)/documents/competitions/$(request.resource.data.competitionId)
-    ).data.seasonId
-      == request.resource.data.seasonId
+  /*
+   * ========================================================
+   * ETAT SPORTIF
+   * ========================================================
+   */
 
-    /*
-     * Cohérence compétition -> poule.
-     */
-    && get(
-      /databases/$(database)/documents/pools/$(request.resource.data.poolId)
+  && request.resource.data.playStatus in [
+    "TO_PLAY",
+    "PLAYED"
+  ]
+
+  /*
+   * ========================================================
+   * JOURNEE
+   * ========================================================
+   */
+
+  && exists(
+    /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
+  )
+
+  /*
+   * ========================================================
+   * INSCRIPTIONS
+   * ========================================================
+   */
+
+  && exists(
+    /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+  )
+
+  && exists(
+    /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+  )
+
+  /*
+   * Les inscriptions doivent être actives.
+   */
+
+  && get(
+    /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+  ).data.active
+    == true
+
+  && get(
+    /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+  ).data.active
+    == true
+
+  /*
+   * ========================================================
+   * MEME COMPETITION
+   * ========================================================
+   */
+
+  && get(
+    /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+  ).data.competitionId
+    ==
+    get(
+      /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
     ).data.competitionId
-      == request.resource.data.competitionId;
+
+  && get(
+    /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+  ).data.competitionId
+    ==
+    get(
+      /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
+    ).data.competitionId
+
+  /*
+   * ========================================================
+   * MEME POULE
+   * ========================================================
+   */
+
+  && get(
+    /databases/$(database)/documents/registrations/$(request.resource.data.homeRegistrationId)
+  ).data.poolId
+    ==
+    get(
+      /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
+    ).data.poolId
+
+  && get(
+    /databases/$(database)/documents/registrations/$(request.resource.data.awayRegistrationId)
+  ).data.poolId
+    ==
+    get(
+      /databases/$(database)/documents/matchdays/$(request.resource.data.matchDayId)
+    ).data.poolId;    
 
 
   /*
@@ -1557,7 +1632,7 @@ match /registrations/{registrationId} {
    */
 
   allow update:
-    if isAdmin()
+    if isAdmin()  
 
     /*
      * Les relations structurelles sont immuables.

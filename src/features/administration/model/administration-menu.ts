@@ -139,12 +139,14 @@ export const ADMINISTRATION_MENU:
         {
             id: "import",
             section: "DATA",
-            title: "Importer une saison",
+            title:
+                "Importer des données",
+
             description:
-                "Importer les données d'une saison",
+                "Saison complète, poule ou matchs",
             route:
                 "/administration/import",
-            enabled: false,
+            enabled: true,
         },
 
         {
@@ -155,7 +157,7 @@ export const ADMINISTRATION_MENU:
                 "Exporter les données d'une saison",
             route:
                 "/administration/export",
-            enabled: false,
+            enabled: true,
         },
 
         /*
@@ -172,7 +174,7 @@ export const ADMINISTRATION_MENU:
                 "Configuration générale de l'application",
             route:
                 "/administration/settings",
-            enabled: false,
+            enabled: true,
         },
 
         {
@@ -183,7 +185,7 @@ export const ADMINISTRATION_MENU:
                 "Mode maintenance de l'application",
             route:
                 "/administration/maintenance",
-            enabled: false,
+            enabled: true,
         },
 
         {

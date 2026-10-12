@@ -1,5 +1,5 @@
 import {
-    addDoc,
+    setDoc,
     serverTimestamp,
     getDoc,
     getDocs,
@@ -28,11 +28,17 @@ import {
 
 export interface CreateMatchRequest {
 
+    id: string;
+
     matchDayId: string;
 
     homeRegistrationId: string;
 
     awayRegistrationId: string;
+
+    playStatus:
+    "TO_PLAY"
+    | "PLAYED";
 
 }
 
@@ -50,39 +56,71 @@ export async function createMatch(
 
 ): Promise<string> {
 
-    const document =
-        await addDoc(
-
-            matchesCollection,
-
-            {
-
-                matchDayId:
-                    request.matchDayId,
-
-                homeRegistrationId:
-                    request.homeRegistrationId,
-
-                awayRegistrationId:
-                    request.awayRegistrationId,
-
-                status:
-                    "NOT_PLANNED",
-
-                plannedReservationId:
-                    null,
-
-                createdAt:
-                    serverTimestamp(),
-
-                updatedAt:
-                    serverTimestamp(),
-
-            },
-
+    const reference =
+        matchDocument(
+            request.id,
         );
 
-    return document.id;
+    /*
+     * Pas d'écrasement silencieux.
+     */
+    const existing =
+        await getDoc(
+            reference,
+        );
+
+    if (
+        existing.exists()
+    ) {
+
+        throw new Error(
+            "MATCH_ALREADY_EXISTS",
+        );
+
+    }
+
+    await setDoc(
+
+        reference,
+
+        {
+
+            matchDayId:
+                request.matchDayId,
+
+            homeRegistrationId:
+                request.homeRegistrationId,
+
+            awayRegistrationId:
+                request.awayRegistrationId,
+
+            /*
+             * Le workflow de réservation
+             * n'est jamais choisi par l'Admin.
+             */
+            status:
+                "NOT_PLANNED",
+
+            plannedReservationId:
+                null,
+
+            /*
+             * Seul état choisi par l'Admin.
+             */
+            playStatus:
+                request.playStatus,
+
+            createdAt:
+                serverTimestamp(),
+
+            updatedAt:
+                serverTimestamp(),
+
+        },
+
+    );
+
+    return request.id;
 
 }
 
@@ -107,6 +145,35 @@ export async function updateMatchParticipants(
 
             awayRegistrationId:
                 request.awayRegistrationId,
+
+            updatedAt:
+                serverTimestamp(),
+
+        },
+
+    );
+
+}
+
+export async function updateMatchPlayStatus(
+
+    matchId: string,
+
+    playStatus:
+        "TO_PLAY"
+        | "PLAYED",
+
+): Promise<void> {
+
+    await updateDoc(
+
+        matchDocument(
+            matchId,
+        ),
+
+        {
+
+            playStatus,
 
             updatedAt:
                 serverTimestamp(),
@@ -504,17 +571,62 @@ export async function getMatchesByRegistration(
 }
 
 export async function attachReservation(
+
     matchId: string,
+
     reservationId: string,
+
 ): Promise<void> {
+
+    const match =
+        await getMatch(
+            matchId,
+        );
+
+    if (!match) {
+
+        throw new Error(
+            "MATCH_NOT_FOUND",
+        );
+
+    }
+
+    /*
+     * Un match déjà joué
+     * ne peut jamais recevoir une réservation.
+     */
+    if (
+        match.playStatus ===
+        "PLAYED"
+    ) {
+
+        throw new Error(
+            "MATCH_ALREADY_PLAYED",
+        );
+
+    }
+
+    if (
+        match.status !==
+        "NOT_PLANNED"
+    ) {
+
+        throw new Error(
+            "MATCH_NOT_AVAILABLE",
+        );
+
+    }
 
     await updateDoc(
 
-        matchDocument(matchId),
+        matchDocument(
+            matchId,
+        ),
 
         {
 
-            status: "PENDING",
+            status:
+                "PENDING",
 
             plannedReservationId:
                 reservationId,

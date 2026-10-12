@@ -117,6 +117,11 @@ export async function loadMyMatches(
                 status:
                     match.status,
 
+                playStatus:
+                    match.playStatus
+                    ??
+                    "TO_PLAY",
+
                 notes:
                     activeReservation?.notes ?? "",
                 lastReservation:

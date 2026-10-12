@@ -20,6 +20,9 @@ import type {
 import CalendarMonthIcon
     from "@mui/icons-material/CalendarMonth";
 
+import CheckCircleIcon
+    from "@mui/icons-material/CheckCircle";
+
 interface Props {
 
     match: MyMatch;
@@ -28,9 +31,9 @@ interface Props {
         match: MyMatch,
     ) => void;
 
-    onReservation(
+    onReservation: (
         match: MyMatch,
-    ): void;
+    ) => void;
 
 }
 
@@ -42,35 +45,87 @@ export function MatchCard({
 
     onReservation,
 
+
 }: Props) {
+
+    /*
+     * ============================================================
+     * ETAT SPORTIF
+     * ============================================================
+     */
+
+    const isPlayed =
+        match.playStatus ===
+        "PLAYED";
+
+    /*
+     * ============================================================
+     * BADGE
+     * ============================================================
+     *
+     * PLAYED est prioritaire sur le statut de réservation.
+     */
 
     const statusColor =
 
-        match.status === "NOT_PLANNED"
+        isPlayed
 
-            ? "warning"
+            ? "success"
 
-            : match.status === "PENDING"
+            : match.status ===
+                "NOT_PLANNED"
 
-                ? "info"
+                ? "warning"
 
-                : "success";
+                : match.status ===
+                    "PENDING"
+
+                    ? "info"
+
+                    : "success";
 
     const statusLabel =
 
-        match.status === "NOT_PLANNED"
+        isPlayed
 
-            ? match.lastReservation?.status === "REJECTED"
+            ? "Joué"
 
-                ? "À replanifier"
+            : match.status ===
+                "NOT_PLANNED"
 
-                : "À planifier"
+                ? "À planifier"
 
-            : match.status === "PENDING"
+                : match.status ===
+                    "PENDING"
 
-                ? "En attente"
+                    ? "En attente"
 
-                : "Planifié"
+                    : "Planifié";
+    /*
+     * ============================================================
+     * ACTION PLANIFIER
+     * ============================================================
+     */
+
+    function handlePlan() {
+
+        /*
+        * Double protection UI.
+        *
+        * Un match joué ne doit jamais
+        * ouvrir le parcours de réservation.
+        */
+        if (isPlayed) {
+
+            return;
+
+        }
+
+        onPlan(
+            match,
+        );
+
+    }
 
     return (
 
@@ -83,8 +138,12 @@ export function MatchCard({
                     <Stack
                         direction="row"
                         sx={{
-                            justifyContent: "space-between",
-                            alignItems: "flex-start",
+                            justifyContent:
+                                "space-between",
+
+                            alignItems:
+                                "flex-start",
+
                             mb: 3,
                         }}
                     >
@@ -93,21 +152,27 @@ export function MatchCard({
                             direction="row"
                             spacing={2}
                             sx={{
-                                alignItems: "center",
+                                alignItems:
+                                    "center",
                             }}
                         >
 
                             <Box
                                 component="img"
-                                src={imagePath(
-                                    "venues",
-                                    match.venueLogo,
-                                )}
-                                alt={match.venueName}
+                                src={
+                                    imagePath(
+                                        "venues",
+                                        match.venueLogo,
+                                    )
+                                }
+                                alt={
+                                    match.venueName
+                                }
                                 sx={{
                                     width: 64,
                                     height: 64,
-                                    objectFit: "contain",
+                                    objectFit:
+                                        "contain",
                                 }}
                             />
 
@@ -119,14 +184,20 @@ export function MatchCard({
                                         fontWeight: 700,
                                     }}
                                 >
-                                    {match.venueName}
+
+                                    {
+                                        match.venueName
+                                    }
+
                                 </Typography>
 
                                 <Typography
                                     variant="caption"
                                     color="text.secondary"
                                 >
+
                                     Établissement
+
                                 </Typography>
 
                             </Stack>
@@ -134,11 +205,12 @@ export function MatchCard({
                         </Stack>
 
                         <Chip
-
-                            color={statusColor}
-
-                            label={statusLabel}
-
+                            color={
+                                statusColor
+                            }
+                            label={
+                                statusLabel
+                            }
                         />
 
                     </Stack>
@@ -146,7 +218,8 @@ export function MatchCard({
                     <Stack
                         spacing={1}
                         sx={{
-                            alignItems: "center",
+                            alignItems:
+                                "center",
                         }}
                     >
 
@@ -156,16 +229,23 @@ export function MatchCard({
                                 fontWeight: 700,
                             }}
                         >
-                            {match.homeTeam}
+
+                            {
+                                match.homeTeam
+                            }
+
                         </Typography>
 
                         <Typography
                             sx={{
                                 fontWeight: 700,
-                                color: "text.secondary",
+                                color:
+                                    "text.secondary",
                             }}
                         >
+
                             VS
+
                         </Typography>
 
                         <Typography
@@ -174,49 +254,53 @@ export function MatchCard({
                                 fontWeight: 700,
                             }}
                         >
-                            {match.awayTeam}
+
+                            {
+                                match.awayTeam
+                            }
+
                         </Typography>
 
                     </Stack>
 
                     {
-
                         match.plannedStartAt && (
 
                             <Typography>
 
-                                🕒 {
+                                🕒{" "}
 
-                                    match.plannedStartAt
+                                {
+                                    match
+                                        .plannedStartAt
                                         .toDate()
                                         .toLocaleString(
                                             "fr-FR",
                                         )
-
                                 }
 
                             </Typography>
 
                         )
-
                     }
 
                     {
-
                         match.boardNumber && (
 
                             <Typography>
 
-                                🎯 Cible {match.boardNumber}
+                                🎯 Cible{" "}
+
+                                {
+                                    match.boardNumber
+                                }
 
                             </Typography>
 
                         )
-
                     }
 
                     {
-
                         match.notes !== "" && (
 
                             <Alert severity="warning">
@@ -226,125 +310,105 @@ export function MatchCard({
                             </Alert>
 
                         )
-
                     }
 
-                    {
+                    {/*
+                     * =================================================
+                     * MATCH JOUE
+                     * =================================================
+                     */}
 
-                        match.status === "NOT_PLANNED"
+                    {
+                        /*
+                         * ============================================================
+                         * MATCH DEJA JOUE
+                         * ============================================================
+                         *
+                         * Prioritaire sur tous les statuts de réservation.
+                         */
+                        isPlayed
 
                             ? (
 
-                                match.lastReservation?.status === "REJECTED"
-
-                                    ? (
-
-                                        <Stack spacing={2}>
-
-                                            <Alert severity="error">
-
-                                                <Typography
-                                                    sx={{
-                                                        fontWeight: 700,
-                                                    }}
-                                                >
-
-                                                    Réservation refusée
-
-                                                </Typography>
-
-                                                <Typography
-                                                    variant="body2"
-                                                >
-
-                                                    {
-
-                                                        match.lastReservation
-                                                            .validationComment
-
-                                                    }
-
-                                                </Typography>
-
-                                            </Alert>
-
-                                            <Button
-
-                                                startIcon={
-                                                    <CalendarMonthIcon />
-                                                }
-
-                                                variant="contained"
-
-                                                fullWidth
-
-                                                onClick={() =>
-
-                                                    onPlan(match)
-
-                                                }
-
-                                            >
-
-                                                Planifier à nouveau
-
-                                            </Button>
-
-                                        </Stack>
-
-                                    )
-
-                                    : (
-
-                                        <Button
-
-                                            startIcon={
-                                                <CalendarMonthIcon />
-                                            }
-
-                                            variant="contained"
-
-                                            fullWidth
-
-                                            onClick={() =>
-
-                                                onPlan(match)
-
-                                            }
-
-                                        >
-
-                                            Planifier
-
-                                        </Button>
-
-                                    )
-
-                            )
-
-                            : (
-
                                 <Button
-
-                                    variant="outlined"
-
                                     fullWidth
-
-                                    onClick={() =>
-
-                                        onReservation(match)
-
+                                    variant="outlined"
+                                    color="success"
+                                    disabled
+                                    startIcon={
+                                        <CheckCircleIcon />
                                     }
-
                                 >
 
-                                    Voir la réservation
+                                    Match joué
 
                                 </Button>
 
                             )
 
+                            : match.status ===
+                                "NOT_PLANNED"
+
+                                ? (
+
+                                    /*
+                                     * =================================================
+                                     * MATCH A PLANIFIER
+                                     * =================================================
+                                     */
+
+                                    <Button
+                                        startIcon={
+                                            <CalendarMonthIcon />
+                                        }
+                                        variant="contained"
+                                        fullWidth
+                                        onClick={() =>
+                                            handlePlan()
+                                        }
+                                    >
+
+                                        Planifier
+
+                                    </Button>
+
+                                )
+
+                                : (
+
+                                    /*
+                                     * =================================================
+                                     * RESERVATION EXISTANTE
+                                     * =================================================
+                                     *
+                                     * PENDING ou PLANNED :
+                                     * on conserve le parcours existant.
+                                     */
+
+                                    <Button
+                                        fullWidth
+                                        variant="outlined"
+                                        onClick={() =>
+                                            onReservation(
+                                                match,
+                                            )
+                                        }
+                                    >
+
+                                        {
+                                            match.status ===
+                                                "PENDING"
+
+                                                ? "Voir la réservation en attente"
+
+                                                : "Voir la réservation"
+                                        }
+
+                                    </Button>
+
+                                )
                     }
+
                 </Stack>
 
             </CardContent>

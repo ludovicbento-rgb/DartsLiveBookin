@@ -3,16 +3,43 @@ import {
   useRoutes,
 } from "react-router-dom";
 
-import { routes } from "./routes";
+import {
+  routes,
+} from "./routes";
+
+import {
+  MaintenanceGuard,
+} from "@/features/configuration/routes/MaintenanceGuard";
 
 function Router() {
-  return useRoutes(routes);
+
+  const content =
+    useRoutes(
+      routes,
+    );
+
+  return (
+
+    <MaintenanceGuard>
+
+      {content}
+
+    </MaintenanceGuard>
+
+  );
+
 }
 
 export function AppRouter() {
+
   return (
+
     <BrowserRouter>
+
       <Router />
+
     </BrowserRouter>
+
   );
+
 }

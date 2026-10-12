@@ -54,6 +54,8 @@ export function createPlanning(
 
     reservationDate: Date,
 
+    durationMinutes: number,
+
 ): PlanningServiceResult {
     const openingHours =
 
@@ -99,8 +101,7 @@ export function createPlanning(
 
         openingHours,
 
-        durationMinutes:
-            data.configuration.reservationDuration,
+        durationMinutes,
 
         reservations,
 
