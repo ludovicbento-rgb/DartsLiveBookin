@@ -3,7 +3,8 @@ export const appConfig = {
 
   championshipName: "Réservation de matchs de Championnat de France Dartslive",
 
-  version: "0.1.0",
+  version:
+    __APP_VERSION__,
 
   language: "fr",
 

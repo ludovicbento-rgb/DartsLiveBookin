@@ -9,19 +9,76 @@ import {
   VitePWA,
 } from "vite-plugin-pwa";
 
+import {
+  readFileSync,
+} from "node:fs";
+
 import path
   from "node:path";
 
+const packageJson =
+  JSON.parse(
+    readFileSync(
+      "./package.json",
+      "utf-8",
+    ),
+  ) as {
+    version: string;
+  };
+
+const appVersion =
+  packageJson.version;
 export default defineConfig({
+
+  define: {
+
+    __APP_VERSION__:
+      JSON.stringify(
+        appVersion,
+      ),
+
+  },
 
   plugins: [
 
     react(),
 
+    {
+      name:
+        "generate-version-file",
+
+      generateBundle() {
+
+        this.emitFile({
+
+          type:
+            "asset",
+
+          fileName:
+            "version.json",
+
+          source:
+            JSON.stringify(
+              {
+                version:
+                  appVersion,
+              },
+              null,
+              2,
+            ),
+
+        });
+
+      },
+    },
+
     VitePWA({
 
       registerType:
         "prompt",
+
+      injectRegister:
+        null,
 
       manifest: {
 
