@@ -58,6 +58,9 @@ import MaintenanceAdminPage
 import AuditPage
   from "@/features/administration/system/audit/pages/AuditPage";
 
+import InstallPage
+  from "@/features/pwa/pages/InstallPage";
+
 export const routes = [
   {
     path: "/",
@@ -265,5 +268,12 @@ export const routes = [
     element: (
       <AvailabilityRulesPage />
     ),
+  },
+  {
+    path:
+      "/install",
+
+    element:
+      <InstallPage />,
   },
 ];

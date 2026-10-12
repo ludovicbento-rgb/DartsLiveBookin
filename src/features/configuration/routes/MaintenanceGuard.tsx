@@ -73,7 +73,10 @@ export function MaintenanceGuard({
         "/login"
         ||
         location.pathname ===
-        "/activate";
+        "/activate"
+        ||
+        location.pathname ===
+        "/install";
 
     if (
         publicDuringMaintenance
